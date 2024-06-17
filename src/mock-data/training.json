@@ -1,0 +1,194 @@
+{
+    "training_sessions": [
+      {
+        "date": "2024-06-06",
+        "type": "Run",
+        "training_name": "Morning Jog",
+        "subtype": "Endurance",
+        "completion": true,
+        "length": 30,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-06",
+        "type": "Strength",
+        "training_name": "Leg Day",
+        "subtype": "Legs",
+        "completion": false,
+        "length": 45,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-07",
+        "type": "Bike",
+        "training_name": "Hill Climb",
+        "subtype": "Intervals",
+        "completion": true,
+        "length": 60,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-08",
+        "type": "Swim",
+        "training_name": "Freestyle Laps",
+        "subtype": "Technique",
+        "completion": true,
+        "length": 40,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-08",
+        "type": "Crossfit",
+        "training_name": "WOD",
+        "subtype": "Mixed",
+        "completion": false,
+        "length": 30,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-09",
+        "type": "Rowing",
+        "training_name": "2000m Test",
+        "subtype": "Endurance",
+        "completion": true,
+        "length": 20,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-10",
+        "type": "Strength",
+        "training_name": "Upper Body Strength",
+        "subtype": "Push",
+        "completion": false,
+        "length": 50,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-11",
+        "type": "Run",
+        "training_name": "Speedwork",
+        "subtype": "Intervals",
+        "completion": true,
+        "length": 25,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-12",
+        "type": "Bike",
+        "training_name": "Long Ride",
+        "subtype": "Endurance",
+        "completion": true,
+        "length": 90,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-12",
+        "type": "Strength",
+        "training_name": "Chest and Arms",
+        "subtype": "Chest and arms",
+        "completion": true,
+        "length": 60,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-13",
+        "type": "Swim",
+        "training_name": "Backstroke Drills",
+        "subtype": "Technique",
+        "completion": false,
+        "length": 35,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-14",
+        "type": "Crossfit",
+        "training_name": "Hero WOD",
+        "subtype": "Mixed",
+        "completion": true,
+        "length": 45,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-14",
+        "type": "Run",
+        "training_name": "Tempo Run",
+        "subtype": "Tempo",
+        "completion": false,
+        "length": 50,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-15",
+        "type": "Rowing",
+        "training_name": "Interval Training",
+        "subtype": "Intervals",
+        "completion": true,
+        "length": 30,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-16",
+        "type": "Strength",
+        "training_name": "Leg Day",
+        "subtype": "Legs",
+        "completion": true,
+        "length": 40,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-17",
+        "type": "Run",
+        "training_name": "Long Run",
+        "subtype": "Endurance",
+        "completion": false,
+        "length": 70,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-18",
+        "type": "Bike",
+        "training_name": "Sprint Intervals",
+        "subtype": "Intervals",
+        "completion": true,
+        "length": 50,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-18",
+        "type": "Swim",
+        "training_name": "Butterfly Technique",
+        "subtype": "Technique",
+        "completion": true,
+        "length": 30,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-19",
+        "type": "Crossfit",
+        "training_name": "AMRAP",
+        "subtype": "Mixed",
+        "completion": false,
+        "length": 25,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-20",
+        "type": "Rowing",
+        "training_name": "500m Sprints",
+        "subtype": "Intervals",
+        "completion": true,
+        "length": 20,
+        "length_unit": "minutes"
+      },
+      {
+        "date": "2024-06-20",
+        "type": "Strength",
+        "training_name": "Pull Day",
+        "subtype": "Pull",
+        "completion": true,
+        "length": 55,
+        "length_unit": "minutes"
+      }
+    ]
+  }
+  

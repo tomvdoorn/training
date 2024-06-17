@@ -23,10 +23,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-    <div className='light h-full'>
       <body 
         className={cn(
-        "relative h-full font-sans antialiased grainy",
+        "relative h-full font-sans antialiased grainy light",
         fontSans.variable
       )}>
         <main className="relative flex flex-col min-h-screen">
@@ -36,7 +35,6 @@ export default function RootLayout({
           </div>
         </main>
       </body>
-    </div>
     </html>
   );
 }

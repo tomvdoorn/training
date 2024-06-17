@@ -1,47 +1,29 @@
-import Image from "next/image"
-import { getServerSession } from 'next-auth/next'
-import Link from "next/link"
+"use client";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  CreditCard,
-  File,
   Home,
   LineChart,
-  ListFilter,
-  MoreVertical,
   Package,
   Package2,
   PanelLeft,
   Search,
-  Settings,
   ShoppingCart,
-  Truck,
-  Users2,
+  Users2
 } from "lucide-react"
-
-import { Badge } from "@/components/ui/badge"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { getServerSession } from 'next-auth/next'
+import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { signOut } from "next-auth/react"
 import { authOptions } from '../../app/api/auth/[...nextauth]/route'
 
 const Topbar = async () => {
@@ -103,25 +85,6 @@ const Topbar = async () => {
     </nav>
   </SheetContent>
 </Sheet>
-<Breadcrumb className="hidden md:flex">
-  <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink asChild>
-        <Link href="#">Dashboard</Link>
-      </BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbLink asChild>
-        <Link href="#">Orders</Link>
-      </BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbSeparator />
-    <BreadcrumbItem>
-      <BreadcrumbPage>Recent Orders</BreadcrumbPage>
-    </BreadcrumbItem>
-  </BreadcrumbList>
-</Breadcrumb>
 <div className="relative ml-auto flex-1 md:grow-0">
   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
   <Input
@@ -152,7 +115,7 @@ const Topbar = async () => {
     <DropdownMenuItem>Settings</DropdownMenuItem>
     <DropdownMenuItem>Support</DropdownMenuItem>
     <DropdownMenuSeparator />
-    <DropdownMenuItem>Logout</DropdownMenuItem>
+    <DropdownMenuItem><Link onClick={signOut}> Logout </Link></DropdownMenuItem>
   </DropdownMenuContent>
 </DropdownMenu>
 </header>

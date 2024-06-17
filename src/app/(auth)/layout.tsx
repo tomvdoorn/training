@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body  className={cn(
-        "font-sans antialiased grainy",
+        "font-sans antialiased grainy relative flex flex-col min-h-screen justify-center",
         fontSans.variable
        )}>
       <TRPCReactProvider>{children}</TRPCReactProvider>
