@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import { useEffect, useState } from "react";
 import { CardHeader, CardTitle, CardContent, Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
@@ -11,10 +12,6 @@ interface TrainingSession {
   completion: boolean;
   length: number;
   length_unit: string;
-}
-
-interface CarouselItemsProps {
-  sessions: TrainingSession[];
 }
 
 const getFormattedDate = (date: Date): string => date.toISOString().split("T")[0];
@@ -39,9 +36,22 @@ const getSessionsForDate = (sessions: TrainingSession[], dateStr: string): Train
   return sessions.filter((session) => session.date === dateStr);
 };
 
-const CarouselItems: React.FC<CarouselItemsProps> = ({ sessions }) => {
+const CarouselItems: React.FC = () => {
+  const [sessions, setSessions] = useState<TrainingSession[]>([]);
+
+  useEffect(() => {
+    // This would be replaced by a trpc call in the future
+    const fetchData = async () => {
+      // Mocking an API call with the JSON data
+      const data = trainingData.training_sessions; // Make sure trainingData is defined or imported
+      setSessions(data);
+    };
+
+    fetchData();
+  }, []);
+
   const today = new Date();
-  
+
   const generateDates = (daysBack: number, daysForward: number): Date[] => {
     const dates = [];
     for (let i = -daysBack; i <= daysForward; i++) {
@@ -78,11 +88,9 @@ const CarouselItems: React.FC<CarouselItemsProps> = ({ sessions }) => {
   );
 
   return (
-    <Carousel className="w-full shrink-0 overflow-hidden relative"
+    <Carousel className="w-full  overflow-hidden relative"
     opts={{
-        startIndex:2,
-        slidesToScroll: 2,
-        align: 'start',
+        startIndex:4,
     }}>
       <CarouselContent className="flex w-full px-12 -ml-2 md:-ml-4 ">
         {dates.map((date, index) => {
@@ -98,25 +106,25 @@ const CarouselItems: React.FC<CarouselItemsProps> = ({ sessions }) => {
           const dailySessions = getSessionsForDate(sessions, dateStr);
 
           return (
-            <CarouselItem  className="pl-10 md:basis-1/2 lg:basis-1/3">
-                <Card key={index} className="min-w-[250px]">
+            <CarouselItem className="pl-10 md:basis-1/2 lg:basis-1/3" key={index}>
+              <Card className="min-w-[250px]">
                 <CardHeader>
-                    <CardTitle>{displayDate}</CardTitle>
+                  <CardTitle>{displayDate}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {dailySessions.length > 0 ? (
+                  {dailySessions.length > 0 ? (
                     renderSessions(dailySessions)
-                    ) : (
+                  ) : (
                     renderEmptyState()
-                    )}
+                  )}
                 </CardContent>
-                </Card>
+              </Card>
             </CarouselItem>
           );
         })}
       </CarouselContent>
       <CarouselPrevious className="absolute left-0 top-1/2 transform -translate-y-1/2" />
-      <CarouselNext className="absolute right-0 top-1/2 transform -translate-y-1/2"  />
+      <CarouselNext className="absolute right-0 top-1/2 transform -translate-y-1/2" />
     </Carousel>
   );
 };

@@ -1,5 +1,5 @@
-import Sidebar from "~/components/app/Sidebar"
-import Topbar from "~/components/app/Topbar"
+import Sidebar from "~/components/app/nav/Sidebar"
+import Topbar from "~/components/app/nav/Topbar"
 import { TRPCReactProvider } from "~/trpc/react"
 import "~/styles/globals.css";
 import { Inter as FontSans } from "next/font/google"
