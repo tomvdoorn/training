@@ -3,7 +3,8 @@
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useEffect, useRef, useState } from "react"; 
 import { cn } from "@/lib/utils";
-import React, { FC } from "react";
+import React from "react";
+import type  { FC } from "react";
 
 interface DayInCalendarProps extends React.HTMLAttributes<HTMLDivElement> {
   dateObj: { date: number; currentMonth: boolean };

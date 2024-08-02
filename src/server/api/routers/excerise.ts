@@ -1,12 +1,21 @@
 import { createTRPCRouter as router, publicProcedure } from '../trpc';
 import { z } from 'zod';
 import { db as prisma } from '../../db';
+import { MuscleGroup } from '@prisma/client';
 
 export const exerciseRouter = router({
   // Get a list of exercises
-  getExercises: publicProcedure.query(async () => {
+  getExercises: publicProcedure
+  .query(async () => {
     const exercises = await prisma.exercise.findMany();
     return exercises;
+  }),
+
+  getExerciseCategories: publicProcedure
+  .query(async () => {
+    const categories = await prisma.exerciseCategory.findMany(
+    );
+    return categories;
   }),
 
   // Add a new exercise
@@ -14,10 +23,11 @@ export const exerciseRouter = router({
     .input(z.object({
       name: z.string(),
       description: z.string().optional(),
-      muscleGroup: z.string(),
+      muscleGroup: z.nativeEnum(MuscleGroup).optional(),
+      categoryId: z.number(),
       type: z.string(),
-      imageUrl: z.string().optional(),
-      videoUrl: z.string().optional(),
+      image: z.string().optional(),
+      video: z.string().optional(),
       userId: z.string().optional(),  // Ensure this is tied to the user
     }))
     .mutation(async ({ input }) => {
@@ -26,9 +36,10 @@ export const exerciseRouter = router({
           name: input.name,
           description: input.description,
           muscleGroup: input.muscleGroup,
+          categoryId: input.categoryId,
           type: input.type,
-          imageUrl: input.imageUrl,
-          videoUrl: input.videoUrl,
+          image: input.image,
+          video: input.video,
           userId: input.userId,
         },
       });

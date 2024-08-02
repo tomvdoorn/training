@@ -4,7 +4,10 @@ import { TRPCReactProvider } from "~/trpc/react"
 import "~/styles/globals.css";
 import { Inter as FontSans } from "next/font/google"
 import { cn } from "~/lib/utils";
-
+import { getCurrentUser } from "@/lib/session"
+import { notFound } from "next/navigation"
+import { Toaster } from "~/components/ui/toaster";
+  
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -16,11 +19,15 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser()
+  if (!user) {
+    return notFound()
+  }
   return (
   <html lang="en">
     <body 
@@ -33,6 +40,7 @@ export default function RootLayout({
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <Topbar/>
           <TRPCReactProvider>{children}</TRPCReactProvider>
+        <Toaster />
         </div>
       </div>
     </body>

@@ -1,26 +1,18 @@
 import CarouselItems from "@/components/app/CarouselItem"; // Ensure the path is correct
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
     ArrowUpRight
-} from "lucide-react"
-import Link from "next/link"
+} from "lucide-react";
+import Link from "next/link";
 
-interface TrainingSession {
-    date: string;
-    type: string;
-    training_name: string;
-    subtype: string;
-    completion: boolean;
-    length: number;
-    length_unit: string;
-}
+
 
 const Page = () => {
 

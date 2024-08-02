@@ -1,112 +1,208 @@
+"use client"
 import React, { useState } from 'react';
-import { api as trpc } from "@/trpc/react";
+import { api } from "~/trpc/react";
+import Modal from "@/components/modal" 
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { MuscleGroup } from '@prisma/client' 
+import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
+import type { Exercise } from '@prisma/client';
 
+interface AddExerciseProps {
+  templateId: number;
+  onExerciseAdded: (newExercise: Exercise) => void;
+}
 
-const AddExercise: React.FC = () => {
+const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded }) => {
+  const { data: exerciseCategories, error, isLoading } = api.exercise.getExerciseCategories.useQuery();
+  const { addExercise } = useWorkoutTemplateStore();
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [muscleGroup, setMuscleGroup] = useState('');
   const [type, setType] = useState('');
+  const [muscleGroup, setMuscleGroup] = useState<MuscleGroup | ''>('');
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
-  const [userId, setUserId] = useState(''); // Assume this comes from authentication context
 
-  const addExercise = trpc.exercise.addExercise.useMutation();
-  const deleteExercise = trpc.exercise.deleteUserExercise.useMutation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const addExerciseMutation = api.exercise.addExercise.useMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!categoryId || !muscleGroup) return;
+
     try {
-      await addExercise.mutateAsync({
+      const newExercise = await addExerciseMutation.mutateAsync({
         name,
         description,
         muscleGroup,
+        categoryId,
         type,
-        imageUrl,
-        videoUrl,
-        userId,
+        image: imageUrl,
+        video: videoUrl,
       });
-      // Reset form fields
-      setName('');
-      setDescription('');
-      setMuscleGroup('');
-      setType('');
-      setImageUrl('');
-      setVideoUrl('');
-      alert('Exercise added successfully!');
+
+      addExercise({
+        templateId,
+        exerciseId: newExercise.id,
+        exercise: newExercise,
+        order: 0, // You might want to set this to the current number of exercises + 1
+      });
+
+      onExerciseAdded(newExercise);
+      setIsModalOpen(false);
+      resetForm();
     } catch (error) {
       console.error('Error adding exercise:', error);
-      alert('Failed to add exercise');
+      // Handle error (e.g., show error message to user)
     }
   };
 
-  const handleDelete = async (exerciseId: number) => {
-    try {
-      await deleteExercise.mutateAsync({ exerciseId, userId });
-      alert('Exercise deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting exercise:', error);
-      alert('Failed to delete exercise');
-    }
+  const resetForm = () => {
+    setName('');
+    setDescription('');
+    setMuscleGroup('');
+    setCategoryId(null);
+    setType('');
+    setImageUrl('');
+    setVideoUrl('');
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+      <Button
+        className="text-white font-bold py-2 px-4 rounded"
+        onClick={() => setIsModalOpen(true)}
+      >
+        Add New Exercise
+      </Button>
+      
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+                Name:
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="name"
+                type="text"
+                placeholder="Exercise Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+                Description:
+              </label>
+              <textarea
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="description"
+                placeholder="Exercise Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="muscleGroup">
+                Muscle Group:
+              </label>
+              <Select onValueChange={(value) => setMuscleGroup(value as MuscleGroup)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Muscle Group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(MuscleGroup).map((group) => (
+                    <SelectItem key={group} value={group}>{group}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+                Category:
+              </label>
+              <Select onValueChange={(value) => setCategoryId(Number(value))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {exerciseCategories?.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>{category.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+                Type:
+              </label>
+              <Select onValueChange={(value) => setType(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Compound">Compound</SelectItem>
+                    <SelectItem value="Isolation">Isolation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="imageUrl">
+                Image URL:
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="imageUrl"
+                type="url"
+                placeholder="Image URL"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="videoUrl">
+                Video URL:
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="videoUrl"
+                type="url"
+                placeholder="Video URL"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Add Exercise
+              </Button>
+              <Button
+                type="button"
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
         </div>
-        <div>
-          <label>Description:</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Muscle Group:</label>
-          <input
-            type="text"
-            value={muscleGroup}
-            onChange={(e) => setMuscleGroup(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Type:</label>
-          <input
-            type="text"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Image URL:</label>
-          <input
-            type="text"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Video URL:</label>
-          <input
-            type="text"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-          />
-        </div>
-        <button type="submit">Add Exercise</button>
-      </form>
-      {/* Add button for testing delete functionality */}
-      <button onClick={() => handleDelete(1)}>Delete Exercise</button> {/* Replace 1 with actual exercise ID */}
+      </Modal>
     </div>
   );
 };

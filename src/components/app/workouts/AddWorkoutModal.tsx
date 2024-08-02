@@ -9,26 +9,32 @@ import {
     CredenzaTitle,
     CredenzaTrigger,
   } from "@/components/ui/credenza"
-import TemplateManager from "./TemplateManager";
-import AddExercise from "./AddExercise";
+import AddTemplate  from "@/components/app/workouts/Add-Template"
+import { Button } from "@/components/ui/button"
+import { PlusCircle } from "lucide-react"
 
-const WorkoutModal = () => {
+interface workoutModal {
+  user_id: string;
+}
+export default  function WorkoutModal({user_id}:workoutModal) {
 
 return(
+    <>
     <Credenza>
     <CredenzaTrigger asChild>
-        <button>Open modal</button>
+        <Button>
+            <PlusCircle className="mr-2 h-4 w-4" /> Create New Template
+        </Button>
     </CredenzaTrigger>
     <CredenzaContent>
         <CredenzaHeader>
-        <CredenzaTitle>Credenza</CredenzaTitle>
+        <CredenzaTitle>Add Workout</CredenzaTitle>
         <CredenzaDescription>
-            A responsive modal component for shadcn/ui.
+           Create a workout template to use in your training sessions.
         </CredenzaDescription>
         </CredenzaHeader>
         <CredenzaBody>
-        <TemplateManager />
-        <AddExercise />
+            <AddTemplate userId= {user_id} />
         </CredenzaBody>
         <CredenzaFooter>
         <CredenzaClose asChild>
@@ -37,7 +43,7 @@ return(
         </CredenzaFooter>
     </CredenzaContent>
     </Credenza>
+</>
 )
 }
 
-export default WorkoutModal;

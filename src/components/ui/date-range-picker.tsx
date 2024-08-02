@@ -1,4 +1,5 @@
-/* eslint-disable max-lines */
+/* eslint-disable max-lines
+   */
 'use client'
 
 import React, { type FC, useState, useEffect, useRef } from 'react'
@@ -37,7 +38,7 @@ export interface DateRangePickerProps {
   showCompare?: boolean
 }
 
-const formatDate = (date: Date, locale: string = 'en-us'): string => {
+const formatDate = (date: Date, locale = 'en-us'): string => {
   return date.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
@@ -459,7 +460,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                       <DateInput
                         value={rangeCompare?.to}
                         onChange={(date) => {
-                          if (rangeCompare && rangeCompare.from) {
+                          if (rangeCompare?.from) {
                             const compareFromDate =
                               date < rangeCompare.from
                                 ? date
@@ -477,7 +478,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                 </div>
               </div>
               { isSmallScreen && (
-                <Select defaultValue={selectedPreset} onValueChange={(value:any) => { setPreset(value) }}>
+                <Select defaultValue={selectedPreset} onValueChange={(value:string) => { setPreset(value) }}>
                   <SelectTrigger className="w-[180px] mx-auto mb-2">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>

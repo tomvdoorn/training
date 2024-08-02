@@ -1,6 +1,7 @@
 import { createTRPCRouter as router, publicProcedure } from '../trpc';
 import { z } from 'zod';
 import { db as prisma } from '../../db';
+import { SetType } from '@prisma/client';
 
 export const setRouter = router({
   // Add set to template exercise
@@ -30,7 +31,7 @@ export const setRouter = router({
       weight: z.number().optional(),
       duration: z.number().optional(),
       distance: z.number().optional(),
-      type: z.string().optional(),
+      type: z.nativeEnum(SetType),
       rpe: z.number().optional(),
       video: z.string().optional(),
     }))

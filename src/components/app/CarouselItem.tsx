@@ -1,20 +1,22 @@
 "use client"
-import { useEffect, useState } from "react";
+import React from "react";
 import { CardHeader, CardTitle, CardContent, Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
+import ScheduleSession from "./ScheduleSessions";
+import { api as trpc } from "~/trpc/react"  
 
-interface TrainingSession {
-  date: string;
-  type: string;
-  training_name: string;
-  subtype: string;
-  completion: boolean;
-  length: number;
-  length_unit: string;
+import type { TrainingSession, Template } from "@prisma/client"
+
+type SessionWithTemplate = TrainingSession & {
+  template: Template | null;
 }
 
-const getFormattedDate = (date: Date): string => date.toISOString().split("T")[0];
+interface SessionsProps extends Omit<TrainingSession, 'template'> {
+  template: Pick<Template, 'name'>;
+}
+
+const getFormattedDate = (date: Date): string => date.toISOString().split("T")[0]!;
 
 const getDisplayDate = (date: Date): string => {
   const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -23,33 +25,17 @@ const getDisplayDate = (date: Date): string => {
   const day = date.getDate();
   const monthName = monthNames[date.getMonth()];
 
-  const getOrdinalSuffix = (n: number) => {
-    const s = ["th", "st", "nd", "rd"],
-          v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  const getOrdinalSuffix = (n: number): string => {
+    const suffixes = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (suffixes[(v - 20) % 10] ?? suffixes[v] ?? suffixes[0]!)
   };
 
   return `${dayName} (${getOrdinalSuffix(day)} of ${monthName})`;
 };
 
-const getSessionsForDate = (sessions: TrainingSession[], dateStr: string): TrainingSession[] => {
-  return sessions.filter((session) => session.date === dateStr);
-};
-
 const CarouselItems: React.FC = () => {
-  const [sessions, setSessions] = useState<TrainingSession[]>([]);
-
-  useEffect(() => {
-    // This would be replaced by a trpc call in the future
-    const fetchData = async () => {
-      // Mocking an API call with the JSON data
-      const data = trainingData.training_sessions; // Make sure trainingData is defined or imported
-      setSessions(data);
-    };
-
-    fetchData();
-  }, []);
-
+  const getAllSessions = trpc.session.getAll.useQuery();
   const today = new Date();
 
   const generateDates = (daysBack: number, daysForward: number): Date[] => {
@@ -64,35 +50,29 @@ const CarouselItems: React.FC = () => {
 
   const dates = generateDates(5, 5);
 
-  const renderSessions = (sessions: TrainingSession[]) => {
-    return sessions.map((session, index) => (
-      <div key={index} className="mb-4">
-        <div className="text-xl font-semibold">{session.training_name}</div>
+  const renderSessions = (sessions: SessionsProps[]) => {
+    return sessions.map((session) => (
+      <div key={session.id} className="mb-4">
+        <div className="text-xl font-semibold">{session.template.name}</div>
         <div className="text-sm">
-          {session.type} - {session.subtype}
-        </div>
-        <div className="text-sm">
-          Length: {session.length} {session.length_unit}
+          Duration: {Math.round((session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60))} minutes
         </div>
         <Badge variant="outline" className="text-xs">
-          {session.completion ? "Completed" : "Not Completed"}
+          {session.completed ? "Completed" : "Not Completed"}
         </Badge>
       </div>
     ));
   };
 
-  const renderEmptyState = () => (
+  const renderEmptyState = (date: Date) => (
     <div className="text-center">
-      <a href="#" className="underline text-blue-600">Schedule a training</a>
+      <ScheduleSession  />
     </div>
   );
 
   return (
-    <Carousel className="w-full  overflow-hidden relative"
-    opts={{
-        startIndex:4,
-    }}>
-      <CarouselContent className="flex w-full px-12 -ml-2 md:-ml-4 ">
+    <Carousel className="w-full overflow-hidden relative" opts={{ startIndex: 4 }}>
+      <CarouselContent className="flex w-full px-12 -ml-2 md:-ml-4">
         {dates.map((date, index) => {
           const dateStr = getFormattedDate(date);
           const displayDate = date.toDateString() === today.toDateString()
@@ -103,7 +83,13 @@ const CarouselItems: React.FC = () => {
             ? "Tomorrow"
             : getDisplayDate(date);
           
-          const dailySessions = getSessionsForDate(sessions, dateStr);
+          const dailySessions = getAllSessions.data
+            ?.filter((session): session is SessionWithTemplate => 
+              getFormattedDate(session.startTime) === dateStr && session.template !== null)
+            .map((session): SessionsProps => ({
+              ...session,
+              template: { name: session.template!.name }
+            }));
 
           return (
             <CarouselItem className="pl-10 md:basis-1/2 lg:basis-1/3" key={index}>
@@ -112,10 +98,10 @@ const CarouselItems: React.FC = () => {
                   <CardTitle>{displayDate}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {dailySessions.length > 0 ? (
+                  {dailySessions && dailySessions.length > 0 ? (
                     renderSessions(dailySessions)
                   ) : (
-                    renderEmptyState()
+                    renderEmptyState(date)
                   )}
                 </CardContent>
               </Card>

@@ -10,8 +10,10 @@ import {
 } from './ui/dropdown-menu'
 import Link from 'next/link'
 import { useAuth } from '../hooks/use-auth'
+import type { User } from '@prisma/client'
 
-const UserAccountNav = ({ user }: { user: User }) => {
+
+const UserAccountNav = ({ user }: { user: Partial<User> }) => {
   const { signOut } = useAuth()
 
   return (

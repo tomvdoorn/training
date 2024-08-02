@@ -1,5 +1,5 @@
 "use client"
-import { Home, LineChart, Package, Settings, ShoppingCart, Users2 } from "lucide-react"
+import { Home, LineChart, Settings, Dumbbell, CalendarDays, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 
 import { BRAND } from '../../../config/name'
@@ -19,9 +19,9 @@ const Sidebar = () =>{
           <span className="sr-only">{BRAND.name}</span>
         </Link>
         <NavItems href="/app" icon={Home} label="Dashboard" />
-        <NavItems href="/app/workouts" icon={ShoppingCart} label="Workouts" />
-        <NavItems href="/app/schedule" icon={Package} label="Schedule" />
-        <NavItems href="/app/customers" icon={Users2} label="Customers" />
+        <NavItems href="/app/workouts" icon={Dumbbell} label="Workouts" />
+        <NavItems href="/app/schedule" icon={CalendarDays} label="Schedule" />
+        <NavItems href="/app/store" icon={ShoppingBag} label="Customers" />
         <NavItems href="/app/analytics" icon={LineChart} label="Analytics" />
       </nav>
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">

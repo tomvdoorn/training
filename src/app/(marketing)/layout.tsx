@@ -18,6 +18,7 @@ export const metadata = {
 
 export default function RootLayout({
   children,
+  
 }: {
   children: React.ReactNode;
 }) {
@@ -31,6 +32,7 @@ export default function RootLayout({
         <main className="relative flex flex-col min-h-screen">
           <Navbar />
           <div className="flex-grow flex-1">
+            
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </div>
         </main>

@@ -1,4 +1,4 @@
-"Use client"
+"use client"
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,20 +9,50 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 
+// Type definitions
+interface Set {
+  weight: number
+  reps: number
+  rpe: number
+  completed: boolean
+}
+
+interface Exercise {
+  name: string
+  note: string
+  sets: Set[]
+}
+
+interface Workout {
+  name: string
+  date: string
+  expanded: boolean
+  exercises: Exercise[]
+}
+
+type NumberFields = {
+    [K in keyof Set]: Set[K] extends number ? K : never
+  }[keyof Set];
+
+interface IconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number | string;
+}
+
 
 export default function Component() {
-const [workouts, setWorkouts] = useState(null)
-const [newWeight, setNewWeight] = useState(0)
+  const [workouts, setWorkouts] = useState<Workout[]>([])
+  const [newWeight, setNewWeight] = useState(0)
   const [newReps, setNewReps] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
-  const [selectedWorkoutIndex, setSelectedWorkoutIndex] = useState(null)
-  const [selectedExerciseIndex, setSelectedExerciseIndex] = useState(null)
-  const [selectedSetIndex, setSelectedSetIndex] = useState(null)
-  const addSet = (workoutIndex, exerciseIndex) => {
+  const [selectedWorkoutIndex, setSelectedWorkoutIndex] = useState<number | null>(null)
+  const [selectedExerciseIndex, setSelectedExerciseIndex] = useState<number | null>(null)
+  const [selectedSetIndex, setSelectedSetIndex] = useState<number | null>(null)
+
+  const addSet = (workoutIndex: number, exerciseIndex: number) => {
     const updatedWorkouts = [...workouts]
-    updatedWorkouts[workoutIndex].exercises[exerciseIndex].sets.push({
-      weight: newWeight,
+    updatedWorkouts?.[workoutIndex]?.exercises?.[exerciseIndex]?.sets.push({
+        weight: newWeight,
       reps: newReps,
       rpe: 0,
       completed: false,
@@ -31,46 +61,77 @@ const [newWeight, setNewWeight] = useState(0)
     setNewWeight(0)
     setNewReps(0)
   }
-  const removeSet = (workoutIndex, exerciseIndex, setIndex) => {
+
+  const removeSet = (workoutIndex: number, exerciseIndex: number, setIndex: number) => {
     setSelectedWorkoutIndex(workoutIndex)
     setSelectedExerciseIndex(exerciseIndex)
     setSelectedSetIndex(setIndex)
     setShowDeleteConfirmation(true)
   }
+
   const confirmRemoveSet = () => {
-    const updatedWorkouts = [...workouts]
-    updatedWorkouts[selectedWorkoutIndex].exercises[selectedExerciseIndex].sets.splice(selectedSetIndex, 1)
-    setWorkouts(updatedWorkouts)
+    if (selectedWorkoutIndex !== null && selectedExerciseIndex !== null && selectedSetIndex !== null) {
+      const updatedWorkouts = [...workouts]
+      updatedWorkouts[selectedWorkoutIndex]?.exercises[selectedExerciseIndex]?.sets?.splice(selectedSetIndex, 1)
+        setWorkouts(updatedWorkouts)
+      setShowDeleteConfirmation(false)
+    }
+  }
+
+  const cancelRemoveSet  = () => {
     setShowDeleteConfirmation(false)
   }
-  const cancelRemoveSet = () => {
-    setShowDeleteConfirmation(false)
+
+  const toggleSetCompletion = (workoutIndex: number, exerciseIndex: number, setIndex: number) => {
+    const updatedWorkouts = [...workouts];
+    const set = updatedWorkouts[workoutIndex]?.exercises[exerciseIndex]?.sets[setIndex];
+    if (set) {
+      set.completed = !set.completed;
+      setWorkouts(updatedWorkouts);
+    }
   }
-  const toggleSetCompletion = (workoutIndex, exerciseIndex, setIndex) => {
-    const updatedWorkouts = [...workouts]
-    updatedWorkouts[workoutIndex].exercises[exerciseIndex].sets[setIndex].completed =
-      !updatedWorkouts[workoutIndex].exercises[exerciseIndex].sets[setIndex].completed
-    setWorkouts(updatedWorkouts)
+
+  const toggleWorkoutExpansion = (index: number) => {
+    const updatedWorkouts = [...workouts];
+    if (index < updatedWorkouts.length) {
+      (updatedWorkouts[index]!).expanded = !(updatedWorkouts[index]!).expanded;
+      setWorkouts(updatedWorkouts);
+    }
   }
-  const toggleWorkoutExpansion = (index) => {
-    const updatedWorkouts = [...workouts]
-    updatedWorkouts[index].expanded = !updatedWorkouts[index].expanded
-    setWorkouts(updatedWorkouts)
-  }
-  const handleAddExercise = (workoutIndex, exerciseIndex) => {
+
+  const handleAddExercise = (workoutIndex: number) => {
     setSelectedWorkoutIndex(workoutIndex)
-    setSelectedExerciseIndex(exerciseIndex)
     setShowModal(true)
   }
+
   const handleCloseModal = () => {
     setShowModal(false)
   }
-  const handleSaveExercise = (newExercise) => {
-    const updatedWorkouts = [...workouts]
-    updatedWorkouts[selectedWorkoutIndex].exercises.push(newExercise)
-    setWorkouts(updatedWorkouts)
-    setShowModal(false)
+
+  const handleSaveExercise = (newExercise: Exercise) => {
+    if (selectedWorkoutIndex !== null) {
+      const updatedWorkouts = [...workouts]
+      updatedWorkouts[selectedWorkoutIndex]?.exercises.push(newExercise)
+      setWorkouts(updatedWorkouts)
+      setShowModal(false)
+    }
   }
+
+  const handleSetUpdate = (
+    workoutIndex: number,
+    exerciseIndex: number,
+    setIndex: number,
+    field: NumberFields,
+    value: number
+  ) => {
+    const updatedWorkouts = [...workouts];
+    const set = updatedWorkouts[workoutIndex]?.exercises[exerciseIndex]?.sets[setIndex];
+    
+    if (set) {
+      set[field] = value;
+      setWorkouts(updatedWorkouts);
+    }
+  };
   return (
     <div className="w-full max-w-4xl mx-auto p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
@@ -100,11 +161,7 @@ const [newWeight, setNewWeight] = useState(0)
                         <Button variant="outline" size="sm" onClick={() => addSet(workoutIndex, exerciseIndex)}>
                           Add Set
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAddExercise(workoutIndex, exerciseIndex)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleAddExercise(workoutIndex)}>
                           Add Exercise
                         </Button>
                         <Button>
@@ -148,7 +205,7 @@ const [newWeight, setNewWeight] = useState(0)
                                     exerciseIndex,
                                     setIndex,
                                     "weight",
-                                    parseInt(e.target.value),
+                                    parseInt(e.target.value)
                                   )
                                 }
                               />
@@ -163,7 +220,7 @@ const [newWeight, setNewWeight] = useState(0)
                                     exerciseIndex,
                                     setIndex,
                                     "reps",
-                                    parseInt(e.target.value),
+                                    parseInt(e.target.value)
                                   )
                                 }
                               />
@@ -253,50 +310,9 @@ const [newWeight, setNewWeight] = useState(0)
     </div>
   )
 }
-function MoveHorizontalIcon(props) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <polyline points="18 8 22 12 18 16" />
-        <polyline points="6 8 2 12 6 16" />
-        <line x1="2" x2="22" y1="12" y2="12" />
-      </svg>
-    )
-  }
+
   
-  
-  function PlusIcon(props) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12h14" />
-        <path d="M12 5v14" />
-      </svg>
-    )
-  }
-  
-  
-  function TrashIcon(props) {
+  function TrashIcon(props:IconProps) {
     return (
       <svg
         {...props}
@@ -318,7 +334,7 @@ function MoveHorizontalIcon(props) {
   }
   
   
-  function TriangleAlertIcon(props) {
+  function TriangleAlertIcon(props:IconProps) {
     return (
       <svg
         {...props}
@@ -335,6 +351,44 @@ function MoveHorizontalIcon(props) {
         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
         <path d="M12 9v4" />
         <path d="M12 17h.01" />
+      </svg>
+    )
+  }
+
+  function PlusIcon(props:IconProps) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 5v14m0-14h14M12 19H5M19 12H5" />
+      </svg>
+    )
+  }
+
+  function MoveHorizontalIcon(props:IconProps) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M3 12h18M3 6h18M3 18h18" />
       </svg>
     )
   }

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../app/api/auth/[...nextauth]/route'
+import { authOptions } from "~/server/auth";
 import MaxWidthWrapper from './MaxWidthWrapper'
 import { Icons } from './Icons'
 import NavItems from './NavItems'

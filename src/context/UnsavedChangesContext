@@ -1,0 +1,168 @@
+import React, { createContext, useContext, useReducer, type ReactNode } from 'react';
+import { type Template, type TemplateExercise, type TemplateExerciseSet } from '@prisma/client';
+
+type State = {
+  hasUnsavedChanges: boolean;
+  changes: {
+    template?: Partial<Template>;
+    exercises: (Partial<TemplateExercise> & { isNew?: boolean; isInitial?: boolean; deleted?: boolean })[];
+    sets: Record<string, Partial<TemplateExerciseSet> | null>;
+  };
+};
+
+type Action =
+  | { type: 'SET_UNSAVED_CHANGES'; payload: boolean }
+  | { type: 'UPDATE_TEMPLATE'; payload: Partial<Template> }
+  | { type: 'UPDATE_EXERCISE'; payload: Partial<TemplateExercise> }
+  | { type: 'ADD_EXERCISE'; payload: Partial<TemplateExercise> }
+  | { type: 'REMOVE_EXERCISE'; payload: { templateExerciseId: number } }
+  | { type: 'UPDATE_SET'; payload: { setId: string; data: Partial<TemplateExerciseSet> } }
+  | { type: 'ADD_SET'; payload: { exerciseId: number; set: Partial<TemplateExerciseSet> } }
+  | { type: 'REMOVE_SET'; payload: { exerciseId: number; setId: number } }
+  | { type: 'RESET_CHANGES' }
+  | { type: 'INITIALIZE_EXERCISES'; payload: TemplateExercise[] };
+
+const initialState: State = {
+  hasUnsavedChanges: false,
+  changes: {
+    exercises: [],
+    sets: {},
+  },
+};
+
+const UnsavedChangesContext = createContext<{
+  state: State;
+  dispatch: React.Dispatch<Action>;
+} | undefined>(undefined);
+
+function unsavedChangesReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'SET_UNSAVED_CHANGES':
+      return { ...state, hasUnsavedChanges: action.payload };
+    case 'UPDATE_TEMPLATE':
+      return {
+        ...state,
+        changes: { ...state.changes, template: { ...state.changes.template, ...action.payload } },
+        hasUnsavedChanges: true
+      };
+    case 'UPDATE_EXERCISE':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          exercises: state.changes.exercises.some(e => e.id === action.payload.id)
+            ? state.changes.exercises.map(exercise =>
+                exercise.id === action.payload.id
+                  ? { ...exercise, ...action.payload }
+                  : exercise
+              )
+            : [...state.changes.exercises, action.payload],
+        },
+        hasUnsavedChanges: true
+      };
+    case 'ADD_EXERCISE':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          exercises: [...state.changes.exercises, { ...action.payload, isNew: true }],
+        },
+        hasUnsavedChanges: true,
+      };
+    case 'REMOVE_EXERCISE':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          exercises: state.changes.exercises.map(exercise =>
+            exercise.id === action.payload.templateExerciseId
+              ? exercise.isNew
+                ? undefined // Remove new exercises completely
+                : { ...exercise, deleted: true }
+              : exercise
+          ).filter(Boolean) as (Partial<TemplateExercise> & { isNew?: boolean; isInitial?: boolean; deleted?: boolean })[],
+        },
+        hasUnsavedChanges: true,
+      };
+    case 'UPDATE_SET':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          sets: {
+            ...state.changes.sets,
+            [action.payload.setId]: action.payload.data
+          }
+        },
+        hasUnsavedChanges: true
+      };
+    case 'ADD_SET':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          exercises: state.changes.exercises.map(exercise =>
+            exercise.id === action.payload.exerciseId
+              ? {
+                  ...exercise,
+                  sets: [...(exercise.sets || []), { ...action.payload.set, isNew: true }],
+                }
+              : exercise
+          ),
+        },
+        hasUnsavedChanges: true,
+      };
+    case 'REMOVE_SET':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          exercises: state.changes.exercises.map(exercise =>
+            exercise.id === action.payload.exerciseId
+              ? {
+                  ...exercise,
+                  sets: exercise.sets?.map(set =>
+                    set.id === action.payload.setId
+                      ? set.isNew
+                        ? undefined // Remove new sets completely
+                        : { ...set, deleted: true }
+                      : set
+                  ).filter(Boolean) as (Partial<TemplateExerciseSet> & { isNew?: boolean; deleted?: boolean })[]
+                }
+              : exercise
+          ),
+        },
+        hasUnsavedChanges: true,
+      };
+    case 'RESET_CHANGES':
+      return initialState;
+    case 'INITIALIZE_EXERCISES':
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          exercises: action.payload.map(exercise => ({ ...exercise, isInitial: true })),
+        },
+      };
+    default:
+      return state;
+  }
+}
+
+export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(unsavedChangesReducer, initialState);
+
+  return (
+    <UnsavedChangesContext.Provider value={{ state, dispatch }}>
+      {children}
+    </UnsavedChangesContext.Provider>
+  );
+}
+
+export function useUnsavedChanges() {
+  const context = useContext(UnsavedChangesContext);
+  if (context === undefined) {
+    throw new Error('useUnsavedChanges must be used within a UnsavedChangesProvider');
+  }
+  return context;
+}

@@ -1,8 +1,9 @@
 "use client"
 import React, { useState } from 'react';
 import { api } from "@/trpc/react";
+import { useSession } from "next-auth/react";
 
-const TemplateManager = () => {
+const  TemplateManager = () =>{
   const [templateName, setTemplateName] = useState('');
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const [templateId, setTemplateId] = useState<number | null>(null);
@@ -16,9 +17,12 @@ const TemplateManager = () => {
   const deleteSetMutation = api.set.deleteSet.useMutation();
 
   const exercisesQuery = api.exercise.getExercises.useQuery();
+  const { data: session } = useSession()
+
 
   const handleCreateTemplate = async () => {
-    const newTemplate = await createTemplateMutation.mutateAsync({ name: templateName, userId: 'your-user-id' });
+    if (!session) return;
+    const newTemplate = await createTemplateMutation.mutateAsync({ name: templateName, userId: session.user.id });
     setTemplateId(newTemplate.id);
   };
 
@@ -30,10 +34,6 @@ const TemplateManager = () => {
 
   const handleAddSet = async (templateExerciseId: number) => {
     await addSetMutation.mutateAsync({ templateExerciseId });
-  };
-
-  const handleUpdateSet = async (setId: number, updates: any) => {
-    await updateSetMutation.mutateAsync({ setId, ...updates });
   };
 
   const handleDeleteTemplate = async () => {
@@ -60,7 +60,7 @@ const TemplateManager = () => {
       />
       <button onClick={handleCreateTemplate}>Create Template</button>
 
-      {templateId && (
+      {/* {templateId && (
         <>
           <h2>Add Exercise</h2>
           <select onChange={(e) => setSelectedExerciseId(Number(e.target.value))}>
@@ -71,24 +71,24 @@ const TemplateManager = () => {
               </option>
             ))}
           </select>
-          <button onClick={handleAddExercise}>Add Exercise</button>
+          <button onClick={handleAddExercise}>Add Exercise</button> */}
 
           {/* Here you can add the UI for managing sets */}
           {/* Assuming you have a list of template exercises and their sets */}
           {/* Example to add a set to a template exercise */}
-          <button onClick={() => handleAddSet(1)}>Add Set to Exercise 1</button>
+          {/* <button onClick={() => handleAddSet(1)}>Add Set to Exercise 1</button> */}
           {/* Example to update a set */}
-          <button onClick={() => handleUpdateSet(1, { reps: 10, weight: 50 })}>Update Set 1</button>
+          {/* <button onClick={() => handleUpdateSet(1, { reps: 10, weight: 50 })}>Update Set 1</button> */}
           {/* Example to delete a set */}
-          <button onClick={() => handleDeleteSet(1)}>Delete Set 1</button>
+          {/* <button onClick={() => handleDeleteSet(1)}>Delete Set 1</button> */}
 
           {/* UI to delete template */}
-          <button onClick={handleDeleteTemplate}>Delete Template</button>
-        </>
-      )}
+          {/* <button onClick={handleDeleteTemplate}>Delete Template</button> */}
+        {/* </> */}
+      {/* )} */}
 
       {/* UI to delete an exercise */}
-      <button onClick={() => handleDeleteExercise(1)}>Delete Exercise 1</button>
+      {/* <button onClick={() => handleDeleteExercise(1)}>Delete Exercise 1</button> */}
     </div>
   );
 };

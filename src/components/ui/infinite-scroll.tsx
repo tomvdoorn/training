@@ -44,7 +44,7 @@ export default function InfiniteScroll({
       // Create a new IntersectionObserver instance because hasMore or next may be changed.
       observer.current = new IntersectionObserver(
         (entries) => {
-          if (entries[0].isIntersecting && hasMore) {
+          if (entries[0]?.isIntersecting && hasMore) {
             next();
           }
         },
@@ -68,7 +68,7 @@ export default function InfiniteScroll({
 
         const isObserveTarget = reverse ? index === 0 : index === flattenChildren.length - 1;
         const ref = isObserveTarget ? observerRef : null;
-        // @ts-ignore ignore ref type
+        // @ts-expect-error ignore ref type
         return React.cloneElement(child, { ref });
       })}
     </>

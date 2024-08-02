@@ -1,0 +1,243 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Account {
+  id String [pk]
+  userId String [not null]
+  type String [not null]
+  provider String [not null]
+  providerAccountId String [not null]
+  refresh_token String
+  access_token String
+  expires_at Int
+  token_type String
+  scope String
+  id_token String
+  session_state String
+  user User [not null]
+  refresh_token_expires_in Int
+
+  indexes {
+    (provider, providerAccountId) [unique]
+  }
+}
+
+Table Session {
+  id String [pk]
+  sessionToken String [unique, not null]
+  userId String [not null]
+  expires DateTime [not null]
+  user User [not null]
+}
+
+Table User {
+  id String [pk]
+  firstName String
+  lastName String
+  email String [unique]
+  emailVerified DateTime
+  password String
+  image String
+  accounts Account [not null]
+  sessions Session [not null]
+  exercises Exercise [not null]
+  templates Template [not null]
+  trainingPlans TrainingPlan [not null]
+  trainingSessions TrainingSession [not null]
+}
+
+Table VerificationToken {
+  identifier String [not null]
+  token String [unique, not null]
+  expires DateTime [not null]
+
+  indexes {
+    (identifier, token) [unique]
+  }
+}
+
+Table Exercise {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  category ExerciseCategory [not null]
+  categoryId Int [not null]
+  description String
+  muscleGroup MuscleGroup
+  image String
+  video String
+  type String [not null]
+  user User
+  userId String
+  templates TemplateExercise [not null]
+  sessions SessionExercise [not null]
+}
+
+Table ExerciseCategory {
+  id Int [pk, increment]
+  name String [unique, not null]
+  exercises Exercise [not null]
+}
+
+Table Template {
+  id Int [pk, increment]
+  name String [not null]
+  user User [not null]
+  userId String [not null]
+  exercises TemplateExercise [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  plans TrainingPlanTemplate [not null]
+  trainingSessions TrainingSession [not null]
+}
+
+Table TemplateExercise {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  template Template [not null]
+  templateId Int [not null]
+  exercise Exercise [not null]
+  exerciseId Int [not null]
+  order Int [not null]
+  sets TemplateExerciseSet [not null]
+  supersetWith TemplateExercise
+  supersetWithId Int [unique]
+  supersettedBy TemplateExercise
+  defaultRestTimer Int
+}
+
+Table TemplateExerciseSet {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  templateExercise TemplateExercise [not null]
+  templateExerciseId Int [not null]
+  reps Int [not null, default: 0]
+  weight Float
+  duration Int
+  distance Float
+  type SetType [not null, default: 'Regular']
+  rpe Int
+  video String
+}
+
+Table TrainingSession {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  user User [not null]
+  userId String [not null]
+  template Template
+  templateId Int
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  completed Boolean [not null, default: false]
+  exercises SessionExercise [not null]
+}
+
+Table SessionExercise {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  session TrainingSession [not null]
+  sessionId Int [not null]
+  exercise Exercise [not null]
+  exerciseId Int [not null]
+  sets SessionExerciseSet [not null]
+  notes String
+  persistNotes Boolean [not null, default: false]
+}
+
+Table SessionExerciseSet {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  sessionExercise SessionExercise [not null]
+  sessionExerciseId Int [not null]
+  reps Int [not null]
+  weight Float
+  duration Int
+  distance Float
+  type SetType [not null]
+  rpe Int
+  video String
+  completed Boolean [not null, default: false]
+}
+
+Table TrainingPlan {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  user User [not null]
+  userId String [not null]
+  templates TrainingPlanTemplate [not null]
+}
+
+Table TrainingPlanTemplate {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  plan TrainingPlan [not null]
+  planId Int [not null]
+  template Template [not null]
+  templateId Int [not null]
+  day Int [not null]
+}
+
+Enum MuscleGroup {
+  Legs
+  Chest
+  Back
+  Shoulders
+  Hamstrings
+  Calves
+  Lats
+  Triceps
+  Biceps
+}
+
+Enum SetType {
+  Warmup
+  Regular
+  Dropset
+  Superset
+  Partials
+}
+
+Ref: Account.userId > User.id [delete: Cascade]
+
+Ref: Session.userId > User.id [delete: Cascade]
+
+Ref: Exercise.categoryId > ExerciseCategory.id
+
+Ref: Exercise.userId > User.id
+
+Ref: Template.userId > User.id
+
+Ref: TemplateExercise.templateId > Template.id
+
+Ref: TemplateExercise.exerciseId > Exercise.id
+
+Ref: TemplateExercise.supersetWithId - TemplateExercise.id
+
+Ref: TemplateExerciseSet.templateExerciseId > TemplateExercise.id
+
+Ref: TrainingSession.userId > User.id
+
+Ref: TrainingSession.templateId > Template.id
+
+Ref: SessionExercise.sessionId > TrainingSession.id
+
+Ref: SessionExercise.exerciseId > Exercise.id
+
+Ref: SessionExerciseSet.sessionExerciseId > SessionExercise.id
+
+Ref: TrainingPlan.userId > User.id
+
+Ref: TrainingPlanTemplate.planId > TrainingPlan.id
+
+Ref: TrainingPlanTemplate.templateId > Template.id

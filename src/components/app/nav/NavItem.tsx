@@ -10,9 +10,9 @@ import {
 import Link from "next/link"
 
 
-const NavItems = ({ href, icon: Icon, label }) => {
+const NavItems = ({ href, icon: Icon, label }: { href: string, icon: React.ElementType, label: string }) => {
     const isActive = usePathname() === href
-    
+
   
     return (
       <TooltipProvider>

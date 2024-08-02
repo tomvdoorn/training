@@ -11,9 +11,40 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signIn, getProviders } from "next-auth/react"
+import { signIn } from "next-auth/react"
+import { useState } from "react"
+import { toast } from "sonner"
+
+
+interface signInProps {
+  email: string;
+  password: string;
+}
 
 const LoginForm = () => {
+
+    const [data, setData] = useState<signInProps>({
+    email: "",
+    password: "",
+  })
+  const handleLogin = async (data:signInProps) => {
+    console.log(data.email)
+    console.log(data.password)
+  const result = await signIn("credentials", {
+    email: data.email,
+    password: data.password,
+    callbackUrl: "/app",
+    
+  });
+
+  if (result?.error) {
+    toast.error("Invalid email or password");
+    console.error(result.error);
+  } else {
+    // Redirect or update UI
+  }
+};
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
@@ -30,6 +61,7 @@ const LoginForm = () => {
               id="email"
               type="email"
               placeholder="m@example.com"
+              onChange={(e) => setData({ ...data, email: e.target.value })}
               required
             />
           </div>
@@ -40,12 +72,14 @@ const LoginForm = () => {
                 Forgot your password?
               </Link>
             </div>
-            <Input id="password" type="password" required />
+            <Input id="password" 
+            onChange={(e) => setData({ ...data, password: e.target.value })}
+            type="password" required />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" onClick={() => handleLogin(data)}>
             Login
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" >
             Login with Google
           </Button>
           <Button variant="outline" className="w-full" onClick={() => signIn("discord", {callbackUrl: "/app"}  )}>
@@ -54,7 +88,7 @@ const LoginForm = () => {
         </div>
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="underline">
+          <Link href="/auth/sign-up" className="underline">
             Sign up
           </Link>
         </div>

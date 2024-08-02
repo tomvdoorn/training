@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { IconProps } from "@radix-ui/react-icons/dist/types";
 import { useEffect, useRef, useState } from "react";
 
 interface Event {
@@ -17,6 +18,8 @@ interface Event {
 interface CalendarEventProps {
   event: Event;
 }
+
+
 
 const CalendarEvent: React.FC<CalendarEventProps> = ({ event }) => {
   const [dragging, setDragging] = useState(false);
@@ -71,7 +74,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({ event }) => {
   );
 };
 
-function SpaceIcon(props: any) {
+function SpaceIcon(props: IconProps) {
   return (
     <svg
       {...props}
