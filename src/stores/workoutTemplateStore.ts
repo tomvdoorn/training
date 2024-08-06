@@ -93,7 +93,7 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
       produce((state: WorkoutTemplateState) => {
         const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
         if (exerciseIndex !== -1) {
-          if (state.exercises[exerciseIndex]!.sets) {
+          if (!state.exercises[exerciseIndex]!.sets) {
             state.exercises[exerciseIndex]!.sets = [];
           }
           const tempId = `temp-${Date.now()}`;
@@ -130,7 +130,7 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
           const setIndex = state.exercises[exerciseIndex]!.sets.findIndex((s) => 
             (typeof setId === 'number' ? s.id === setId : s.tempId === setId)
           );
-          if (setIndex !== -1) {
+          if (setIndex !== -1 )  {
             const set = state.exercises[exerciseIndex]!.sets[setIndex];
             if (set!.isNew) {
               state.exercises[exerciseIndex]!.sets.splice(setIndex, 1);
