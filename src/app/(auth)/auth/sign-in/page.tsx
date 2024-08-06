@@ -1,6 +1,7 @@
 "use client"
-import Link from "next/link"
 
+import { Suspense } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -12,38 +13,40 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signIn } from "next-auth/react"
-import { useState } from "react"
-import { toast } from "sonner"
+import { useState, FormEvent } from "react"
+import { useToast } from "~/components/ui/use-toast"
 
-
-interface signInProps {
+interface SignInProps {
   email: string;
   password: string;
 }
 
-const LoginForm = () => {
-
-    const [data, setData] = useState<signInProps>({
+const LoginFormContent = () => {
+  const { toast } = useToast();
+  const [data, setData] = useState<SignInProps>({
     email: "",
     password: "",
   })
-  const handleLogin = async (data:signInProps) => {
-    console.log(data.email)
-    console.log(data.password)
-  const result = await signIn("credentials", {
-    email: data.email,
-    password: data.password,
-    callbackUrl: "/app",
-    
-  });
 
-  if (result?.error) {
-    toast.error("Invalid email or password");
-    console.error(result.error);
-  } else {
-    // Redirect or update UI
-  }
-};
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+      callbackUrl: "/app",
+    });
+
+    if (result?.error) {
+      toast({
+        title: "Login failed",
+        description: "An error occurred during sign in. Please try again.",
+        variant: "destructive"
+      });
+    } else if (result?.url) {
+      window.location.href = result.url;
+    }
+  };
 
   return (
     <Card className="mx-auto max-w-sm">
@@ -54,7 +57,7 @@ const LoginForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
+        <form onSubmit={handleLogin} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -72,20 +75,28 @@ const LoginForm = () => {
                 Forgot your password?
               </Link>
             </div>
-            <Input id="password" 
-            onChange={(e) => setData({ ...data, password: e.target.value })}
-            type="password" required />
+            <Input 
+              id="password" 
+              onChange={(e) => setData({ ...data, password: e.target.value })}
+              type="password" 
+              required 
+            />
           </div>
-          <Button type="submit" className="w-full" onClick={() => handleLogin(data)}>
+          <Button type="submit" className="w-full">
             Login
           </Button>
-          <Button variant="outline" className="w-full" >
+          <Button type="button" variant="outline" className="w-full">
             Login with Google
           </Button>
-          <Button variant="outline" className="w-full" onClick={() => signIn("discord", {callbackUrl: "/app"}  )}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full" 
+            onClick={() => signIn("discord", {callbackUrl: "/app"})}
+          >
             Login with Discord
           </Button>
-        </div>
+        </form>
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
           <Link href="/auth/sign-up" className="underline">
@@ -97,5 +108,12 @@ const LoginForm = () => {
   )
 }
 
+const LoginForm = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginFormContent />
+    </Suspense>
+  )
+}
 
 export default LoginForm

@@ -30,7 +30,8 @@ declare module "next-auth" {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db) as Adapter,
   pages: {
-    signIn: '/auth/sign-in',  
+    signIn: '/auth/sign-in',
+    error: '/auth/sign-in', // Redirect errors back to sign-in page
   },
   callbacks: {
     jwt: ({ token, user }) => {
@@ -73,8 +74,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials.password) {
-            console.log("Missing email or password");
-            return null;
+            return null; // Return null instead of throwing an error
           }
 
           const user = await db.user.findUnique({
@@ -82,15 +82,13 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user?.password) {
-            console.log("User not found or password not set");
-            return null;
+            return null; // Return null instead of throwing an error
           }
 
           const isPasswordValid = await compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
-            console.log("Invalid password");
-            return null;
+            return null; // Return null instead of throwing an error
           }
 
           return {
@@ -102,7 +100,7 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error) {
           console.error("Error in authorize function:", error);
-          return null;
+          return null; // Return null for any unexpected errors
         }
       }
     })

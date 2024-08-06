@@ -211,7 +211,6 @@ return (
             handleConfirmNavigation();
           }).catch((error) => {
             console.error('Error during save and navigation:', error);
-            // Optionally, you can show an error toast here
           });
         }} 
       />

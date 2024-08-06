@@ -34,6 +34,11 @@ const SignUpPage = () => {
 
   const { mutate: signUp } = api.auth.signUp.useMutation({
   onSuccess: () => {
+      toast({
+      title: "Sign-up successful",
+      description: "You have successfully signed up!",
+      variant: "default"
+    })
     router.push("/auth/sign-in");
   },
   onError: (error) => {

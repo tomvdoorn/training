@@ -218,17 +218,17 @@ Ref: Exercise.userId > User.id
 
 Ref: Template.userId > User.id
 
-Ref: TemplateExercise.templateId > Template.id
+Ref: TemplateExercise.templateId > Template.id [delete: Cascade]
 
 Ref: TemplateExercise.exerciseId > Exercise.id
 
 Ref: TemplateExercise.supersetWithId - TemplateExercise.id
 
-Ref: TemplateExerciseSet.templateExerciseId > TemplateExercise.id
+Ref: TemplateExerciseSet.templateExerciseId > TemplateExercise.id [delete: Cascade]
 
 Ref: TrainingSession.userId > User.id
 
-Ref: TrainingSession.templateId > Template.id
+Ref: TrainingSession.templateId > Template.id [delete: Set Null]
 
 Ref: SessionExercise.sessionId > TrainingSession.id
 

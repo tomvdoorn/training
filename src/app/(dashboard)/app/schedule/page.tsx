@@ -1,68 +1,103 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import  CalendarDay  from "@/components/app/calendar/CalendarDays";
+import CalendarDay from "@/components/app/calendar/CalendarDays";
+import { api } from '~/trpc/react';
+
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const events = [
-    {
-        id: 1001,
-        name: "Meeting with team",
-        startDate: "2024-06-03",
-        endDate: "2024-06-03",
-        attendees: ["John", "Jane", "Alice"],
-        status: "completed",
-    },
-    {
-        id: 1,
-        name: "Meeting with team two",
-        startDate: "2024-06-03",
-        endDate: "2024-06-03",
-        attendees: ["John", "Jane", "Alice"],
-        status: "completed",
-    },
-    {
-        id: 2,
-        name: "Project deadline",
-        startDate: "2024-06-10",
-        endDate: "2024-06-10",
-        attendees: ["Team A"],
-        status: "failed",
-    },
-    {
-        id: 3,
-        name: "Conference",
-        startDate: "2024-06-15",
-        endDate: "2024-06-17",
-        attendees: ["John", "Alice"],
-        status: "completed",
-    },
-    {
-        id: 4,
-        name: "Client call",
-        startDate: "2024-06-20",
-        endDate: "2024-06-20",
-        attendees: ["Jane"],
-        status: "completed",
-    },
-];
-
-function getDaysInMonth(month: number, year: number) {
+function getDaysInMonth(month: number, year: number): number {
   return new Date(year, month + 1, 0).getDate();
 }
 
-function getFirstDayOfMonth(month: number, year: number) {
+function getFirstDayOfMonth(month: number, year: number): number {
   return new Date(year, month, 1).getDay();
 }
 
-function getEventsForDate(date: number, month: number, year: number) {
-  const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-  return events.filter(event => event.startDate <= dateString && event.endDate >= dateString);
+// Define the type for the API response
+interface ApiSession {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  templateId: number | null;
+  startTime: Date;
+  endTime: Date;
+  completed: boolean;
+  template: {
+    id: number;
+    name: string;
+    userId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
+}
+
+// Define our Session type
+interface Session {
+  id: number;
+  templateId: number| null;
+  startTime: Date;
+  endTime: Date;
+  completed: boolean;
+  template: {
+    name: string;
+  } | null;
+}
+
+interface Session_res {
+  id: number;
+  templateId: number | null;
+  startTime: Date;
+  endTime: Date;
+  completed: boolean;
+  template: {
+    name: string;
+  } | null;
+}
+
+interface SessionDate {
+  date: number;
+  month: number;
+  year: number;
+  sessions: Session[];
+}
+
+// Function to transform ApiSession to Session
+function transformSession(apiSession: ApiSession): Session {
+  return {
+    id: apiSession.id,
+    templateId: apiSession.templateId ?? null,
+    startTime: apiSession.startTime,
+    endTime: apiSession.endTime,
+    completed: apiSession.completed,
+    template: apiSession.template ? { name: apiSession.template.name } : null,
+  };
+}
+
+function getSessionsForDate(date: number, month: number, year: number, sessions: Session[]): Session_res[] {
+  const startOfDay = new Date(year, month, date);
+  const endOfDay = new Date(year, month, date, 23, 59, 59, 999);
+  
+  return sessions.filter(session => {
+    const sessionDate = new Date(session.startTime);
+    return sessionDate >= startOfDay && sessionDate <= endOfDay;
+  });
 }
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
+  const [userSessions, setUserSessions] = useState<Session[]>([]);
+
+  const { data: sessions, isLoading } = api.session.getAll.useQuery();
+
+  useEffect(() => {
+    if (sessions) {
+      const transformedSessions = (sessions as ApiSession[]).map(transformSession);
+      setUserSessions(transformedSessions);
+    }
+  }, [sessions]);
 
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -70,12 +105,16 @@ export default function Calendar() {
   const firstDayOfMonth = getFirstDayOfMonth(currentMonth, currentYear);
 
   const prevMonthDays = getDaysInMonth(currentMonth - 1, currentYear);
-  const dates = [];
+  const dates: Array<{date: number; month: number; year: number; currentMonth: boolean}> = [];
 
   // Fill in previous month's dates
   for (let i = 0; i < firstDayOfMonth; i++) {
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     dates.push({
       date: prevMonthDays - firstDayOfMonth + i + 1,
+      month: prevMonth,
+      year: prevYear,
       currentMonth: false
     });
   }
@@ -84,6 +123,8 @@ export default function Calendar() {
   for (let i = 1; i <= daysInMonth; i++) {
     dates.push({
       date: i,
+      month: currentMonth,
+      year: currentYear,
       currentMonth: true
     });
   }
@@ -91,8 +132,12 @@ export default function Calendar() {
   // Fill in next month's dates
   const nextMonthDayCount = 42 - dates.length;  // Ensure 6 weeks display
   for (let i = 1; i <= nextMonthDayCount; i++) {
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     dates.push({
       date: i,
+      month: nextMonth,
+      year: nextYear,
       currentMonth: false
     });
   }
@@ -108,6 +153,10 @@ export default function Calendar() {
   const handleToday = () => {
     setCurrentDate(new Date());
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
@@ -137,19 +186,18 @@ export default function Calendar() {
             </div>
           ))}
           {dates.map((dateObj, index) => {
-            const eventsForDate = getEventsForDate(dateObj.date, currentMonth, currentYear);
+            const sessionsForDate = getSessionsForDate(dateObj.date, dateObj.month, dateObj.year, userSessions);
             const isToday = 
               dateObj.date === today.getDate() &&
-              dateObj.currentMonth &&
-              currentMonth === today.getMonth() &&
-              currentYear === today.getFullYear();
+              dateObj.month === today.getMonth() &&
+              dateObj.year === today.getFullYear();
 
             return (              
-            <CalendarDay 
+              <CalendarDay 
                 key={index} 
                 dateObj={dateObj} 
                 isToday={isToday} 
-                eventsForDate={eventsForDate} 
+                eventsForDate={sessionsForDate} 
               />
             );
           })}

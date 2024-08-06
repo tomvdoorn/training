@@ -12,7 +12,6 @@ const  TemplateManager = () =>{
   const addExerciseMutation = api.template.addExerciseToTemplate.useMutation();
   const addSetMutation = api.set.addSetToTemplateExercise.useMutation();
   const updateSetMutation = api.set.updateSet.useMutation();
-  const deleteTemplateMutation = api.template.deleteTemplate.useMutation();
   const deleteExerciseMutation = api.exercise.deleteUserExercise.useMutation();
   const deleteSetMutation = api.set.deleteSet.useMutation();
 
@@ -36,11 +35,6 @@ const  TemplateManager = () =>{
     await addSetMutation.mutateAsync({ templateExerciseId });
   };
 
-  const handleDeleteTemplate = async () => {
-    if (templateId) {
-      await deleteTemplateMutation.mutateAsync({ templateId });
-    }
-  };
 
   const handleDeleteExercise = async (exerciseId: number) => {
     await deleteExerciseMutation.mutateAsync({ exerciseId, userId: 'your-user-id' });

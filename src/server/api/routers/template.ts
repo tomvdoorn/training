@@ -108,89 +108,95 @@
         return exercises;
       }),
 
-    // Delete template
-    deleteTemplate: publicProcedure
+    deleteTemplate: protectedProcedure
       .input(z.object({
-        templateId: z.number(),
+        id: z.number(),
+      }))
+      .mutation(async ({input, ctx}) => {
+        const {session} = ctx;
+
+        await prisma.template.delete({
+          where: {
+            id: input.id,
+            userId: session.user.id
+          }
+        });
+
+        return {success: true};
+      }),
+
+    updateTemplate: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        // Add other fields as needed
       }))
       .mutation(async ({ input }) => {
-        await prisma.template.delete({
-          where: { id: input.templateId },
+        const updatedTemplate = await prisma.template.update({
+          where: { id: input.id },
+          data: {
+            name: input.name,
+            // Update other fields as needed
+          },
         });
-        return { success: true };
+        return updatedTemplate;
       }),
-      // Add these to your existing templateRouter
 
-updateTemplate: publicProcedure
-  .input(z.object({
-    id: z.number(),
-    name: z.string().optional(),
-    // Add other fields as needed
-  }))
-  .mutation(async ({ input }) => {
-    const updatedTemplate = await prisma.template.update({
-      where: { id: input.id },
-      data: {
-        name: input.name,
-        // Update other fields as needed
-      },
-    });
-    return updatedTemplate;
-  }),
+  updateExerciseInTemplate: publicProcedure
+    .input(z.object({
+      id: z.number(),
+      order: z.number().optional(),
+      // Add other fields as needed
+    }))
+    .mutation(async ({ input }) => {
+      const updatedExercise = await prisma.templateExercise.update({
+        where: { id: input.id },
+        data: {
+          order: input.order,
+          // Update other fields as needed
+        },
+      });
+      return updatedExercise;
+    }),
 
-updateExerciseInTemplate: publicProcedure
-  .input(z.object({
-    id: z.number(),
-    order: z.number().optional(),
-    // Add other fields as needed
-  }))
-  .mutation(async ({ input }) => {
-    const updatedExercise = await prisma.templateExercise.update({
-      where: { id: input.id },
-      data: {
-        order: input.order,
-        // Update other fields as needed
-      },
-    });
-    return updatedExercise;
-  }),
+  removeExerciseFromTemplate: publicProcedure
+    .input(z.object({
+      templateExerciseId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const { templateExerciseId } = input;
+      
+      // First, delete all associated sets
+      await prisma.templateExerciseSet.deleteMany({
+        where: { templateExerciseId },
+      });
 
-removeExerciseFromTemplate: publicProcedure
-  .input(z.object({
-    templateExerciseId: z.number(),
-  }))
-  .mutation(async ({ input }) => {
-    const { templateExerciseId } = input;
+      // Then, delete the template exercise
+      await prisma.templateExercise.delete({
+        where: { id: templateExerciseId },
+      });
+
+      return { success: true };
+    }),
+
+
+  updateSetInTemplate: publicProcedure
+    .input(z.object({
+      id: z.number(),
+      reps: z.number().optional(),
+      weight: z.number().optional(),
+      type: z.enum(['Warmup', 'Regular', 'Dropset', 'Superset', 'Partials']).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const updatedSet = await prisma.templateExerciseSet.update({
+        where: { id: input.id },
+        data: {
+          reps: input.reps,
+          weight: input.weight,
+          type: input.type,
+        },
+      });
+      return updatedSet;
+    }),
+    }); 
     
-    // First, delete all associated sets
-    await prisma.templateExerciseSet.deleteMany({
-      where: { templateExerciseId },
-    });
-
-    // Then, delete the template exercise
-    await prisma.templateExercise.delete({
-      where: { id: templateExerciseId },
-    });
-
-    return { success: true };
-  }),
-
-updateSetInTemplate: publicProcedure
-  .input(z.object({
-    id: z.number(),
-    reps: z.number().optional(),
-    weight: z.number().optional(),
-    type: z.enum(['Warmup', 'Regular', 'Dropset', 'Superset', 'Partials']).optional(),
-  }))
-  .mutation(async ({ input }) => {
-    const updatedSet = await prisma.templateExerciseSet.update({
-      where: { id: input.id },
-      data: {
-        reps: input.reps,
-        weight: input.weight,
-        type: input.type,
-      },
-    });
-    return updatedSet;
-  }),
-  }); 
