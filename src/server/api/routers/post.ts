@@ -86,7 +86,7 @@ export const postRouter = createTRPCRouter({
                 in: mediaIds.map(mid => parseInt(mid)),
               },
             },
-            data: { postId: id },
+            data: { postId: post.id },
           });
         }
       }

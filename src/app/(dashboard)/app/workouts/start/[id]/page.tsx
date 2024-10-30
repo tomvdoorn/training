@@ -94,7 +94,13 @@ function StartWorkout({ params }: PageProps) {
 
   useEffect(() => {
     if (exerciseMediaQuery.data) {
-      setAvailableMedia(exerciseMediaQuery.data);
+      setAvailableMedia(exerciseMediaQuery.data.map(item => ({
+        id: String(item.id),
+        url: item.fileUrl,
+        type: item.fileType as 'image' | 'video',
+        exerciseId: item.sessionExerciseId,
+        setIds: item.setIds
+      })));
     }
   }, [exerciseMediaQuery.data]);
 
