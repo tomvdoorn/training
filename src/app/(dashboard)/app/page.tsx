@@ -12,8 +12,12 @@ import {
     ArrowUpRight
 } from "lucide-react";
 import Link from "next/link";
+import SportsSocialFeed from "@/components/app/social/SportsSocialFeed";
+import { getCurrentUser } from "@/lib/session"
 
-const Dashboard = () => {
+
+const Dashboard = async () => {
+      const currentUser = await getCurrentUser()
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
             <div className="flex justify-between items-center">
@@ -31,9 +35,9 @@ const Dashboard = () => {
                 <Card className="xl:col-span-2">
                     <CardHeader className="flex flex-row items-center">
                         <div className="grid gap-2">
-                            <CardTitle>Workouts</CardTitle>
+                            <CardTitle>Feed</CardTitle>
                             <CardDescription>
-                                Recent workouts completed.
+                                Recent workouts completed by the community.
                             </CardDescription>
                         </div>
                         <Button asChild size="sm" className="ml-auto gap-1">
@@ -44,7 +48,11 @@ const Dashboard = () => {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        {/* Add workout content here */}
+                        {currentUser ? (
+                            <SportsSocialFeed currentUser={currentUser} />
+                        ) : (
+                            <div>Please sign in to view the feed</div>
+                        )}
                     </CardContent>
                 </Card>
                 <Card>

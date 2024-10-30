@@ -13,7 +13,7 @@ const  AddTemplate: React.FC<AddTemplateProps> = ({userId}) => {
     const [name, setTemplateName] = useState("");
 
   const createTemplate = api.template.createTemplate.useMutation({
-    onSuccess: ({id, name}) => {
+    onSuccess: ({id}) => {
         console.log("Template created"+ id)
         const route =  `/app/workouts/edit/${id}`
         router.push(route)

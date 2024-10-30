@@ -15,8 +15,8 @@ Table Account {
   scope String
   id_token String
   session_state String
-  user User [not null]
   refresh_token_expires_in Int
+  user User [not null]
 
   indexes {
     (provider, providerAccountId) [unique]
@@ -40,11 +40,23 @@ Table User {
   password String
   image String
   accounts Account [not null]
-  sessions Session [not null]
   exercises Exercise [not null]
+  sessions Session [not null]
   templates Template [not null]
   trainingPlans TrainingPlan [not null]
   trainingSessions TrainingSession [not null]
+  posts Post [not null]
+  PostComment PostComment [not null]
+  PostLike PostLike [not null]
+  commentLikes CommentLike [not null]
+  followers Follow [not null]
+  following Follow [not null]
+  bio String
+  personalRecords ExercisePersonalRecord [not null]
+  trainingPlanTemplates TrainingPlanTemplate [not null]
+  ownedTemplates Template [not null]
+  ownedTrainingPlans TrainingPlan [not null]
+  acquisitions Acquisition [not null]
 }
 
 Table VerificationToken {
@@ -59,20 +71,23 @@ Table VerificationToken {
 
 Table Exercise {
   id Int [pk, increment]
+  name String [unique, not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  name String [not null]
-  category ExerciseCategory [not null]
   categoryId Int [not null]
+  typeId Int [not null]
   description String
   muscleGroup MuscleGroup
   image String
   video String
-  type String [not null]
-  user User
   userId String
-  templates TemplateExercise [not null]
+  instructions String
+  category ExerciseCategory [not null]
+  type ExerciseType [not null]
+  user User
   sessions SessionExercise [not null]
+  templates TemplateExercise [not null]
+  personalRecords ExercisePersonalRecord [not null]
 }
 
 Table ExerciseCategory {
@@ -81,39 +96,56 @@ Table ExerciseCategory {
   exercises Exercise [not null]
 }
 
+Table ExerciseType {
+  id Int [pk, increment]
+  name String [unique, not null]
+  Exercises Exercise [not null]
+}
+
 Table Template {
   id Int [pk, increment]
   name String [not null]
-  user User [not null]
   userId String [not null]
-  exercises TemplateExercise [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  user User [not null]
+  exercises TemplateExercise [not null]
   plans TrainingPlanTemplate [not null]
   trainingSessions TrainingSession [not null]
+  posts Post [not null]
+  note String
+  owner_id String [not null]
+  is_copy Boolean [not null, default: false]
+  original_id Int
+  owner User [not null]
+  original Template
+  copies Template [not null]
+  store_listing StoreListing
+  acquisitions Acquisition [not null]
 }
 
 Table TemplateExercise {
   id Int [pk, increment]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  template Template [not null]
   templateId Int [not null]
-  exercise Exercise [not null]
   exerciseId Int [not null]
   order Int [not null]
-  sets TemplateExerciseSet [not null]
-  supersetWith TemplateExercise
+  notes String
   supersetWithId Int [unique]
-  supersettedBy TemplateExercise
   defaultRestTimer Int
+  exercise Exercise [not null]
+  supersetWith TemplateExercise
+  supersettedBy TemplateExercise
+  template Template [not null]
+  sessionExercises SessionExercise [not null]
+  sets TemplateExerciseSet [not null]
 }
 
 Table TemplateExerciseSet {
   id Int [pk, increment]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  templateExercise TemplateExercise [not null]
   templateExerciseId Int [not null]
   reps Int [not null, default: 0]
   weight Float
@@ -122,42 +154,50 @@ Table TemplateExerciseSet {
   type SetType [not null, default: 'Regular']
   rpe Int
   video String
+  templateExercise TemplateExercise [not null]
+  sessionExerciseSets SessionExerciseSet [not null]
 }
 
 Table TrainingSession {
   id Int [pk, increment]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  user User [not null]
   userId String [not null]
-  template Template
   templateId Int
   startTime DateTime [not null]
   endTime DateTime [not null]
   completed Boolean [not null, default: false]
   exercises SessionExercise [not null]
+  template Template
+  user User [not null]
+  media TrainingSessionMedia [not null]
+  post Post
 }
 
 Table SessionExercise {
   id Int [pk, increment]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  session TrainingSession [not null]
   sessionId Int [not null]
-  exercise Exercise [not null]
   exerciseId Int [not null]
-  sets SessionExerciseSet [not null]
   notes String
   persistNotes Boolean [not null, default: false]
+  exercise Exercise [not null]
+  session TrainingSession [not null]
+  sets SessionExerciseSet [not null]
+  media SessionExerciseMedia [not null]
+  templateExercise TemplateExercise
+  templateExerciseId Int
+  order Int [not null]
+  personalRecords ExercisePersonalRecord [not null]
 }
 
 Table SessionExerciseSet {
   id Int [pk, increment]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  sessionExercise SessionExercise [not null]
   sessionExerciseId Int [not null]
-  reps Int [not null]
+  reps Int
   weight Float
   duration Int
   distance Float
@@ -165,27 +205,191 @@ Table SessionExerciseSet {
   rpe Int
   video String
   completed Boolean [not null, default: false]
+  sessionExercise SessionExercise [not null]
+  templateExerciseSet TemplateExerciseSet
+  templateExerciseSetId Int
+  personalRecords ExercisePersonalRecord [not null]
 }
 
 Table TrainingPlan {
   id Int [pk, increment]
+  name String [not null]
+  duration Int [not null]
+  userId String [not null]
+  user User [not null]
+  difficulty TrainingPlanDifficulty [not null, default: 'Beginner']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  name String [not null]
-  user User [not null]
-  userId String [not null]
   templates TrainingPlanTemplate [not null]
+  owner_id String [not null]
+  is_copy Boolean [not null, default: false]
+  original_id Int
+  owner User [not null]
+  original TrainingPlan
+  copies TrainingPlan [not null]
+  store_listing StoreListing
+  acquisitions Acquisition [not null]
 }
 
 Table TrainingPlanTemplate {
   id Int [pk, increment]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  plan TrainingPlan [not null]
   planId Int [not null]
-  template Template [not null]
-  templateId Int [not null]
+  templateId Int
   day Int [not null]
+  plan TrainingPlan [not null]
+  template Template
+  userId String [not null]
+  user User [not null]
+
+  indexes {
+    (planId, day) [unique]
+  }
+}
+
+Table Post {
+  id Int [pk, increment]
+  user User [not null]
+  userId String [not null]
+  trainingSession TrainingSession
+  trainingSessionId Int [unique]
+  templateId Int
+  title String [not null]
+  note String
+  privacy String [not null, default: 'public']
+  numberOfPRs Int [not null, default: 0]
+  totalWeightLifted Float [not null, default: 0]
+  highlightedSetId Int
+  highlightedExerciseName String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  comments PostComment [not null]
+  likes PostLike [not null]
+  Template Template
+  viewCount Int [not null, default: 0]
+}
+
+Table PostComment {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  content String [not null]
+  userId String [not null]
+  postId Int [not null]
+  user User [not null]
+  post Post [not null]
+  likes CommentLike [not null]
+}
+
+Table PostLike {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  userId String [not null]
+  postId Int [not null]
+  user User [not null]
+  post Post [not null]
+}
+
+Table CommentLike {
+  id Int [pk, increment]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  userId String [not null]
+  commentId Int [not null]
+  user User [not null]
+  comment PostComment [not null]
+
+  indexes {
+    (userId, commentId) [unique]
+  }
+}
+
+Table Follow {
+  id Int [pk, increment]
+  follower User [not null]
+  followerId String [not null]
+  following User [not null]
+  followingId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (followerId, followingId) [unique]
+  }
+}
+
+Table TrainingSessionMedia {
+  id Int [pk, increment]
+  trainingSession TrainingSession [not null]
+  trainingSessionId Int [not null]
+  fileUrl String [not null]
+  fileType String [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table SessionExerciseMedia {
+  id Int [pk, increment]
+  sessionExercise SessionExercise [not null]
+  sessionExerciseId Int [not null]
+  setIds Int[] [not null]
+  fileUrl String [not null]
+  fileType String [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table ExercisePersonalRecord {
+  id Int [pk, increment]
+  exerciseId Int [not null]
+  userId String [not null]
+  sessionExerciseId Int [not null]
+  setId Int [not null]
+  prType PRType [not null]
+  value Float [not null]
+  date DateTime [default: `now()`, not null]
+  exercise Exercise [not null]
+  user User [not null]
+  sessionExercise SessionExercise [not null]
+  set SessionExerciseSet [not null]
+}
+
+Table StoreListing {
+  id Int [pk, increment]
+  title String [not null]
+  description String [not null]
+  preview_image String
+  purchase_count Int [not null, default: 0]
+  status StoreStatus [not null, default: 'Active']
+  created_at DateTime [default: `now()`, not null]
+  updated_at DateTime [not null]
+  type ListingType [not null]
+  template_id Int [unique]
+  training_plan_id Int [unique]
+  template Template
+  training_plan TrainingPlan
+}
+
+Table Acquisition {
+  id Int [pk, increment]
+  user_id String [not null]
+  template_id Int
+  training_plan_id Int
+  acquired_at DateTime [default: `now()`, not null]
+  user User [not null]
+  template Template
+  training_plan TrainingPlan
+
+  indexes {
+    (user_id, template_id) [unique]
+    (user_id, training_plan_id) [unique]
+  }
+}
+
+Enum TrainingPlanDifficulty {
+  Beginner
+  Intermediate
+  Advanced
+  Expert
 }
 
 Enum MuscleGroup {
@@ -208,36 +412,112 @@ Enum SetType {
   Partials
 }
 
+Enum PRType {
+  HighestWeight
+  HighestVolume
+  HighestOneRepMax
+}
+
+Enum StoreStatus {
+  Active
+  Inactive
+}
+
+Enum ListingType {
+  Template
+  TrainingPlan
+}
+
 Ref: Account.userId > User.id [delete: Cascade]
 
 Ref: Session.userId > User.id [delete: Cascade]
 
 Ref: Exercise.categoryId > ExerciseCategory.id
 
+Ref: Exercise.typeId > ExerciseType.id
+
 Ref: Exercise.userId > User.id
 
 Ref: Template.userId > User.id
 
-Ref: TemplateExercise.templateId > Template.id [delete: Cascade]
+Ref: Template.owner_id > User.id
+
+Ref: Template.original_id - Template.id
 
 Ref: TemplateExercise.exerciseId > Exercise.id
 
 Ref: TemplateExercise.supersetWithId - TemplateExercise.id
 
+Ref: TemplateExercise.templateId > Template.id [delete: Cascade]
+
 Ref: TemplateExerciseSet.templateExerciseId > TemplateExercise.id [delete: Cascade]
+
+Ref: TrainingSession.templateId > Template.id
 
 Ref: TrainingSession.userId > User.id
 
-Ref: TrainingSession.templateId > Template.id [delete: Set Null]
+Ref: SessionExercise.exerciseId > Exercise.id
 
 Ref: SessionExercise.sessionId > TrainingSession.id
 
-Ref: SessionExercise.exerciseId > Exercise.id
+Ref: SessionExercise.templateExerciseId > TemplateExercise.id
 
 Ref: SessionExerciseSet.sessionExerciseId > SessionExercise.id
 
+Ref: SessionExerciseSet.templateExerciseSetId > TemplateExerciseSet.id
+
 Ref: TrainingPlan.userId > User.id
+
+Ref: TrainingPlan.owner_id > User.id
+
+Ref: TrainingPlan.original_id - TrainingPlan.id
 
 Ref: TrainingPlanTemplate.planId > TrainingPlan.id
 
 Ref: TrainingPlanTemplate.templateId > Template.id
+
+Ref: TrainingPlanTemplate.userId > User.id
+
+Ref: Post.userId > User.id
+
+Ref: Post.trainingSessionId - TrainingSession.id
+
+Ref: Post.templateId > Template.id
+
+Ref: PostComment.userId > User.id
+
+Ref: PostComment.postId > Post.id
+
+Ref: PostLike.userId > User.id
+
+Ref: PostLike.postId > Post.id
+
+Ref: CommentLike.userId > User.id
+
+Ref: CommentLike.commentId > PostComment.id
+
+Ref: Follow.followerId > User.id
+
+Ref: Follow.followingId > User.id
+
+Ref: TrainingSessionMedia.trainingSessionId > TrainingSession.id
+
+Ref: SessionExerciseMedia.sessionExerciseId > SessionExercise.id
+
+Ref: ExercisePersonalRecord.exerciseId > Exercise.id
+
+Ref: ExercisePersonalRecord.userId > User.id
+
+Ref: ExercisePersonalRecord.sessionExerciseId > SessionExercise.id
+
+Ref: ExercisePersonalRecord.setId > SessionExerciseSet.id
+
+Ref: StoreListing.template_id - Template.id
+
+Ref: StoreListing.training_plan_id - TrainingPlan.id
+
+Ref: Acquisition.user_id > User.id
+
+Ref: Acquisition.template_id > Template.id
+
+Ref: Acquisition.training_plan_id > TrainingPlan.id

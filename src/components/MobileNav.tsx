@@ -7,6 +7,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+interface ProductCategory {
+  label: string;
+  featured: {
+    name: string;
+    href: string;
+    imageSrc: string;
+  }[];
+}
+
 const MobileNav = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
 
@@ -62,7 +71,7 @@ const MobileNav = () => {
 
             <div className='mt-2'>
               <ul>
-                {PRODUCT_CATEGORIES.map((category) => (
+                {PRODUCT_CATEGORIES.map((category: ProductCategory) => (
                   <li
                     key={category.label}
                     className='space-y-10 px-4 pb-8 pt-10'>

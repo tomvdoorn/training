@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/use-toast'
 
+
 const ScheduleSession = () => {
   const router = useRouter()
   const [open, setOpen] = useState(false)

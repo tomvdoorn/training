@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
-import type { Template, TemplateExercise, TemplateExerciseSet, Exercise } from '@prisma/client';
+import type { Template, TemplateExercise, TemplateExerciseSet, Exercise, SessionExerciseSet } from '@prisma/client';
 
 
 // Define more specific types for our state
@@ -15,12 +15,14 @@ type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
   deleted?: boolean;
   tempId?: string;
+  completed?: boolean;
 };
 
 interface WorkoutTemplateState {
   template: Partial<Template> | null;
   exercises: PartialTemplateExercise[];
   hasUnsavedChanges: boolean;
+  isSessionMode: boolean;
 }
 interface addExerciseState extends Partial<TemplateExercise> {
   exercise: Exercise;
@@ -35,12 +37,16 @@ interface WorkoutTemplateActions {
   removeSet: (exerciseId: number, setId: number | string) => void;
   resetChanges: () => void;
   initializeExercises: (exercises: TemplateExercise[]) => void;
+  setSessionMode: (isSessionMode: boolean) => void;
+  updateSessionSet: (exerciseId: number, setId: number | string, setData: Partial<SessionExerciseSet>) => void;
+  reorderExercises: (fromIndex: number, toIndex: number) => void;
+  resetUnsavedChanges: () => void;
 }
-
 const initialState: WorkoutTemplateState = {
   template: null,
   exercises: [],
   hasUnsavedChanges: false,
+  isSessionMode: false,
 };
 
 export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemplateActions>((set) => ({
@@ -57,7 +63,17 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
   addExercise: (exercise) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        state.exercises.push({ ...exercise, isNew: true, sets: [] });
+        state.exercises.push({
+          ...exercise,
+          isNew: true,
+          sets: [{
+            reps: 0,
+            weight: 0,
+            type: 'Regular',
+            isNew: true,
+            tempId: `temp-${Date.now()}`,
+          }],
+        });
         state.hasUnsavedChanges = true;
       })
     ),
@@ -67,7 +83,11 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
       produce((state: WorkoutTemplateState) => {
         const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
         if (exerciseIndex !== -1) {
-          state.exercises[exerciseIndex] = { ...state.exercises[exerciseIndex], ...exerciseData };
+          state.exercises[exerciseIndex] = {
+            ...state.exercises[exerciseIndex]!,
+            ...exerciseData,
+            notes: exerciseData.notes !== undefined ? exerciseData.notes : state.exercises[exerciseIndex]!.notes  ,
+          };
         }
         state.hasUnsavedChanges = true;
       })
@@ -152,6 +172,49 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
           ...exercise, 
           sets: exercise.sets?.map(set => ({ ...set })) ?? []
         }));
+      })
+    ),
+
+  setSessionMode: (isSessionMode) =>
+    set(
+      produce((state: WorkoutTemplateState) => {
+        state.isSessionMode = isSessionMode;
+      })
+    ),
+
+  updateSessionSet: (exerciseId, setId, setData) =>
+    set(
+      produce((state: WorkoutTemplateState) => {
+        const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
+        if (exerciseIndex !== -1 && state.exercises[exerciseIndex]!.sets) {
+          const setIndex = state.exercises[exerciseIndex]!.sets.findIndex((s) => 
+            (typeof setId === 'number' ? s.id === setId : s.tempId === setId)
+          );
+          if (setIndex !== -1) {
+            state.exercises[exerciseIndex]!.sets[setIndex] = {
+              ...state.exercises[exerciseIndex]!.sets[setIndex],
+              ...setData,
+              completed: setData.completed ?? state.exercises[exerciseIndex]!.sets[setIndex]!.completed
+            };
+          }
+        }
+        state.hasUnsavedChanges = true;
+      })
+    ),
+
+  reorderExercises: (fromIndex: number, toIndex: number) =>
+    set(
+      produce((state: WorkoutTemplateState) => {
+        const [reorderedItem] = state.exercises.splice(fromIndex, 1);
+        state.exercises.splice(toIndex, 0, reorderedItem);
+        state.hasUnsavedChanges = true;
+      })
+    ),
+
+  resetUnsavedChanges: () =>
+    set(
+      produce((state: WorkoutTemplateState) => {
+        state.hasUnsavedChanges = false;
       })
     ),
 }));

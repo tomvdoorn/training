@@ -1,26 +1,56 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "~/components/ui/table";
-import type { Exercise as ExerciseType } from "@prisma/client";
+import type { Exercise as ExerciseType, TemplateExercise } from "@prisma/client";
 import ExerciseSet from "./ExerciseSet";
 import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 import type { TemplateExerciseSet } from "@prisma/client";
+
+import { ChevronUp, ChevronDown } from "lucide-react";
+import { CheckCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
+import FileUploadModal from '~/components/app/workouts/FileUploadModal'
+import { Textarea } from "~/components/ui/textarea";
+import { MoreHorizontal } from "lucide-react";
 
 type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
   deleted?: boolean;
   tempId?: string;
 };
+
+
 interface ExerciseProps {
   templateExerciseId: number;
+  template_id?: number;
   exerciseIndex: number;
   exercise: ExerciseType;
-  sets?: PartialTemplateExerciseSet[];
+  sets?: TemplateExerciseSet[];
   workoutIndex: number;
-  template_id?: number;
+  start: boolean;
+  onReorder: (fromIndex: number, toIndex: number) => void;
+  templateExercise?: {
+    id?: number;
+    notes?: string | null;
+    deleted?: boolean;
+    sets?: PartialTemplateExerciseSet[];
+    is_copy?: boolean;
+  };
+  addMediaMutation?: any;
+  setDataOption?: any;
+  lastSessionData?: any;
+  prSessionData?: any;
 }
 
+const setTypeColors = {
+  Regular: 'bg-gray-50',
+  Warmup: 'bg-yellow-50',
+  Dropset: 'bg-red-50',
+  Superset: 'bg-purple-50',
+  Partials: 'bg-blue-50',
+  // Add more types and colors as needed
+};
 
 const Exercise = ({
   templateExerciseId,
@@ -28,8 +58,18 @@ const Exercise = ({
   exercise,
   sets,
   workoutIndex,
+  start,
+  onReorder,
+  addMediaMutation,
+  setDataOption,
+  lastSessionData,
+  prSessionData,
+  templateExercise
 }: ExerciseProps) => {
-  const { addSet, removeExercise, updateExercise } = useWorkoutTemplateStore();
+  const { addSet, removeExercise, updateExercise, reorderExercises } = useWorkoutTemplateStore();
+  const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false);
+  const [showNotes, setShowNotes] = useState(!!templateExercise?.notes);
+  const [notes, setNotes] = useState(templateExercise?.notes || '');
 
   const handleAddSet = useCallback(() => {
     const newSet: Partial<TemplateExerciseSet> = {
@@ -48,80 +88,183 @@ const Exercise = ({
     updateExercise(templateExerciseId, data);
   }, [templateExerciseId, updateExercise]);
 
+  const handleMoveUp = () => {
+    if (exerciseIndex > 0) {
+      onReorder(exerciseIndex, exerciseIndex - 1);
+    }
+  };
+
+  const handleMoveDown = () => {
+    onReorder(exerciseIndex, exerciseIndex + 1);
+  };
+
+  const handleFileUpload = () => {
+    setIsFileUploadModalOpen(true);
+  };
+
+  const handleFileUploadComplete = async (file: File, selectedSets: number[]) => {
+    const result = await uploadFileToStorage(file);
+    
+    if (result) {
+      const [fileUrl, detectedFileType] = result.split('|');
+      
+      await addMediaMutation.mutateAsync({
+        sessionExerciseId: templateExerciseId,
+        fileUrl: fileUrl as string,
+        fileType: detectedFileType as string,
+        setIds: selectedSets,
+      });
+    }
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(e.target.value);
+    updateExercise(templateExerciseId, { notes: e.target.value });
+  };
+
+  const toggleNotes = () => {
+    setShowNotes(!showNotes);
+    if (!notes) {
+      setNotes('');
+    }
+  };
+
   return (
-    <div className={`mb-6 p-4 mt-8 rounded-lg ${exerciseIndex % 2 === 0 ? 'bg-slate-50' : 'bg-zinc-50'} shadow-sm`}>
-      <div className="flex items-center justify-between mb-4 ">
-        <div className="font-medium">{exercise.name}</div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleAddSet}>
-            Add Set
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoveHorizontalIcon className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Option 1</DropdownMenuItem>
-              <DropdownMenuItem>Option 2</DropdownMenuItem>
-              <DropdownMenuItem onSelect={handleDeleteExercise}>Delete Exercise</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <>
+      <div 
+        className={`mb-6 p-4 mt-8 rounded-lg ${exerciseIndex % 2 === 0 ? 'bg-slate-50' : 'bg-zinc-50'} shadow-sm transition-all duration-200 hover:shadow-md`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="font-medium">{exercise.name}</div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleAddSet}>
+              Add Set
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleMoveUp} disabled={exerciseIndex === 0}>
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleMoveDown}>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={handleFileUpload}>Upload Media</DropdownMenuItem>
+                <DropdownMenuItem onSelect={toggleNotes}>
+                  {notes ? 'Edit Notes' : 'Add Notes'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleDeleteExercise}>Delete Exercise</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+        {(notes || showNotes) && (
+          <Textarea
+            value={notes}
+            onChange={handleNotesChange}
+            placeholder="Add notes for this exercise..."
+            className="w-full mb-4"
+          />
+        )}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Set</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Weight</TableHead>
+              <TableHead>Reps</TableHead>
+              {start ? (
+                <TableHead className="text-left">
+                  <TooltipProvider>
+                  
+                  <Tooltip>
+                    <TooltipTrigger>
+                    <span className="sr-only">Completed</span>
+                    <CheckCircle className="w-4 h-4 mx-auto lg:hidden" />
+                    <p className="align-left text-sm hidden lg:block">Completed</p>
+                    </TooltipTrigger>
+                    <TooltipContent>Mark set as completed</TooltipContent>
+                  </Tooltip>
+                  </TooltipProvider>
+                </TableHead>
+              ) : null}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sets ? (sets.filter((set): set is TemplateExerciseSet => !('deleted' in set) || !set.deleted).map((set, setIndex) => (
+              <ExerciseSet
+                key={`${exerciseIndex}-${setIndex}`}
+                setIndex={setIndex}
+                set={set}
+                workoutIndex={workoutIndex}
+                exerciseIndex={exerciseIndex}
+                templateExerciseId={templateExerciseId}
+                start={start ?? false}
+                setTypeColors={setTypeColors}
+                setDataOption={setDataOption}
+                lastSessionData={lastSessionData}
+                prSessionData={prSessionData}
+              />
+            )))
+          : 
+          (
+            <div className="p-4 text-center">No Sets Added</div>
+          )
+        }
+          </TableBody>
+        </Table>
       </div>
-      <p className="text-gray-500 dark:text-gray-400 mb-4">{exercise.description}</p>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Set</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Weight</TableHead>
-            <TableHead>Reps</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sets ? (sets.filter(set => !set.deleted).map((set, setIndex) => (
-            <ExerciseSet
-              key={`${exerciseIndex}-${setIndex}`}
-              setIndex={setIndex}
-              set={set}
-              workoutIndex={workoutIndex}
-              exerciseIndex={exerciseIndex}
-              templateExerciseId={templateExerciseId}
-            />
-          )))
-        : 
-        (
-          <div className="p-4 text-center">No Sets Added</div>
-        )
-      }
-        </TableBody>
-      </Table>
-    </div>
+      <FileUploadModal
+        isOpen={isFileUploadModalOpen}
+        onClose={() => setIsFileUploadModalOpen(false)}
+        onUpload={handleFileUploadComplete}
+        sets={sets as TemplateExerciseSet[]}
+      />
+    </>
   );
 };
 
-function MoveHorizontalIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="18 8 22 12 18 16" />
-      <polyline points="6 8 2 12 6 16" />
-      <line x1="2" x2="22" y1="12" y2="12" />
-    </svg>
-  );
-}
-
 export default Exercise;
+
+async function uploadFileToStorage(file: File): Promise<string | null> {
+  if (process.env.NODE_ENV === 'production') {
+    // For production, return null (implement your cloud storage solution here)
+    return null;
+  } else {
+    // For development, use local storage
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        const fileName = `local_${Date.now()}_${file.name}`;
+        const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+        let fileType = 'unknown';
+
+        // Determine file type based on extension
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
+          fileType = 'image';
+        } else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension)) {
+          fileType = 'video';
+        }
+
+        try {
+          localStorage.setItem(fileName, base64String);
+          resolve(`local://${fileName}|${fileType}`);
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+            console.error('Local storage quota exceeded. Unable to store file.');
+            alert('The file is too large to be stored locally. Please try a smaller file or clear some space.');
+            resolve(null);
+          } else {
+            throw error;
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}

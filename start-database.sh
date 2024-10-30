@@ -33,6 +33,8 @@ source .env
 
 DB_PASSWORD=$(echo "$DATABASE_URL" | awk -F':' '{print $3}' | awk -F'@' '{print $1}')
 DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'\/' '{print $1}')
+echo "$DB_PORT"
+echo "DB_PASSWORD: $DB_PASSWORD"
 
 if [ "$DB_PASSWORD" = "password" ]; then
   echo "You are using the default database password"
@@ -45,6 +47,7 @@ if [ "$DB_PASSWORD" = "password" ]; then
   DB_PASSWORD=$(openssl rand -base64 12 | tr '+/' '-_')
   sed -i -e "s#:password@#:$DB_PASSWORD@#" .env
 fi
+echo "DB_PASSWORD: $DB_PASSWORD"
 
 docker run -d \
   --name $DB_CONTAINER_NAME \

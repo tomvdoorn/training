@@ -7,22 +7,22 @@ import MaxWidthWrapper from "~/components/MaxWidthWrapper";
 
 const perks = [
   {
-    name: 'Best Coaches',
+    name: 'Personalized Training',
     Icon: ArrowDownToLine,
     description:
-      'Trained by the best coaches in the world, with the best training plans.',
+      'Trained by the best coaches in the world, with the best training plans. Coach not online? The best AI coaches are here to help.',
   },
   {
-    name: 'Guaranteed Quality',
+    name: 'All styles of training',
     Icon: CheckCircle,
     description:
-      'Powerfull AI trained with the newest and highest quality data',
+      'Log your training, from strength to endurance, from mobility to flexibility.',
   },
   {
     name: 'Share your progress',
     Icon: Leaf,
     description:
-      "Use the community to share your progress and get feedback from the best coaches.",
+      "Use the community to share your progress. Compare your lifts with others to perfect technique.",
   },
 ]
 
@@ -35,7 +35,7 @@ export default function Home() {
         <p className="text-sm font-semibold text-gray-700">Get strong</p>
         </div>
         <h1 className='max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl'>
-          Plan, log, coach, improve <span className='text-blue-700'> your training </span>  </h1>
+          Plan, log, coach and improve <span className='text-blue-700'> your training </span>  </h1>
         <p className="mt-5 max-w-prose text-zinc-700 sm:text-lg ">
           Your best in class training tool. With support from real and the best AI coaches. Hybrid, pure strength, always the best you need to improve.
         </p>

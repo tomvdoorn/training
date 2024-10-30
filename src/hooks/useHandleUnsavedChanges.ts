@@ -5,16 +5,20 @@ import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 
 export function useHandleUnsavedChanges() {
   const router = useRouter();
-  const hasUnsavedChanges = useWorkoutTemplateStore(state => state.hasUnsavedChanges);
+  const { hasUnsavedChanges, isSessionMode, resetUnsavedChanges } = useWorkoutTemplateStore(state => ({
+    hasUnsavedChanges: state.hasUnsavedChanges,
+    isSessionMode: state.isSessionMode,
+    resetUnsavedChanges: state.resetUnsavedChanges
+  }));
   const [showModal, setShowModal] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   const handleBeforeUnload = useCallback((event: BeforeUnloadEvent) => {
     if (hasUnsavedChanges) {
       event.preventDefault();
-      event.returnValue = '';
+      event.returnValue = isSessionMode ? 'You have an ongoing session. Are you sure you want to leave?' : 'You have unsaved changes. Are you sure you want to leave?';
     }
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, isSessionMode]);
 
   const handlePopState = useCallback((event: PopStateEvent) => {
     if (hasUnsavedChanges) {
@@ -53,9 +57,10 @@ export function useHandleUnsavedChanges() {
   const handleConfirmNavigation = useCallback(() => {
     setShowModal(false);
     if (pendingNavigation) {
+      resetUnsavedChanges();
       router.push(pendingNavigation);
     }
-  }, [pendingNavigation, router]);
+  }, [pendingNavigation, router, resetUnsavedChanges]);
 
   const handleCancelNavigation = useCallback(() => {
     setShowModal(false);

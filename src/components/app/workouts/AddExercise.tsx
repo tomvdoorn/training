@@ -17,9 +17,10 @@ import type { Exercise } from '@prisma/client';
 interface AddExerciseProps {
   templateId: number;
   onExerciseAdded: (newExercise: Exercise) => void;
+  children?: React.ReactNode;
 }
 
-const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded }) => {
+const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, children }) => {
   const { data: exerciseCategories, error, isLoading } = api.exercise.getExerciseCategories.useQuery();
   const { addExercise } = useWorkoutTemplateStore();
 
@@ -44,8 +45,8 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded }
         name,
         description,
         muscleGroup,
-        categoryId,
-        type,
+        categoryId: Number(categoryId),
+        type: Number(type),
         image: imageUrl,
         video: videoUrl,
       });
@@ -78,12 +79,16 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded }
 
   return (
     <div>
-      <Button
-        className="text-white font-bold py-2 px-4 rounded"
-        onClick={() => setIsModalOpen(true)}
-      >
-        Add New Exercise
-      </Button>
+      {children ? (
+        <div onClick={() => setIsModalOpen(true)}>{children}</div>
+      ) : (
+        <Button
+          className="text-white font-bold py-2 px-4 rounded"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Add New Exercise
+        </Button>
+      )}
       
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">

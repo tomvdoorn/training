@@ -30,20 +30,18 @@
 
     // Get all templates for a user
     getTemplatesUser: protectedProcedure
-      .query(async ({  ctx }) => {
-        const { session } = ctx
-        const templates = await prisma.template.findMany({
-
-          include:{
+      .query(async ({ ctx }) => {
+        return ctx.db.template.findMany({
+          where: { userId: ctx.session.user.id },
+          include: {
+            store_listing: true,
             exercises: {
-              include:{
-              exercise: true
-              },
-            },
-          },
-          where: { userId: session.user.id },
+              include: {
+                exercise: true
+              }
+            }
+          }
         });
-        return templates;
       }),
     
 
@@ -58,6 +56,7 @@
           data: {
             name: input.name,
             userId: input.userId,
+            owner_id: input.userId,
           },
         });
         return template;
@@ -69,10 +68,6 @@
         templateId: z.number(),
         exerciseId: z.number(),
         order: z.number(),
-        sets: z.array(z.object({
-          reps: z.number(),
-        })).optional(),
-
       }))
       .mutation(async ({ input }) => {
         const templateExercise = await prisma.templateExercise.create({
@@ -80,18 +75,11 @@
             templateId: input.templateId,
             exerciseId: input.exerciseId,
             order: input.order,
-            sets: {
-              create: [
-                { reps: 10,
-                  type: 'Regular'
-                },  
-              ],
-            }
           },
           include: {
             sets: true,
-        }
-      });
+          }
+        });
         return templateExercise;
       }),
 
@@ -129,6 +117,7 @@
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
+        note: z.string().optional(),
         // Add other fields as needed
       }))
       .mutation(async ({ input }) => {
@@ -136,6 +125,7 @@
           where: { id: input.id },
           data: {
             name: input.name,
+            note: input.note,
             // Update other fields as needed
           },
         });
@@ -146,6 +136,7 @@
     .input(z.object({
       id: z.number(),
       order: z.number().optional(),
+      notes: z.string().optional(),
       // Add other fields as needed
     }))
     .mutation(async ({ input }) => {
@@ -153,6 +144,7 @@
         where: { id: input.id },
         data: {
           order: input.order,
+          notes: input.notes,
           // Update other fields as needed
         },
       });
@@ -198,5 +190,6 @@
       });
       return updatedSet;
     }),
+
     }); 
     

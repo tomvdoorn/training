@@ -25,6 +25,13 @@
       --ring: 142.1 76.2% 36.3%;
       --radius: 0.5rem;
     }
+    .exercise-list .dragging {
+      @apply opacity-50;
+    }
+
+    .exercise-list .placeholder {
+      @apply h-16 border-2 border-dashed border-blue-400 rounded-lg my-4 bg-blue-50;
+    }
   
     .dark {
       --background: 20 14.3% 4.1%;
