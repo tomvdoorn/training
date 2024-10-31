@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
 import { z } from "zod"
-import { db as prisma } from "~/server/db"
+
 
 export const trainingPlanRouter = createTRPCRouter({
   getTrainingPlans: protectedProcedure

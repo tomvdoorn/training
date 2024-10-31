@@ -172,6 +172,7 @@ Table TrainingSession {
   user User [not null]
   media TrainingSessionMedia [not null]
   post Post
+  rating Int
 }
 
 Table SessionExercise {
@@ -186,6 +187,7 @@ Table SessionExercise {
   session TrainingSession [not null]
   sets SessionExerciseSet [not null]
   media SessionExerciseMedia [not null]
+  exerciseMedia ExerciseMedia [not null]
   templateExercise TemplateExercise
   templateExerciseId Int
   order Int [not null]
@@ -268,6 +270,7 @@ Table Post {
   likes PostLike [not null]
   Template Template
   viewCount Int [not null, default: 0]
+  media SessionExerciseMedia [not null]
 }
 
 Table PostComment {
@@ -336,6 +339,8 @@ Table SessionExerciseMedia {
   fileUrl String [not null]
   fileType String [not null]
   createdAt DateTime [default: `now()`, not null]
+  post Post
+  postId Int
 }
 
 Table ExercisePersonalRecord {
@@ -383,6 +388,16 @@ Table Acquisition {
     (user_id, template_id) [unique]
     (user_id, training_plan_id) [unique]
   }
+}
+
+Table ExerciseMedia {
+  id Int [pk, increment]
+  url String [not null]
+  type String [not null]
+  sessionExerciseId Int [not null]
+  sessionExercise SessionExercise [not null]
+  setIds Int[] [not null]
+  createdAt DateTime [default: `now()`, not null]
 }
 
 Enum TrainingPlanDifficulty {
@@ -504,6 +519,8 @@ Ref: TrainingSessionMedia.trainingSessionId > TrainingSession.id
 
 Ref: SessionExerciseMedia.sessionExerciseId > SessionExercise.id
 
+Ref: SessionExerciseMedia.postId > Post.id
+
 Ref: ExercisePersonalRecord.exerciseId > Exercise.id
 
 Ref: ExercisePersonalRecord.userId > User.id
@@ -521,3 +538,5 @@ Ref: Acquisition.user_id > User.id
 Ref: Acquisition.template_id > Template.id
 
 Ref: Acquisition.training_plan_id > TrainingPlan.id
+
+Ref: ExerciseMedia.sessionExerciseId > SessionExercise.id

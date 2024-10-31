@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/comp
 import FileUploadModal from '~/components/app/workouts/FileUploadModal'
 import { Textarea } from "~/components/ui/textarea";
 import { MoreHorizontal } from "lucide-react";
+import { api } from "~/trpc/react";
 
 type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
@@ -37,10 +38,10 @@ interface ExerciseProps {
     sets?: PartialTemplateExerciseSet[];
     is_copy?: boolean;
   };
-  addMediaMutation?: any;
-  setDataOption?: any;
-  lastSessionData?: any;
-  prSessionData?: any;
+  addMediaMutation?: typeof api.media.uploadSessionExerciseMedia.useMutation;
+  setDataOption?: 'lastSession' | 'prSession' | 'template';
+  lastSessionData?: ReturnType<typeof api.session.getLastSessionData.useQuery> | undefined  ;
+  prSessionData?: ReturnType<typeof api.session.getPRSessionData.useQuery> | undefined;
 }
 
 const setTypeColors = {

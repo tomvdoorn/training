@@ -50,10 +50,10 @@ export const mediaRouter = createTRPCRouter({
         .getPublicUrl(fileName);
 
       // Save media reference to database
-      const media = await ctx.db.sessionExerciseMedia.create({
+      const media = await ctx.db.exerciseMedia.create({
         data: {
-          fileUrl: publicUrl,
-          fileType: fileType,
+          url: publicUrl,
+          type: fileType,
           sessionExerciseId: input.sessionExerciseId,
           setIds: input.setIds,
         },
@@ -67,7 +67,7 @@ export const mediaRouter = createTRPCRouter({
       sessionExerciseId: z.number(),
     }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.sessionExerciseMedia.findMany({
+      return ctx.db.exerciseMedia.findMany({
         where: {
           sessionExerciseId: input.sessionExerciseId,
         },

@@ -320,10 +320,6 @@ function WorkoutPage({ params }: PageProps) {
                   sets: exercise.sets,
                   is_copy: workout?.is_copy
                 }}
-                addMediaMutation={null}
-                setDataOption="template"
-                lastSessionData={null}
-                prSessionData={null}
               />
             ))}
           </CardContent>

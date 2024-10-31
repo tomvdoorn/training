@@ -39,32 +39,32 @@ model Session {
 }
 
 model User {
-  id               String            @id @default(cuid())
-  firstName        String?
-  lastName         String?
-  email            String?           @unique
-  emailVerified    DateTime?
-  password         String?
-  image            String?
-  accounts         Account[]
-  exercises        Exercise[]
-  sessions         Session[]
-  templates        Template[]
-  trainingPlans    TrainingPlan[]
-  trainingSessions TrainingSession[]
-  posts            Post[]
-  PostComment      PostComment[]
-  PostLike         PostLike[]
-  commentLikes     CommentLike[]
-  followers        Follow[]          @relation("Following")
-  following        Follow[]          @relation("Follower")
-  bio              String?
-  personalRecords  ExercisePersonalRecord[]
+  id                    String                   @id @default(cuid())
+  firstName             String?
+  lastName              String?
+  email                 String?                  @unique
+  emailVerified         DateTime?
+  password              String?
+  image                 String?
+  accounts              Account[]
+  exercises             Exercise[]
+  sessions              Session[]
+  templates             Template[]
+  trainingPlans         TrainingPlan[]
+  trainingSessions      TrainingSession[]
+  posts                 Post[]
+  PostComment           PostComment[]
+  PostLike              PostLike[]
+  commentLikes          CommentLike[]
+  followers             Follow[]                 @relation("Following")
+  following             Follow[]                 @relation("Follower")
+  bio                   String?
+  personalRecords       ExercisePersonalRecord[]
   trainingPlanTemplates TrainingPlanTemplate[]
   // Add these new relations
-  ownedTemplates   Template[]        @relation("TemplateOwner")
-  ownedTrainingPlans TrainingPlan[]  @relation("TrainingPlanOwner")
-  acquisitions     Acquisition[]
+  ownedTemplates        Template[]               @relation("TemplateOwner")
+  ownedTrainingPlans    TrainingPlan[]           @relation("TrainingPlanOwner")
+  acquisitions          Acquisition[]
 }
 
 model VerificationToken {
@@ -76,23 +76,23 @@ model VerificationToken {
 }
 
 model Exercise {
-  id          Int                @id @default(autoincrement())
-  name        String             @unique
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  categoryId  Int
-  typeId      Int
-  description String?
-  muscleGroup MuscleGroup?
-  image       String?
-  video       String?
-  userId      String?
-  instructions String?
-  category    ExerciseCategory   @relation(fields: [categoryId], references: [id])
-  type        ExerciseType       @relation(fields: [typeId], references: [id])
-  user        User?              @relation(fields: [userId], references: [id])
-  sessions    SessionExercise[]
-  templates   TemplateExercise[]
+  id              Int                      @id @default(autoincrement())
+  name            String                   @unique
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  categoryId      Int
+  typeId          Int
+  description     String?
+  muscleGroup     MuscleGroup?
+  image           String?
+  video           String?
+  userId          String?
+  instructions    String?
+  category        ExerciseCategory         @relation(fields: [categoryId], references: [id])
+  type            ExerciseType             @relation(fields: [typeId], references: [id])
+  user            User?                    @relation(fields: [userId], references: [id])
+  sessions        SessionExercise[]
+  templates       TemplateExercise[]
   personalRecords ExercisePersonalRecord[]
 }
 
@@ -103,8 +103,8 @@ model ExerciseCategory {
 }
 
 model ExerciseType {
-  id      Int @id @default(autoincrement())
-  name    String @unique
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
   Exercises Exercise[]
 }
 
@@ -120,14 +120,14 @@ model Template {
   trainingSessions TrainingSession[]
   posts            Post[]
   note             String?
-  owner_id        String
-  is_copy         Boolean          @default(false)
-  original_id     Int?
-  owner           User             @relation("TemplateOwner", fields: [owner_id], references: [id])
-  original        Template?        @relation("TemplateCopy", fields: [original_id], references: [id])
-  copies          Template[]       @relation("TemplateCopy")
-  store_listing   StoreListing?
-  acquisitions    Acquisition[]
+  owner_id         String
+  is_copy          Boolean                @default(false)
+  original_id      Int?
+  owner            User                   @relation("TemplateOwner", fields: [owner_id], references: [id])
+  original         Template?              @relation("TemplateCopy", fields: [original_id], references: [id])
+  copies           Template[]             @relation("TemplateCopy")
+  store_listing    StoreListing?
+  acquisitions     Acquisition[]
 }
 
 model TemplateExercise {
@@ -149,92 +149,94 @@ model TemplateExercise {
 }
 
 model TemplateExerciseSet {
-  id                 Int              @id @default(autoincrement())
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  templateExerciseId Int
-  reps               Int              @default(0)
-  weight             Float?
-  duration           Int?
-  distance           Float?
-  type               SetType          @default(Regular)
-  rpe                Int?
-  video              String?
-  templateExercise   TemplateExercise @relation(fields: [templateExerciseId], references: [id], onDelete: Cascade)
+  id                  Int                  @id @default(autoincrement())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  templateExerciseId  Int
+  reps                Int                  @default(0)
+  weight              Float?
+  duration            Int?
+  distance            Float?
+  type                SetType              @default(Regular)
+  rpe                 Int?
+  video               String?
+  templateExercise    TemplateExercise     @relation(fields: [templateExerciseId], references: [id], onDelete: Cascade)
   sessionExerciseSets SessionExerciseSet[]
 }
 
 model TrainingSession {
-  id         Int               @id @default(autoincrement())
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  id         Int                    @id @default(autoincrement())
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
   userId     String
   templateId Int?
   startTime  DateTime
   endTime    DateTime
-  completed  Boolean           @default(false)
+  completed  Boolean                @default(false)
   exercises  SessionExercise[]
-  template   Template?         @relation(fields: [templateId], references: [id])
-  user       User              @relation(fields: [userId], references: [id])
+  template   Template?              @relation(fields: [templateId], references: [id])
+  user       User                   @relation(fields: [userId], references: [id])
   media      TrainingSessionMedia[]
   post       Post?
   rating     Int?
 }
+
 model SessionExercise {
-  id           Int                  @id @default(autoincrement())
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  sessionId    Int
-  exerciseId   Int
-  notes        String?
-  persistNotes Boolean              @default(false)
-  exercise     Exercise             @relation(fields: [exerciseId], references: [id])
-  session      TrainingSession      @relation(fields: [sessionId], references: [id])
-  sets         SessionExerciseSet[]
-  media        SessionExerciseMedia[]
-  templateExercise TemplateExercise? @relation("SessionExerciseToTemplateExercise", fields: [templateExerciseId], references: [id])
+  id                 Int                      @id @default(autoincrement())
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  sessionId          Int
+  exerciseId         Int
+  notes              String?
+  persistNotes       Boolean                  @default(false)
+  exercise           Exercise                 @relation(fields: [exerciseId], references: [id])
+  session            TrainingSession          @relation(fields: [sessionId], references: [id])
+  sets               SessionExerciseSet[]
+  media              SessionExerciseMedia[]
+  exerciseMedia      ExerciseMedia[]
+  templateExercise   TemplateExercise?        @relation("SessionExerciseToTemplateExercise", fields: [templateExerciseId], references: [id])
   templateExerciseId Int?
-  order        Int
-  personalRecords ExercisePersonalRecord[]
+  order              Int
+  personalRecords    ExercisePersonalRecord[]
 }
 
 model SessionExerciseSet {
-  id                   Int             @id @default(autoincrement())
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
-  sessionExerciseId    Int
-  reps                 Int?
-  weight               Float?
-  duration             Int?
-  distance             Float?
-  type                 SetType
-  rpe                  Int?
-  video                String?
-  completed            Boolean         @default(false)
-  sessionExercise      SessionExercise @relation(fields: [sessionExerciseId], references: [id])
-  templateExerciseSet  TemplateExerciseSet? @relation(fields: [templateExerciseSetId], references: [id])
+  id                    Int                      @id @default(autoincrement())
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  sessionExerciseId     Int
+  reps                  Int?
+  weight                Float?
+  duration              Int?
+  distance              Float?
+  type                  SetType
+  rpe                   Int?
+  video                 String?
+  completed             Boolean                  @default(false)
+  sessionExercise       SessionExercise          @relation(fields: [sessionExerciseId], references: [id])
+  templateExerciseSet   TemplateExerciseSet?     @relation(fields: [templateExerciseSetId], references: [id])
   templateExerciseSetId Int?
-  personalRecords      ExercisePersonalRecord[]
+  personalRecords       ExercisePersonalRecord[]
 }
 
 model TrainingPlan {
-  id        Int      @id @default(autoincrement())
-  name      String
-  duration  Int
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  difficulty TrainingPlanDifficulty @default(Beginner) 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  templates TrainingPlanTemplate[]
-  owner_id        String
-  is_copy         Boolean          @default(false)
-  original_id     Int?
-  owner           User             @relation("TrainingPlanOwner", fields: [owner_id], references: [id])
-  original        TrainingPlan?    @relation("TrainingPlanCopy", fields: [original_id], references: [id])
-  copies          TrainingPlan[]   @relation("TrainingPlanCopy")
-  store_listing   StoreListing?
-  acquisitions    Acquisition[]
+  id            Int                    @id @default(autoincrement())
+  name          String
+  duration      Int
+  userId        String
+  user          User                   @relation(fields: [userId], references: [id])
+  difficulty    TrainingPlanDifficulty @default(Beginner)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  templates     TrainingPlanTemplate[]
+  owner_id      String
+  is_copy       Boolean                @default(false)
+  original_id   Int?
+  owner         User                   @relation("TrainingPlanOwner", fields: [owner_id], references: [id])
+  original      TrainingPlan?          @relation("TrainingPlanCopy", fields: [original_id], references: [id])
+  copies        TrainingPlan[]         @relation("TrainingPlanCopy")
+  store_listing StoreListing?
+  acquisitions  Acquisition[]
 }
 
 enum TrainingPlanDifficulty {
@@ -280,37 +282,37 @@ enum SetType {
 }
 
 model Post {
-  id                      Int              @id @default(autoincrement())
-  user                    User             @relation(fields: [userId], references: [id])
+  id                      Int                    @id @default(autoincrement())
+  user                    User                   @relation(fields: [userId], references: [id])
   userId                  String
-  trainingSession         TrainingSession? @relation(fields: [trainingSessionId], references: [id])
-  trainingSessionId       Int?             @unique
+  trainingSession         TrainingSession?       @relation(fields: [trainingSessionId], references: [id])
+  trainingSessionId       Int?                   @unique
   templateId              Int?
   title                   String
   note                    String?
-  privacy                 String           @default("public")
-  numberOfPRs             Int              @default(0)
-  totalWeightLifted       Float            @default(0)
+  privacy                 String                 @default("public")
+  numberOfPRs             Int                    @default(0)
+  totalWeightLifted       Float                  @default(0)
   highlightedSetId        Int?
   highlightedExerciseName String?
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
   comments                PostComment[]
   likes                   PostLike[]
-  Template                Template?        @relation(fields: [templateId], references: [id])
-  viewCount               Int               @default(0)
-  media             SessionExerciseMedia[]
+  Template                Template?              @relation(fields: [templateId], references: [id])
+  viewCount               Int                    @default(0)
+  media                   SessionExerciseMedia[]
 }
 
 model PostComment {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   content   String
   userId    String
   postId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+  post      Post          @relation(fields: [postId], references: [id])
   likes     CommentLike[]
 }
 
@@ -325,12 +327,12 @@ model PostLike {
 }
 
 model CommentLike {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   userId    String
   commentId Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
   comment   PostComment @relation(fields: [commentId], references: [id])
 
   @@unique([userId, commentId])
@@ -348,12 +350,12 @@ model Follow {
 }
 
 model TrainingSessionMedia {
-  id               Int             @id @default(autoincrement())
-  trainingSession  TrainingSession @relation(fields: [trainingSessionId], references: [id])
+  id                Int             @id @default(autoincrement())
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id])
   trainingSessionId Int
-  fileUrl          String
-  fileType         String // e.g., "image", "video", "document"
-  createdAt        DateTime        @default(now())
+  fileUrl           String
+  fileType          String // e.g., "image", "video", "document"
+  createdAt         DateTime        @default(now())
 }
 
 model SessionExerciseMedia {
@@ -369,17 +371,17 @@ model SessionExerciseMedia {
 }
 
 model ExercisePersonalRecord {
-  id                Int      @id @default(autoincrement())
+  id                Int                @id @default(autoincrement())
   exerciseId        Int
   userId            String
   sessionExerciseId Int
   setId             Int
   prType            PRType
   value             Float
-  date              DateTime @default(now())
-  exercise          Exercise @relation(fields: [exerciseId], references: [id])
-  user              User     @relation(fields: [userId], references: [id])
-  sessionExercise   SessionExercise @relation(fields: [sessionExerciseId], references: [id])
+  date              DateTime           @default(now())
+  exercise          Exercise           @relation(fields: [exerciseId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
+  sessionExercise   SessionExercise    @relation(fields: [sessionExerciseId], references: [id])
   set               SessionExerciseSet @relation(fields: [setId], references: [id])
 }
 
@@ -390,30 +392,30 @@ enum PRType {
 }
 
 model StoreListing {
-  id              Int           @id @default(autoincrement())
-  title           String
-  description     String
-  preview_image   String?
-  purchase_count  Int           @default(0)
-  status          StoreStatus   @default(Active)
-  created_at      DateTime      @default(now())
-  updated_at      DateTime      @updatedAt
-  type            ListingType
-  template_id     Int?         @unique
-  training_plan_id Int?        @unique
-  template        Template?     @relation(fields: [template_id], references: [id])
-  training_plan   TrainingPlan? @relation(fields: [training_plan_id], references: [id])
+  id               Int           @id @default(autoincrement())
+  title            String
+  description      String
+  preview_image    String?
+  purchase_count   Int           @default(0)
+  status           StoreStatus   @default(Active)
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  type             ListingType
+  template_id      Int?          @unique
+  training_plan_id Int?          @unique
+  template         Template?     @relation(fields: [template_id], references: [id])
+  training_plan    TrainingPlan? @relation(fields: [training_plan_id], references: [id])
 }
 
 model Acquisition {
-  id              Int          @id @default(autoincrement())
-  user_id         String
-  template_id     Int?
+  id               Int           @id @default(autoincrement())
+  user_id          String
+  template_id      Int?
   training_plan_id Int?
-  acquired_at     DateTime     @default(now())
-  user            User         @relation(fields: [user_id], references: [id])
-  template        Template?    @relation(fields: [template_id], references: [id])
-  training_plan   TrainingPlan? @relation(fields: [training_plan_id], references: [id])
+  acquired_at      DateTime      @default(now())
+  user             User          @relation(fields: [user_id], references: [id])
+  template         Template?     @relation(fields: [template_id], references: [id])
+  training_plan    TrainingPlan? @relation(fields: [training_plan_id], references: [id])
 
   @@unique([user_id, template_id])
   @@unique([user_id, training_plan_id])
@@ -432,9 +434,9 @@ enum ListingType {
 model ExerciseMedia {
   id                Int             @id @default(autoincrement())
   url               String
-  type              String          // 'image' or 'video'
+  type              String // 'image' or 'video'
   sessionExerciseId Int
   sessionExercise   SessionExercise @relation(fields: [sessionExerciseId], references: [id])
-  setIds            Int[]           // Array of related set IDs
+  setIds            Int[] // Array of related set IDs
   createdAt         DateTime        @default(now())
 }

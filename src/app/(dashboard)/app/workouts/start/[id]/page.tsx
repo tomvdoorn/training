@@ -14,7 +14,7 @@ import type { TemplateExercise, TemplateExerciseSet } from '@prisma/client';
 import { useSessionHandler } from '~/hooks/useSessionHandler';
 import { FinishWorkoutModal } from '~/components/app/workouts/FinishWorkoutModal';
 import SetDataSelector from '~/components/app/workouts/SetDataSelector';
-import { useSession } from 'next-auth/react';
+import type { ExerciseMedia } from '@prisma/client';
 
 interface PageProps {
   params: {
@@ -94,10 +94,10 @@ function StartWorkout({ params }: PageProps) {
 
   useEffect(() => {
     if (exerciseMediaQuery.data) {
-      setAvailableMedia(exerciseMediaQuery.data.map(item => ({
+      setAvailableMedia(exerciseMediaQuery.data.map((item: ExerciseMedia  ) => ({
         id: String(item.id),
-        url: item.fileUrl,
-        type: item.fileType as 'image' | 'video',
+        url: item.url,
+        type: item.type as 'image' | 'video',
         exerciseId: item.sessionExerciseId,
         setIds: item.setIds
       })));

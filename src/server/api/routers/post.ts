@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getDayPart } from "~/utils/dateHelpers";
-import { db as prisma } from '../../db';
+
 
 
 
@@ -27,14 +27,14 @@ export const postRouter = createTRPCRouter({
       }
 
       const dayPart = getDayPart(trainingSession.startTime);
-      const defaultTitle = `${trainingSession.template?.name || 'Workout'} - ${dayPart}`;
+      const defaultTitle = `${trainingSession.template?.name ?? 'Workout'} - ${dayPart}`;
 
       const post = await ctx.db.post.create({
         data: {
           userId: ctx.session.user.id,
           trainingSessionId: input.trainingSessionId,
           templateId: input.templateId,
-          title: input.title,
+          title: input.title || defaultTitle,
           note: input.note,
           privacy: input.privacy,
         },
@@ -47,9 +47,7 @@ export const postRouter = createTRPCRouter({
               in: input.mediaIds.map(id => parseInt(id)),
             },
           },
-          data: {
-            postId: post.id,
-          },
+          data: { postId: post.id },
         });
       }
 
@@ -217,16 +215,4 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  updatePost: publicProcedure
-    .input(z.object({
-      id: z.number(),
-      numberOfPRs: z.number(),
-    }))
-    .mutation(async ({ input }) => {
-      const updatedPost = await prisma.post.update({
-        where: { id: input.id },
-        data: { numberOfPRs: input.numberOfPRs },
-      });
-      return updatedPost;
-    }),
 });

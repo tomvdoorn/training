@@ -31,7 +31,15 @@ const Dashboard = async () => {
             <div>
                 <CarouselItems />
             </div>
-            <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 md:gap-8 lg:grid-cols-4 xl:grid-cols-4">
+                <Card className="xl:col-span-1">
+                    <CardHeader>
+                        <CardTitle>Stats about previous sessions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-8">
+                        {/* Add recent sales content here */}
+                    </CardContent>
+                </Card>
                 <Card className="xl:col-span-2">
                     <CardHeader className="flex flex-row items-center">
                         <div className="grid gap-2">
@@ -57,9 +65,12 @@ const Dashboard = async () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Recent Sales</CardTitle>
+                        <CardTitle>Follow recommendations</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-8">
+                        <div>
+                            <h3>Follow these users to see their workouts in your feed</h3>
+                        </div>
                         {/* Add recent sales content here */}
                     </CardContent>
                 </Card>

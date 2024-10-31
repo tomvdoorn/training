@@ -169,12 +169,12 @@ export const storeRouter = createTRPCRouter({
             is_copy: true,
             original: { connect: { id: listing.template.id } },
             exercises: {
-              create: listing.template.exercises.map((ex: any) => ({
+              create: listing.template.exercises.map((ex: TemplateExercise & { exercise: Exercise } & { sets: TemplateExerciseSet[] }) => ({
                 exerciseId: ex.exercise.id,
                 order: ex.order,
                 notes: ex.notes,
                 sets: {
-                  create: ex.sets.map((set: any) => ({
+                  create: ex.sets.map((set: TemplateExerciseSet) => ({
                     reps: set.reps,
                     weight: set.weight,
                     type: set.type,
