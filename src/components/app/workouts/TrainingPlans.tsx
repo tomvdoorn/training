@@ -3,8 +3,7 @@
 import { api } from "~/trpc/react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
-import { Calendar, MoreVertical, Store } from "lucide-react"
-import Link from "next/link"
+import { Calendar, MoreVertical } from "lucide-react"
 import ScheduleTrainingPlanModal from "./ScheduleTrainingPlanModal"
 import {
   DropdownMenu,

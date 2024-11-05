@@ -9,7 +9,7 @@ import SportsSocialFeed from "@/components/app/social/SportsSocialFeed";
 import { api } from "~/trpc/react";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil } from "lucide-react";
-
+import { User } from "@prisma/client";
 interface ProfilePageProps {
   params: {
     id: string;
@@ -21,9 +21,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [bio, setBio] = useState('');
   const [isEditingBio, setIsEditingBio] = useState(false);
-
-  const { data: currentUser, isLoading: isCurrentUserLoading } = api.user.getCurrentUser.useQuery();
-  const { data: profileUser, isLoading: isProfileUserLoading } = api.user.getById.useQuery({ id: params.id });
+  const { data: currentUser, isLoading: isCurrentUserLoading }: { data: User | undefined, isLoading: boolean } = api.user.getCurrentUser.useQuery();
+  const { data: profileUser, isLoading: isProfileUserLoading }: { data: User | undefined, isLoading: boolean }   = api.user.getById.useQuery({ id: params.id });
   const { data: followersCount } = api.user.getFollowersCount.useQuery({ userId: params.id });
   const { data: followingCount } = api.user.getFollowingCount.useQuery({ userId: params.id });
   const { data: isFollowingData } = api.user.isFollowing.useQuery(
@@ -34,7 +33,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const followMutation = api.user.followUser.useMutation();
   const unfollowMutation = api.user.unfollowUser.useMutation();
   const updateBioMutation = api.user.updateBio.useMutation();
-
+  
   useEffect(() => {
     if (isFollowingData !== undefined) {
       setIsFollowing(isFollowingData);
@@ -47,16 +46,16 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   }, [profileUser]);
 
-  if (isCurrentUserLoading || isProfileUserLoading) {
+  if (isCurrentUserLoading ?? isProfileUserLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!currentUser || !profileUser) {
+  if (!currentUser ?? !profileUser) {
     router.push("/404");
     return null;
   }
-
-  const isOwnProfile = currentUser.id === profileUser.id;
+  let isOwnProfile = false
+  isOwnProfile = currentUser?.id === profileUser.id;
 
   const handleFollowToggle = async () => {
     if (isFollowing) {
@@ -79,8 +78,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   };
 
   const handleBioKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      handleBioSave();
+    if (e.key === 'Enter' && (e.metaKey ?? e.ctrlKey)) {
+      void handleBioSave();
     }
   };
 
@@ -91,8 +90,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardHeader className="flex flex-col items-center">
               <Avatar className="w-32 h-32">
-                <AvatarImage src={profileUser.image || undefined} alt={profileUser.firstName || ''} />
-                <AvatarFallback>{profileUser.firstName?.charAt(0) || ''}</AvatarFallback>
+                <AvatarImage src={profileUser.image ?? undefined} alt={profileUser.firstName ?? ''} />
+                <AvatarFallback>{profileUser.firstName?.charAt(0) ?? ''}</AvatarFallback>
               </Avatar>
               <CardTitle className="mt-4 text-2xl">{profileUser.firstName} {profileUser.lastName}</CardTitle>
             </CardHeader>
@@ -125,7 +124,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm pr-8 text-center whitespace-pre-wrap">{bio || 'No bio available.'}</p>
+                  <p className="text-sm pr-8 text-center whitespace-pre-wrap">{bio ?? 'No bio available.'}</p>
                 )}
               </div>
               <div className="flex justify-around mb-4">

@@ -21,7 +21,7 @@ export function MuscleGroupChart({ data }: MuscleGroupChartProps) {
           cx="50%"
           cy="50%"
           outerRadius={100}
-          label={(entry) => entry.name}
+          label={(entry: { name: string }) => entry.name}
         >
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.color} />

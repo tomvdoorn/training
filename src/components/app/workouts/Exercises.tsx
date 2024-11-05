@@ -1,19 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/ui/dropdown-menu";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "~/components/ui/table";
-import type { Exercise as ExerciseType, TemplateExercise } from "@prisma/client";
+import { Table, TableHeader, TableRow, TableHead, TableBody } from "~/components/ui/table";
 import ExerciseSet from "./ExerciseSet";
 import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
-import type { TemplateExerciseSet } from "@prisma/client";
-
-import { ChevronUp, ChevronDown } from "lucide-react";
-import { CheckCircle } from 'lucide-react';
+import { ChevronUp, ChevronDown, CheckCircle, MoreHorizontal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
 import FileUploadModal from '~/components/app/workouts/FileUploadModal'
 import { Textarea } from "~/components/ui/textarea";
-import { MoreHorizontal } from "lucide-react";
-import { api } from "~/trpc/react";
+import type { api } from "~/trpc/react";
+import type { Exercise as ExerciseType, SessionExerciseSet, TemplateExerciseSet, SetType } from "@prisma/client";
 
 type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
@@ -27,7 +23,7 @@ interface ExerciseProps {
   template_id?: number;
   exerciseIndex: number;
   exercise: ExerciseType;
-  sets?: TemplateExerciseSet[];
+  sets?: (TemplateExerciseSet & { deleted?: boolean })[];
   workoutIndex: number;
   start: boolean;
   onReorder: (fromIndex: number, toIndex: number) => void;
@@ -38,10 +34,23 @@ interface ExerciseProps {
     sets?: PartialTemplateExerciseSet[];
     is_copy?: boolean;
   };
-  addMediaMutation?: typeof api.media.uploadSessionExerciseMedia.useMutation;
-  setDataOption?: 'lastSession' | 'prSession' | 'template';
-  lastSessionData?: ReturnType<typeof api.session.getLastSessionData.useQuery> | undefined  ;
-  prSessionData?: ReturnType<typeof api.session.getPRSessionData.useQuery> | undefined;
+  addMediaMutation?: typeof api.media.uploadSessionExerciseMedia.useMutation extends () => infer R ? R : never;
+  setDataOption?: 'lastSession' | 'prSession' | 'template' | undefined;
+  lastSessionData?: {
+    exercises: Array<{
+      id: number;
+      templateExerciseId: number | null;
+      sets: Array<{
+        reps: number | null;
+        weight: number | null;
+        type: SetType;
+      }>;
+    }>;
+  };
+  prSessionData?: Array<{
+    id: number;
+    sets: Array<Partial<SessionExerciseSet>>;
+  }>;
 }
 
 const setTypeColors = {
@@ -70,7 +79,7 @@ const Exercise = ({
   const { addSet, removeExercise, updateExercise, reorderExercises } = useWorkoutTemplateStore();
   const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false);
   const [showNotes, setShowNotes] = useState(!!templateExercise?.notes);
-  const [notes, setNotes] = useState(templateExercise?.notes || '');
+  const [notes, setNotes] = useState(templateExercise?.notes ?? '');
 
   const handleAddSet = useCallback(() => {
     const newSet: Partial<TemplateExerciseSet> = {
@@ -108,13 +117,17 @@ const Exercise = ({
     
     if (result) {
       const [fileUrl, detectedFileType] = result.split('|');
-      
-      await addMediaMutation.mutateAsync({
-        sessionExerciseId: templateExerciseId,
-        fileUrl: fileUrl as string,
-        fileType: detectedFileType as string,
-        setIds: selectedSets,
-      });
+      if (addMediaMutation) {   
+        await addMediaMutation.mutateAsync({
+          sessionExerciseId: templateExerciseId,
+          file: {
+            name: file.name,
+            type: detectedFileType!,
+            base64: fileUrl!,
+          },
+          setIds: selectedSets,
+                });
+      }
     }
   };
 
@@ -163,7 +176,7 @@ const Exercise = ({
             </DropdownMenu>
           </div>
         </div>
-        {(notes || showNotes) && (
+        {(notes ?? showNotes) && (
           <Textarea
             value={notes}
             onChange={handleNotesChange}
@@ -196,7 +209,7 @@ const Exercise = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sets ? (sets.filter((set): set is TemplateExerciseSet => !('deleted' in set) || !set.deleted).map((set, setIndex) => (
+            {sets ? (sets.filter((set): set is TemplateExerciseSet => !('deleted' in set) ?? !set.deleted).map((set, setIndex) => (
               <ExerciseSet
                 key={`${exerciseIndex}-${setIndex}`}
                 setIndex={setIndex}
@@ -242,7 +255,7 @@ async function uploadFileToStorage(file: File): Promise<string | null> {
       reader.onloadend = () => {
         const base64String = reader.result as string;
         const fileName = `local_${Date.now()}_${file.name}`;
-        const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+        const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
         let fileType = 'unknown';
 
         // Determine file type based on extension

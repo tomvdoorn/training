@@ -41,7 +41,7 @@ export function useSessionHandler() {
     handleConfirmNavigation,
     handleCancelNavigation,
     handleSetCompletion,
-        addExercise,
+    addExercise,
     updateTemplate,
     initializeExercises,
     resetChanges,

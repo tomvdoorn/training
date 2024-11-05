@@ -34,13 +34,13 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
   const toggleCommentLikeMutation = api.post.toggleCommentLike.useMutation();
 
   const handleAddComment = async () => {
-    if (!currentUser || !commentText.trim()) return;
+    if (!currentUser ?? !commentText.trim()) return;
 
     try {
       await addCommentMutation.mutateAsync({ postId, content: commentText });
       setCommentText('');
       // Refetch comments to update the UI
-      queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
+      await queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -49,7 +49,7 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault(); // Prevent default to avoid newline
-      handleAddComment();
+      void handleAddComment();
     }
   };
 
@@ -58,7 +58,7 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
 
     try {
       await toggleCommentLikeMutation.mutateAsync({ commentId });
-      queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
+      await queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
     } catch (error) {
       console.error('Error toggling comment like:', error);
     }
@@ -67,8 +67,8 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
   const renderComment = (comment: Comment) => (
     <div key={comment.id} className="flex items-start space-x-2 mb-2">
       <Avatar className="w-8 h-8">
-        <AvatarImage src={comment.user?.image || undefined} alt={comment.user?.firstName || ''} />
-        <AvatarFallback>{comment.user?.firstName?.charAt(0) || ''}</AvatarFallback>
+        <AvatarImage src={comment.user?.image ?? undefined} alt={comment.user?.firstName ?? ''} />
+        <AvatarFallback>{comment.user?.firstName?.charAt(0) ?? ''}</AvatarFallback>
       </Avatar>
       <div className="flex-grow">
         <p className="text-sm font-semibold">{comment.user?.firstName} {comment.user?.lastName}</p>
@@ -81,7 +81,7 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
         onClick={() => handleToggleLike(comment.id)}
       >
         <Heart className={`h-4 w-4 ${comment.likes && comment.likes.some(like => like.userId === currentUser?.id) ? 'fill-red-500 text-red-500' : ''}`} />
-        <span className="text-xs">{comment.likes?.length || 0}</span>
+        <span className="text-xs">{comment.likes?.length ?? 0}</span>
       </Button>
     </div>
   );
@@ -94,8 +94,8 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
       {currentUser && isExpanded && (
         <div className="flex items-start space-x-2">
           <Avatar className="w-8 h-8">
-            <AvatarImage src={currentUser.image || undefined} alt={currentUser.firstName || ''} />
-            <AvatarFallback>{currentUser.firstName?.charAt(0) || ''}</AvatarFallback>
+            <AvatarImage src={currentUser.image ?? undefined} alt={currentUser.firstName ?? ''} />
+            <AvatarFallback>{currentUser.firstName?.charAt(0) ?? ''}</AvatarFallback>
           </Avatar>
           <div className="flex-grow">
             <Textarea

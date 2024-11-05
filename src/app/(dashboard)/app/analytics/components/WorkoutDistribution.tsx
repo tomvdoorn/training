@@ -33,9 +33,10 @@ export function WorkoutDistribution({ data }: WorkoutDistributionProps) {
         <Tooltip
           content={({ active, payload }) => {
             if (active && payload && payload.length > 0 && payload[0]?.payload) {
+              const data = payload[0].payload as { day: string, value: number }
               return (
                 <Card className="p-2">
-                  <div className="text-sm font-bold">{payload[0].payload.day}</div>
+                  <div className="text-sm font-bold">{data.day}</div>
                   <div className="text-sm">{payload[0].value} workouts</div>
                 </Card>
               )

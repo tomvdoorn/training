@@ -7,7 +7,6 @@ import { MuscleGroupChart } from "./components/MuscleGroupChart"
 import { WeeklyVolume } from "./components/WeeklyVolume"
 import { PersonalRecords } from "./components/PersonalRecords"
 import { api } from "~/trpc/react"
-import { startOfMonth } from "date-fns"
 import { type AnalyticsStats } from "~/types/analytics"
 
 export default function AnalyticsPage() {

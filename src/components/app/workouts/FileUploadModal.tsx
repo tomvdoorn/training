@@ -10,7 +10,7 @@ const FileUploadModal = ({ isOpen, onClose, onUpload, sets }: { isOpen: boolean,
   const [selectedSets, setSelectedSets] = useState<number[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e?.target?.files?.[0]) {
       setSelectedFile(e.target.files[0]);
     }
   };

@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button"
-import { MoreVertical, Store } from "lucide-react"
+import { MoreVertical } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,

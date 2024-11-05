@@ -4,13 +4,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dumbbell, Calendar, Zap, Download } from "lucide-react"
+import { Download } from "lucide-react"
 import { api } from "~/trpc/react"
 import { useToast } from "~/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import type { StoreListing } from "@prisma/client"
+import Image from "next/image"
 
-// Add these interfaces at the top of the file
+
 interface AcquireSuccess {
   success: boolean;
   copied_id: number | null;
@@ -30,8 +30,9 @@ interface StoreListingWithRelations {
 
 export default function StorePage() {
   const [typeFilter, setTypeFilter] = useState<"Template" | "TrainingPlan" | "all">("all")
-  const [difficultyFilter, setDifficultyFilter] = useState("all")
-  const [durationFilter, setDurationFilter] = useState("all")
+  // TODO: Add difficulty and duration filters
+  // const [difficultyFilter, setDifficultyFilter] = useState("all")
+  // const [durationFilter, setDurationFilter] = useState("all")
   const { toast } = useToast()
   const router = useRouter()
 
@@ -52,7 +53,7 @@ export default function StorePage() {
         router.push(`/app/plans/${data.copied_id}`)
       }
     },
-    onError: (error: any) => { // Use TRPCClientErrorLike type if needed
+    onError: (error) => { // Use TRPCClientErrorLike type if needed
       toast({
         title: "Error",
         description: error.message,
@@ -81,7 +82,7 @@ export default function StorePage() {
         </header>
         
         <div className="flex flex-wrap gap-4 mb-8">
-          <Select onValueChange={(value: any) => setTypeFilter(value)}>
+          <Select onValueChange={(value: string) => setTypeFilter(value as "Template" | "TrainingPlan" | "all")}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
@@ -97,7 +98,7 @@ export default function StorePage() {
           {listings?.map((listing: StoreListingWithRelations) => (
             <Card key={listing.id} className="overflow-hidden">
               {listing.preview_image && (
-                <img src={listing.preview_image} alt={listing.title} className="w-full h-40 object-cover" />
+                <Image src={listing.preview_image} alt={listing.title} className="w-full h-40 object-cover" />
               )}
               <CardHeader>
                 <div className="flex justify-between items-start">

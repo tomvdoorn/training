@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { IconProps } from "@radix-ui/react-icons/dist/types";
+import type { IconProps } from "@radix-ui/react-icons/dist/types";
 import { useEffect, useRef, useState } from "react";
 
 interface Session {

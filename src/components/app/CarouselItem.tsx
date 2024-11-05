@@ -64,7 +64,7 @@ const CarouselItems: React.FC = () => {
           title: "Success",
           description: "Workout deleted successfully.",
         });
-        getAllSessions.refetch();
+        await getAllSessions.refetch();
       } catch (error) {
         console.error('Failed to delete session:', error);
         toast({
@@ -77,7 +77,7 @@ const CarouselItems: React.FC = () => {
     }
   };
 
-  const renderSessions = (sessions: SessionsProps[], showAll: boolean = false) => {
+  const renderSessions = (sessions: SessionsProps[], showAll = false) => {
     const sortedSessions = sortSessions(sessions);
     const displaySessions = showAll ? sortedSessions : sortedSessions.slice(0, 3);
     const now = new Date();

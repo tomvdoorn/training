@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import SportsSocialFeed from "@/components/app/social/SportsSocialFeed";
 import { getCurrentUser } from "@/lib/session"
+import type { User } from '@prisma/client';
 
 
 const Dashboard = async () => {
@@ -57,7 +58,7 @@ const Dashboard = async () => {
                     </CardHeader>
                     <CardContent>
                         {currentUser ? (
-                            <SportsSocialFeed currentUser={currentUser} />
+                            <SportsSocialFeed currentUser={currentUser as User} />
                         ) : (
                             <div>Please sign in to view the feed</div>
                         )}

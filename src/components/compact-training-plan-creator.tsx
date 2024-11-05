@@ -26,6 +26,12 @@ interface CompactTrainingPlanCreatorComponentProps {
   mode?: 'create' | 'edit';
 }
 
+interface TrainingPlan {
+  name: string;
+  duration: number;
+  templates: (string)[];
+}
+
 export function CompactTrainingPlanCreatorComponent({ 
   onClose, 
   userId, 
@@ -33,18 +39,18 @@ export function CompactTrainingPlanCreatorComponent({
   existingPlan,
   mode = 'create' 
 }: CompactTrainingPlanCreatorComponentProps) {
-  const [plan, setPlan] = useState(() => {
+  const [plan, setPlan] = useState<TrainingPlan>(() => {
     if (existingPlan) {
       return {
         name: existingPlan.name,
         duration: existingPlan.duration,
-        templates: Array(existingPlan.duration).fill(null).map((_, index) => {
+        templates: Array(existingPlan.duration).fill(null).map((_, index): string => {
           const template = existingPlan.templates?.find(t => t.day === index + 1);
           return template?.templateId?.toString() ?? "rest";
         })
       };
     }
-    return { name: "", duration: 7, templates: Array(7).fill("rest") };
+    return { name: "", duration: 7, templates: Array(7).fill("rest") as string[] };
   });
 
   const { data: templates, isLoading } = api.template.getTemplatesUser.useQuery();
@@ -53,19 +59,20 @@ export function CompactTrainingPlanCreatorComponent({
   const utils = api.useContext();
 
   const handleChange = (field: string, value: string | number | string[]) => {
-    setPlan(prev => {
+    setPlan((prev: TrainingPlan) => {
       if (field === 'duration') {
         const newDuration = Number(value)
         return {
           ...prev,
           duration: newDuration,
           templates: newDuration > prev.templates.length
-            ? [...prev.templates, ...Array(newDuration - prev.templates.length).fill("")]
+            ? [...prev.templates, ...Array(newDuration - prev.templates.length).fill("") as string[]]
             : prev.templates.slice(0, newDuration)
         }
       }
       if (field === 'templates') {
-        return { ...prev, templates: value as string[] };
+        const newTemplates = value as string[];
+        return { ...prev, templates: newTemplates };
       }
       return { ...prev, [field]: value };
     })

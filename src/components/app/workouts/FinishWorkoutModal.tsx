@@ -163,7 +163,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
                 <SelectValue placeholder="Select rating" />
               </SelectTrigger>
               <SelectContent>
-                {[...Array(10)].map((_, i) => (
+                {Array.from({ length: 10 }, (_, i) => (
                   <SelectItem key={i + 1} value={(i + 1).toString()}>
                     {i + 1}
                   </SelectItem>

@@ -83,10 +83,8 @@ function StartWorkout({ params }: PageProps) {
   const createSessionSetMutation = api.session.createSessionSet.useMutation();
   const uploadSessionExerciseMediaMutation = api.media.uploadSessionExerciseMedia.useMutation();
   const updatePostMutation = api.post.updatePost.useMutation();   
-  const checkAndCreatePRMutation = api.exercise.checkAndCreatePR.useMutation();
-
+  const checkAndCreatePRMutation = api.exercise.checkAndCreatePR.useMutation(); 
   const [availableMedia, setAvailableMedia] = useState<MediaItem[]>([]);
-
   const exerciseMediaQuery = api.media.getSessionExerciseMedia.useQuery(
     { sessionExerciseId: sessionId ?? -1 },
     { enabled: !!sessionId }
@@ -272,8 +270,25 @@ function StartWorkout({ params }: PageProps) {
 
   const [setDataOption, setSetDataOption] = useState<'lastSession' | 'prSession' | 'template'>('lastSession');
 
-  const lastSessionQuery = api.session.getLastSessionData.useQuery({ templateId });
-  const prSessionQuery = api.session.getPRSessionData.useQuery({ templateId });
+  const lastSessionQuery = api.session.getLastSessionData.useQuery({ templateId }, {
+    select: (data) => data ? {
+      exercises: data.exercises.map(ex => ({
+        id: ex.id,
+        templateExerciseId: ex.templateExerciseId,
+        sets: ex.sets.map(set => ({
+          reps: set.reps,
+          weight: set.weight,
+          type: set.type
+        }))
+      }))
+    } : undefined
+  });
+  const prSessionQuery = api.session.getPRSessionData.useQuery({ templateId }, {
+    select: (data) => data ? Object.entries(data).map(([id, exercise]) => ({
+      id: parseInt(id),
+      sets: exercise.sets
+    })) : undefined
+  });
 
   return (
 
@@ -338,9 +353,9 @@ function StartWorkout({ params }: PageProps) {
                   addMediaMutation={uploadSessionExerciseMediaMutation}
                   start
                   setDataOption={setDataOption}
-                  lastSessionData={lastSessionQuery.data ?? undefined}
+                  lastSessionData={lastSessionQuery.data }
                   prSessionData={prSessionQuery.data ?? undefined}
-                  templateExercise={exercise}
+                  templateExercise={exercise as Partial<TemplateExercise>}
                 />
               ))}
             </CardContent>

@@ -1,7 +1,7 @@
 import { createTRPCRouter as router, publicProcedure } from '../trpc';
 import { z } from 'zod';
 import { db as prisma } from '../../db';
-import { ExerciseType, MuscleGroup } from '@prisma/client';
+import { MuscleGroup } from '@prisma/client';
 
 export const exerciseRouter = router({
   // Get a list of exercises

@@ -68,7 +68,7 @@ function WorkoutPage({ params }: PageProps) {
   useEffect(() => {
     if (workout) {
       setTemplateName(workout.name);
-      setTemplateNotes(workout.note  || '');
+      setTemplateNotes(workout.note  ?? '');
     }
   }, [workout]);
 
@@ -81,7 +81,7 @@ function WorkoutPage({ params }: PageProps) {
   };
 
   const handleNameBlur = async () => {
-    if (workout && (templateName !== workout.name || templateNotes !== workout.note)) {
+    if (workout && (templateName !== workout.name ?? templateNotes !== workout.note)) {
       try {
         await updateTemplateMutation.mutateAsync({
           id: templateId,
@@ -101,7 +101,7 @@ function WorkoutPage({ params }: PageProps) {
           variant: "destructive",
         });
         setTemplateName(workout.name);
-        setTemplateNotes(workout.note || '');
+        setTemplateNotes(workout.note ?? '');
       }
     }
   };
@@ -115,7 +115,7 @@ function WorkoutPage({ params }: PageProps) {
   const deleteExerciseMutation = api.template.removeExerciseFromTemplate.useMutation();
 
   useEffect(() => {
-    if (workout && workout.exercises) {
+    if (workout?.exercises) {
       initializeExercises(workout.exercises);
       updateTemplate(workout);
     }
@@ -174,7 +174,7 @@ function WorkoutPage({ params }: PageProps) {
             await updateExerciseMutation.mutateAsync({
               id: exercise.id!,
               ...exercise,
-              notes: exercise.notes || undefined,
+              notes: exercise.notes ?? undefined,
             });
 
             // Handle sets for existing exercise
@@ -270,7 +270,7 @@ function WorkoutPage({ params }: PageProps) {
                 id: exercise.id,
                 notes: exercise.notes,
                 deleted: exercise.deleted,
-                sets: exercise.sets,
+                sets: exercise.sets as TemplateExerciseSet[],
                 is_copy: workout?.is_copy
               }}
             />
@@ -317,7 +317,7 @@ function WorkoutPage({ params }: PageProps) {
                   id: exercise.id,
                   notes: exercise.notes,
                   deleted: exercise.deleted,
-                  sets: exercise.sets,
+                  sets: exercise.sets as TemplateExerciseSet[],
                   is_copy: workout?.is_copy
                 }}
               />

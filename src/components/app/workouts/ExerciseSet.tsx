@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { TableRow, TableCell } from "~/components/ui/table";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { type TemplateExerciseSet, SetType } from "@prisma/client";
+import { type TemplateExerciseSet, SessionExerciseSet, SetType } from "@prisma/client";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "~/components/ui/select";
 import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 import { Checkbox } from "~/components/ui/checkbox";
@@ -17,17 +17,21 @@ interface ExerciseSetProps {
   templateExerciseId: number;
   start: boolean;
   setTypeColors: Record<string, string>;
-  setDataOption: 'lastSession' | 'prSession' | 'template';
+  setDataOption: 'lastSession' | 'prSession' | 'template' | undefined;
   lastSessionData?: {
     exercises: Array<{
       id: number;
-      templateExerciseId: number;
-      sets: Array<Partial<TemplateExerciseSet>>;
+      templateExerciseId: number | null;
+      sets: Array<{
+        reps: number | null;
+        weight: number | null;
+        type: SetType;
+      }>;
     }>;
   };
   prSessionData?: Array<{
       id: number;
-      sets: Array<Partial<TemplateExerciseSet>>;
+      sets: Array<Partial<SessionExerciseSet>>;
   }>;
 }
 
@@ -59,7 +63,7 @@ const ExerciseSet = ({
   const placeholderData = getPlaceholderData();
 
   const handleInputChange = useCallback((field: keyof (TemplateExerciseSet & { completed?: boolean }), value: string | number | boolean) => {
-    let updatedFields: Partial<TemplateExerciseSet & { completed?: boolean }> = { [field]: value };
+    const updatedFields: Partial<TemplateExerciseSet & { completed?: boolean }> = { [field]: value };
 
     if (field === 'completed' && value === true) {
       // If marking as completed and weight or reps are undefined, use placeholder data
@@ -78,7 +82,7 @@ const ExerciseSet = ({
     removeSet(templateExerciseId, set.isNew ? set.tempId! : set.id!);
   }, [templateExerciseId, set.id, set.tempId, set.isNew, removeSet]);
 
-  const selectorColor = setTypeColors[set.type as string] || 'bg-white';
+  const selectorColor = setTypeColors[set.type as string] ?? 'bg-white';
 
 
 
@@ -121,7 +125,7 @@ const ExerciseSet = ({
           type="number"
           min={0}
           value={set.completed ? (set.weight?.toString() ?? '') : (start ? undefined : set.weight?.toString() ?? '')}
-          onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) || 0)}
+          onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) ?? 0)}
           placeholder={placeholderData.weight?.toString() ?? ''}
         />
       </TableCell>
@@ -130,7 +134,7 @@ const ExerciseSet = ({
           type="number"
           min={0}
           value={set.completed ? (set.reps?.toString() ?? '') : (start ? undefined : set.reps?.toString() ?? '')}
-          onChange={(e) => handleInputChange('reps', parseInt(e.target.value) || 0)}
+          onChange={(e) => handleInputChange('reps', parseInt(e.target.value) ?? 0)}
           placeholder={placeholderData.reps?.toString() ?? ''}
         />
       </TableCell>

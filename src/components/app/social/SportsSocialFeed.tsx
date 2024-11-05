@@ -30,8 +30,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
+import type { User } from "@prisma/client"
 
-import type { User, Post } from "@prisma/client"
 // Helper function to calculate relative time
 function getRelativeTime(date: Date): string {
   const now = new Date();
@@ -82,7 +82,8 @@ const ActivityIcon = ({ type }: { type: string }) => {
   }
 }
 
-const StatisticsTable = ({ stats }: { stats: { [key: string]: string | number } }) => (
+const StatisticsTable = ({ stats }: { stats: Record<string, string | number> }) => (
+  <>
   <Table>
     <TableCaption className="text-primary-foreground">Key Statistics</TableCaption>
     <TableHeader>
@@ -99,19 +100,13 @@ const StatisticsTable = ({ stats }: { stats: { [key: string]: string | number } 
         </TableRow>
       ))}
     </TableBody>
-  </Table>
+    </Table>
+  </>
 )
 
 // Update the type definition for the currentUser prop to match what getCurrentUser() returns
 interface SportsSocialFeedProps {
-      currentUser: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        name?: string | null;
-        email?: string | null;
-        image?: string | null;
-    },
+  currentUser: User | undefined;
   profileUserId?: string;
 }
 
@@ -143,7 +138,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
 
     try {
       await toggleLikeMutation.mutateAsync({ postId });
-      queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
+      await queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
     } catch (error) {
       console.error('Error toggling post like:', error);
     }
@@ -154,7 +149,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
       try {
         await deletePostMutation.mutateAsync({ trainingSessionId: postToDelete });
         await deleteSessionMutation.mutateAsync({ id: trainingSessionId });
-        queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
+        await queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
         setPostToDelete(null);
         toast({
           title: "Success",
@@ -182,8 +177,8 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
           <CardHeader className="flex flex-row items-center gap-4">
             <Link href={`/app/profile/${post.user.id}`} className="flex items-center gap-4">
               <Avatar className="w-10 h-10">
-                <AvatarImage src={post.user.image || undefined} alt={post.user.firstName || ''} />
-                <AvatarFallback>{post.user.firstName?.charAt(0) || ''}</AvatarFallback>
+                <AvatarImage src={post.user.image ?? undefined} alt={post.user.firstName ?? ''} />
+                <AvatarFallback>{post.user.firstName?.charAt(0) ?? ''}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <p className="text-sm font-semibold">{post.user.firstName} {post.user.lastName}</p>
@@ -191,8 +186,8 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
               </div>
             </Link>
             <div className="ml-auto flex items-center gap-2">
-              <ActivityIcon type={post.trainingSession?.template?.name || 'weightlifting'} />
-              {post.user.id === currentUser.id && (
+              <ActivityIcon type={post.trainingSession?.template?.name ?? 'weightlifting'} />
+              {post.user.id === currentUser?.id && (
               <Button variant="ghost" size="icon" className="rounded-full">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
@@ -219,7 +214,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction onClick={() => {
                                 if (post.trainingSessionId) {
-                                  handleDeletePost(post.trainingSessionId);
+                                void  handleDeletePost(post.trainingSessionId);
                                 }
                                 setPostToDelete(post.id);
                               }}>
@@ -245,7 +240,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
                     <StatisticsTable stats={{
                       "Total Weight Lifted": `${post.totalWeightLifted} kg`,
                       "Number of PRs": post.numberOfPRs,
-                      "Highlighted Exercise": post.highlightedExerciseName || 'N/A'
+                      "Highlighted Exercise": post.highlightedExerciseName ?? 'N/A'
                     }} />
                   </div>
                 </div>
@@ -283,7 +278,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
                 <CommentSection
                   postId={post.id}
                   comments={post.comments}
-                  currentUser={currentUser as User}
+                  currentUser={currentUser!}
                   isExpanded={expandedComments.has(post.id)}
                 />
 

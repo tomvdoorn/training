@@ -10,6 +10,8 @@ import { Store } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { TRPCClientErrorLike } from "@trpc/client"
+import { type AppRouter } from "~/server/api/root"
 
 interface StoreListingDialogProps {
   type: "Template" | "TrainingPlan"
@@ -22,6 +24,7 @@ interface StoreListingDialogProps {
     status: 'Active' | 'Inactive'
   } | null
 }
+
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Expert"
 
@@ -47,36 +50,36 @@ export function StoreListingDialog({ type, itemId, existingListing }: StoreListi
   const utils = api.useContext()
 
   const createListingMutation = api.store.createListing.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success!",
         description: `${type} listed in store successfully`,
       })
       setOpen(false)
-      utils.store.getListings.invalidate()
+      void utils.store.getListings.invalidate()
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred",
         variant: "destructive",
       })
     },
   })
 
   const updateListingMutation = api.store.updateListing.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success!",
         description: "Store listing updated successfully",
       })
       setOpen(false)
-      utils.store.getListings.invalidate()
+      void utils.store.getListings.invalidate()
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred",
         variant: "destructive",
       })
     },

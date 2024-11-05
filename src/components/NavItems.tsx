@@ -51,13 +51,13 @@ const NavItems = () => {
             close={close}
             handleOpen={handleOpen}
             isOpen={isOpen}
-            key={category.value}
+            key={category.value} 
             isAnyOpen={isAnyOpen}
           />
         )
       })}
     </div>
-  )
+  ) 
 }
 
 export default NavItems

@@ -11,11 +11,16 @@ type PartialTemplateExercise = Partial<TemplateExercise> & {
   sets?: PartialTemplateExerciseSet[];
 };
 
-type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
+type PartialTemplateExerciseSet = Partial<Omit<TemplateExerciseSet, 'reps' | 'weight' | 'duration' | 'distance' | 'rpe'>> & {
   isNew?: boolean;
   deleted?: boolean;
   tempId?: string;
   completed?: boolean;
+  reps?: number | null;
+  weight?: number | null;
+  duration?: number | null;
+  distance?: number | null;
+  rpe?: number | null;
 };
 
 interface WorkoutTemplateState {
@@ -206,8 +211,10 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
     set(
       produce((state: WorkoutTemplateState) => {
         const [reorderedItem] = state.exercises.splice(fromIndex, 1);
-        state.exercises.splice(toIndex, 0, reorderedItem);
-        state.hasUnsavedChanges = true;
+        if (reorderedItem) {
+          state.exercises.splice(toIndex, 0, reorderedItem);
+          state.hasUnsavedChanges = true;
+        }
       })
     ),
 

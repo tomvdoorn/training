@@ -1,16 +1,8 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import type { Template, Exercise, TemplateExercise, TemplateExerciseSet, Prisma } from "@prisma/client"
+import type { Exercise, TemplateExercise, TemplateExerciseSet, Prisma } from "@prisma/client"
 
-interface TemplateWithExercises extends Template {
-  exercises: (TemplateExercise & {
-    exercise: Exercise;
-    sets: TemplateExerciseSet[];
-  })[];
-}
-
-type TemplateCreateInput = Prisma.TemplateCreateInput;
 
 export const storeRouter = createTRPCRouter({
   // List all store items

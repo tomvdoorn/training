@@ -1,7 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc"
-import { z } from "zod"
 import { addDays, startOfWeek, endOfWeek, format, startOfMonth } from "date-fns"
-import { MUSCLE_GROUP_COLORS, type MuscleGroupData, MuscleGroupColor } from "~/types/analytics"
+import { MUSCLE_GROUP_COLORS, type MuscleGroupData } from "~/types/analytics"
 
 export const analyticsRouter = createTRPCRouter({
   getStats: protectedProcedure.query(async ({ ctx }) => {
@@ -47,7 +46,7 @@ export const analyticsRouter = createTRPCRouter({
     const totalWeight = sessions.reduce((acc, session) => {
       return acc + session.exercises.reduce((exerciseAcc, exercise) => {
         return exerciseAcc + exercise.sets.reduce((setAcc, set) => {
-          return setAcc + (set.weight || 0) * (set.reps || 0)
+          return setAcc + (set.weight ?? 0) * (set.reps ?? 0)
         }, 0)
       }, 0)
     }, 0)
@@ -73,7 +72,7 @@ export const analyticsRouter = createTRPCRouter({
         return {
           date: format(date, 'EEE'),
           volume: dayVolume.reduce((acc, set) => {
-            return acc + (set.weight || 0) * (set.reps || 0)
+            return acc + (set.weight ?? 0) * (set.reps ?? 0)
           }, 0)
         }
       })
@@ -109,9 +108,9 @@ export const analyticsRouter = createTRPCRouter({
         const color = MUSCLE_GROUP_COLORS[muscleGroup as keyof typeof MUSCLE_GROUP_COLORS] ?? MUSCLE_GROUP_COLORS.Other;
         
         return {
-          name: exercise?.name || 'Unknown',
+          name: exercise?.name ?? 'Unknown',
           value: group._count,
-          color: color as MuscleGroupColor
+          color: color!
         } satisfies MuscleGroupData;
       })
     );
