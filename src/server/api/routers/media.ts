@@ -1,77 +1,136 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-  : null;
+import { supabase } from "~/utils/supabase";
+import { TRPCError } from "@trpc/server";
 
 export const mediaRouter = createTRPCRouter({
-  uploadSessionExerciseMedia: protectedProcedure
-    .input(z.object({
-      sessionExerciseId: z.number(),
-      file: z.object({
-        name: z.string(),
-        type: z.string(),
-        base64: z.string(),
-      }),
-      setIds: z.array(z.number()),
-    }))
+  create: protectedProcedure
+    .input(
+      z.object({
+        fileUrl: z.string(),
+        fileType: z.string(),
+        trainingSessionId: z.number().optional(),
+        sessionExerciseId: z.number().optional(),
+        postId: z.number().optional(),
+        setIds: z.array(z.number()).optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      if (!supabase) {
-        throw new Error("Supabase configuration is missing");
-      }
-
-      const fileName = `${ctx.session.user.id}/${input.sessionExerciseId}/${Date.now()}_${input.file.name}`;
-      const fileType = input.file.type.startsWith('image/') ? 'image' : 'video';
-      
-      // Convert base64 to buffer
-      const base64Data = input.file.base64.split(',')[1] ?? '';
-      const buffer = Buffer.from(base64Data, 'base64');
-
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('workout-media')
-        .upload(fileName, buffer, {
-          contentType: input.file.type,
-          cacheControl: '3600',
-        });
-
-      if (error) {
-        throw new Error(`Failed to upload media: ${error.message}`);
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('workout-media')
-        .getPublicUrl(fileName);
-
-      // Save media reference to database
-      const media = await ctx.db.exerciseMedia.create({
+      return ctx.db.media.create({
         data: {
-          url: publicUrl,
-          type: fileType,
+          fileUrl: input.fileUrl,
+          fileType: input.fileType,
+          trainingSessionId: input.trainingSessionId,
           sessionExerciseId: input.sessionExerciseId,
-          setIds: input.setIds,
+          postId: input.postId,
+          sessionExerciseSetId: input.setIds ? input.setIds[0] : null,
         },
       });
-
-      return media;
     }),
 
-  getSessionExerciseMedia: protectedProcedure
-    .input(z.object({
-      sessionExerciseId: z.number(),
-    }))
+  getByTrainingSession: protectedProcedure
+    .input(z.object({ trainingSessionId: z.number() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.exerciseMedia.findMany({
+      return ctx.db.media.findMany({
+        where: {
+          trainingSessionId: input.trainingSessionId,
+        },
+      });
+    }),
+
+  getBySessionExercise: protectedProcedure
+    .input(z.object({ sessionExerciseId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.media.findMany({
         where: {
           sessionExerciseId: input.sessionExerciseId,
         },
       });
+    }),
+
+  getByPost: protectedProcedure
+    .input(z.object({ postId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.media.findMany({
+        where: {
+          postId: input.postId,
+        },
+      });
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // First get the media record to get the fileUrl
+      const media = await ctx.db.media.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!media) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Media not found',
+        });
+      }
+
+      // Extract the file path from the Supabase URL
+      const fileUrl = new URL(media.fileUrl);
+      const filePath = fileUrl.pathname.split('/').pop();
+
+      if (!filePath) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Invalid file URL',
+        });
+      }
+
+      // Delete from Supabase storage
+      const { error: storageError } = await supabase.storage
+        .from('media')
+        .remove([filePath]);
+
+      if (storageError) {
+        console.error('Error deleting from storage:', storageError);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete file from storage',
+        });
+      }
+
+      // Delete the database record
+      return ctx.db.media.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  // New procedure to handle direct file uploads
+  getUploadUrl: protectedProcedure
+    .input(z.object({
+      fileName: z.string(),
+      contentType: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const fileExtension = input.fileName.split('.').pop()?.toLowerCase() ?? '';
+      const uniqueFileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExtension}`;
+
+      // Get signed URL for upload
+      const { data, error } = await supabase.storage
+        .from('media')
+        .createSignedUploadUrl(uniqueFileName);
+
+      if (error ?? !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to generate upload URL',
+        });
+      }
+
+      return {
+        uploadUrl: data.signedUrl,
+        fileUrl: supabase.storage
+          .from('media')
+          .getPublicUrl(uniqueFileName).data.publicUrl,
+      };
     }),
 });
 

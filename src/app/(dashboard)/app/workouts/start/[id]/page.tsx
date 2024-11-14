@@ -14,7 +14,7 @@ import type { TemplateExercise, TemplateExerciseSet } from '@prisma/client';
 import { useSessionHandler } from '~/hooks/useSessionHandler';
 import { FinishWorkoutModal } from '~/components/app/workouts/FinishWorkoutModal';
 import SetDataSelector from '~/components/app/workouts/SetDataSelector';
-import type { ExerciseMedia } from '@prisma/client';
+import type { Media } from '@prisma/client';
 
 interface PageProps {
   params: {
@@ -81,23 +81,23 @@ function StartWorkout({ params }: PageProps) {
   const createPostMutation = api.post.createPost.useMutation();
   const createSessionExerciseMutation = api.session.createSessionExercise.useMutation();
   const createSessionSetMutation = api.session.createSessionSet.useMutation();
-  const uploadSessionExerciseMediaMutation = api.media.uploadSessionExerciseMedia.useMutation();
+  const uploadSessionExerciseMediaMutation = api.media.create.useMutation();
   const updatePostMutation = api.post.updatePost.useMutation();   
   const checkAndCreatePRMutation = api.exercise.checkAndCreatePR.useMutation(); 
   const [availableMedia, setAvailableMedia] = useState<MediaItem[]>([]);
-  const exerciseMediaQuery = api.media.getSessionExerciseMedia.useQuery(
+  const exerciseMediaQuery = api.media.getBySessionExercise.useQuery(
     { sessionExerciseId: sessionId ?? -1 },
     { enabled: !!sessionId }
   );
 
   useEffect(() => {
     if (exerciseMediaQuery.data) {
-      setAvailableMedia(exerciseMediaQuery.data.map((item: ExerciseMedia  ) => ({
+      setAvailableMedia(exerciseMediaQuery.data.map((item: Media) => ({
         id: String(item.id),
-        url: item.url,
-        type: item.type as 'image' | 'video',
-        exerciseId: item.sessionExerciseId,
-        setIds: item.setIds
+        url: item.fileUrl,
+        type: item.fileType as 'image' | 'video',
+        exerciseId: item.sessionExerciseId ?? 0,
+        setIds: Array.isArray(item.sessionExerciseSetId) ? item.sessionExerciseSetId : [item.sessionExerciseSetId ?? -1]
       })));
     }
   }, [exerciseMediaQuery.data]);
@@ -162,6 +162,7 @@ function StartWorkout({ params }: PageProps) {
         });
 
         let totalPRs = 0;
+        let totalWeight = 0;
 
         for (const exercise of exercises) {
           if (exercise.deleted) {
@@ -207,7 +208,9 @@ function StartWorkout({ params }: PageProps) {
                   reps: set.reps ?? 0,
                   weight: set.weight ?? 0,
                 });
-
+                if (set.weight && set.reps) {
+                totalWeight += (set.weight  * set.reps )
+                }
                 totalPRs += prResult.newPRsCount;
               }
             }
@@ -217,6 +220,7 @@ function StartWorkout({ params }: PageProps) {
         await updatePostMutation.mutateAsync({
           id: newPost.id,
           numberOfPRs: totalPRs,
+          totalWeightLifted: totalWeight,
         });
 
         console.log("Post updated with PR information");

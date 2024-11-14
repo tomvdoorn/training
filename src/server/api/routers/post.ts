@@ -41,7 +41,7 @@ export const postRouter = createTRPCRouter({
       });
 
       if (input.mediaIds?.length) {
-        await ctx.db.sessionExerciseMedia.updateMany({
+        await ctx.db.media.updateMany({
           where: {
             id: {
               in: input.mediaIds.map(id => parseInt(id)),
@@ -61,6 +61,7 @@ export const postRouter = createTRPCRouter({
       note: z.string().optional(),
       privacy: z.enum(['public', 'friends', 'private']).optional(),
       numberOfPRs: z.number().optional(),
+      totalWeightLifted: z.number().optional(),
       mediaIds: z.array(z.string()).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -72,13 +73,13 @@ export const postRouter = createTRPCRouter({
       });
 
       if (mediaIds !== undefined) {
-        await ctx.db.sessionExerciseMedia.updateMany({
+        await ctx.db.media.updateMany({
           where: { postId: id },
           data: { postId: null },
         });
 
         if (mediaIds.length > 0) {
-          await ctx.db.sessionExerciseMedia.updateMany({
+          await ctx.db.media.updateMany({
             where: {
               id: {
                 in: mediaIds.map(mid => parseInt(mid)),
@@ -128,6 +129,16 @@ export const postRouter = createTRPCRouter({
           trainingSession: {
             include: {
               template: true,
+              exercises: {
+                include: {
+                  exercise: true,
+                  sets: {
+                    include: {
+                      personalRecords: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },

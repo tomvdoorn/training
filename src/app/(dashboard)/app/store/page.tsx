@@ -44,14 +44,9 @@ export default function StorePage() {
     onSuccess: (data: AcquireSuccess) => {
       toast({
         title: "Success!",
-        description: "Item added to your collection",
+        description: "Item added to your collection. Find it in your templates.",
       })
-      // Redirect to the appropriate page based on type
-      if (typeFilter === "Template") {
-        router.push(`/app/workouts/edit/${data.copied_id}`)
-      } else {
-        router.push(`/app/plans/${data.copied_id}`)
-      }
+
     },
     onError: (error) => { // Use TRPCClientErrorLike type if needed
       toast({

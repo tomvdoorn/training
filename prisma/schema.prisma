@@ -9,6 +9,7 @@ generator dbml {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")?
 }
 
 model Account {
@@ -176,7 +177,7 @@ model TrainingSession {
   exercises  SessionExercise[]
   template   Template?              @relation(fields: [templateId], references: [id])
   user       User                   @relation(fields: [userId], references: [id])
-  media      TrainingSessionMedia[]
+  media      Media[]
   post       Post?
   rating     Int?
 }
@@ -192,8 +193,7 @@ model SessionExercise {
   exercise           Exercise                 @relation(fields: [exerciseId], references: [id])
   session            TrainingSession          @relation(fields: [sessionId], references: [id])
   sets               SessionExerciseSet[]
-  media              SessionExerciseMedia[]
-  exerciseMedia      ExerciseMedia[]
+  media              Media[]
   templateExercise   TemplateExercise?        @relation("SessionExerciseToTemplateExercise", fields: [templateExerciseId], references: [id])
   templateExerciseId Int?
   order              Int
@@ -217,6 +217,7 @@ model SessionExerciseSet {
   templateExerciseSet   TemplateExerciseSet?     @relation(fields: [templateExerciseSetId], references: [id])
   templateExerciseSetId Int?
   personalRecords       ExercisePersonalRecord[]
+  media                 Media[]
 }
 
 model TrainingPlan {
@@ -271,6 +272,8 @@ enum MuscleGroup {
   Lats
   Triceps
   Biceps
+  Core
+  Glutes
 }
 
 enum SetType {
@@ -301,7 +304,7 @@ model Post {
   likes                   PostLike[]
   Template                Template?              @relation(fields: [templateId], references: [id])
   viewCount               Int                    @default(0)
-  media                   SessionExerciseMedia[]
+  media                   Media[]
 }
 
 model PostComment {
@@ -347,27 +350,6 @@ model Follow {
   createdAt   DateTime @default(now())
 
   @@unique([followerId, followingId])
-}
-
-model TrainingSessionMedia {
-  id                Int             @id @default(autoincrement())
-  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id])
-  trainingSessionId Int
-  fileUrl           String
-  fileType          String // e.g., "image", "video", "document"
-  createdAt         DateTime        @default(now())
-}
-
-model SessionExerciseMedia {
-  id                Int             @id @default(autoincrement())
-  sessionExercise   SessionExercise @relation(fields: [sessionExerciseId], references: [id])
-  sessionExerciseId Int
-  setIds            Int[]
-  fileUrl           String
-  fileType          String // e.g., "image", "video"
-  createdAt         DateTime        @default(now())
-  post              Post?           @relation(fields: [postId], references: [id])
-  postId            Int?
 }
 
 model ExercisePersonalRecord {
@@ -431,12 +413,24 @@ enum ListingType {
   TrainingPlan
 }
 
-model ExerciseMedia {
-  id                Int             @id @default(autoincrement())
-  url               String
-  type              String // 'image' or 'video'
-  sessionExerciseId Int
-  sessionExercise   SessionExercise @relation(fields: [sessionExerciseId], references: [id])
-  setIds            Int[] // Array of related set IDs
-  createdAt         DateTime        @default(now())
+model Media {
+  id                Int              @id @default(autoincrement())
+  fileUrl           String
+  fileType          String // e.g., "image", "video"
+  createdAt         DateTime         @default(now())
+  
+  // Optional relations
+  trainingSession   TrainingSession? @relation(fields: [trainingSessionId], references: [id])
+  trainingSessionId Int?
+  
+  sessionExercise   SessionExercise? @relation(fields: [sessionExerciseId], references: [id])
+  sessionExerciseId Int?
+
+  sessionExerciseSet   SessionExerciseSet? @relation(fields: [sessionExerciseSetId], references: [id])
+  sessionExerciseSetId Int?
+  
+  post              Post?            @relation(fields: [postId], references: [id])
+  postId            Int?
+  
+
 }

@@ -130,9 +130,24 @@ export const sessionRouter = createTRPCRouter({
   deleteSession: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.sessionExerciseSet.deleteMany({ where: { sessionExercise: { sessionId: input.id } } });
-      await ctx.db.sessionExercise.deleteMany({ where: { sessionId: input.id } });
-      return ctx.db.trainingSession.delete({ where: { id: input.id } });
+      await ctx.db.media.deleteMany({
+        where: {
+          OR: [
+            { trainingSessionId: input.id },
+            { sessionExercise: { sessionId: input.id } }
+          ]
+        }
+      });
+
+      await ctx.db.sessionExerciseSet.deleteMany({ 
+        where: { sessionExercise: { sessionId: input.id } } 
+      });
+      await ctx.db.sessionExercise.deleteMany({ 
+        where: { sessionId: input.id } 
+      });
+      return ctx.db.trainingSession.delete({ 
+        where: { id: input.id } 
+      });
     }),
 
   getLastSessionData: protectedProcedure

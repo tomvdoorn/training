@@ -170,7 +170,7 @@ Table TrainingSession {
   exercises SessionExercise [not null]
   template Template
   user User [not null]
-  media TrainingSessionMedia [not null]
+  media Media [not null]
   post Post
   rating Int
 }
@@ -186,8 +186,7 @@ Table SessionExercise {
   exercise Exercise [not null]
   session TrainingSession [not null]
   sets SessionExerciseSet [not null]
-  media SessionExerciseMedia [not null]
-  exerciseMedia ExerciseMedia [not null]
+  media Media [not null]
   templateExercise TemplateExercise
   templateExerciseId Int
   order Int [not null]
@@ -211,6 +210,7 @@ Table SessionExerciseSet {
   templateExerciseSet TemplateExerciseSet
   templateExerciseSetId Int
   personalRecords ExercisePersonalRecord [not null]
+  media Media [not null]
 }
 
 Table TrainingPlan {
@@ -270,7 +270,7 @@ Table Post {
   likes PostLike [not null]
   Template Template
   viewCount Int [not null, default: 0]
-  media SessionExerciseMedia [not null]
+  media Media [not null]
 }
 
 Table PostComment {
@@ -322,27 +322,6 @@ Table Follow {
   }
 }
 
-Table TrainingSessionMedia {
-  id Int [pk, increment]
-  trainingSession TrainingSession [not null]
-  trainingSessionId Int [not null]
-  fileUrl String [not null]
-  fileType String [not null]
-  createdAt DateTime [default: `now()`, not null]
-}
-
-Table SessionExerciseMedia {
-  id Int [pk, increment]
-  sessionExercise SessionExercise [not null]
-  sessionExerciseId Int [not null]
-  setIds Int[] [not null]
-  fileUrl String [not null]
-  fileType String [not null]
-  createdAt DateTime [default: `now()`, not null]
-  post Post
-  postId Int
-}
-
 Table ExercisePersonalRecord {
   id Int [pk, increment]
   exerciseId Int [not null]
@@ -390,14 +369,19 @@ Table Acquisition {
   }
 }
 
-Table ExerciseMedia {
+Table Media {
   id Int [pk, increment]
-  url String [not null]
-  type String [not null]
-  sessionExerciseId Int [not null]
-  sessionExercise SessionExercise [not null]
-  setIds Int[] [not null]
+  fileUrl String [not null]
+  fileType String [not null]
   createdAt DateTime [default: `now()`, not null]
+  trainingSession TrainingSession
+  trainingSessionId Int
+  sessionExercise SessionExercise
+  sessionExerciseId Int
+  sessionExerciseSet SessionExerciseSet
+  sessionExerciseSetId Int
+  post Post
+  postId Int
 }
 
 Enum TrainingPlanDifficulty {
@@ -417,6 +401,8 @@ Enum MuscleGroup {
   Lats
   Triceps
   Biceps
+  Core
+  Glutes
 }
 
 Enum SetType {
@@ -515,12 +501,6 @@ Ref: Follow.followerId > User.id
 
 Ref: Follow.followingId > User.id
 
-Ref: TrainingSessionMedia.trainingSessionId > TrainingSession.id
-
-Ref: SessionExerciseMedia.sessionExerciseId > SessionExercise.id
-
-Ref: SessionExerciseMedia.postId > Post.id
-
 Ref: ExercisePersonalRecord.exerciseId > Exercise.id
 
 Ref: ExercisePersonalRecord.userId > User.id
@@ -539,4 +519,10 @@ Ref: Acquisition.template_id > Template.id
 
 Ref: Acquisition.training_plan_id > TrainingPlan.id
 
-Ref: ExerciseMedia.sessionExerciseId > SessionExercise.id
+Ref: Media.trainingSessionId > TrainingSession.id
+
+Ref: Media.sessionExerciseId > SessionExercise.id
+
+Ref: Media.sessionExerciseSetId > SessionExerciseSet.id
+
+Ref: Media.postId > Post.id

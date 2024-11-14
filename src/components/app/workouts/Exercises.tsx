@@ -10,6 +10,7 @@ import FileUploadModal from '~/components/app/workouts/FileUploadModal'
 import { Textarea } from "~/components/ui/textarea";
 import type { api } from "~/trpc/react";
 import type { Exercise as ExerciseType, SessionExerciseSet, TemplateExerciseSet, SetType } from "@prisma/client";
+import { uploadFileToStorage } from '~/utils/supabase';
 
 type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
@@ -34,7 +35,7 @@ interface ExerciseProps {
     sets?: PartialTemplateExerciseSet[];
     is_copy?: boolean;
   };
-  addMediaMutation?: typeof api.media.uploadSessionExerciseMedia.useMutation extends () => infer R ? R : never;
+  addMediaMutation?: typeof api.media.create.useMutation extends () => infer R ? R : never;
   setDataOption?: 'lastSession' | 'prSession' | 'template' | undefined;
   lastSessionData?: {
     exercises: Array<{
@@ -113,21 +114,35 @@ const Exercise = ({
   };
 
   const handleFileUploadComplete = async (file: File, selectedSets: number[]) => {
-    const result = await uploadFileToStorage(file);
-    
-    if (result) {
-      const [fileUrl, detectedFileType] = result.split('|');
+    try {
+      // Upload to Supabase and get URL
+      const fileUrl = await uploadFileToStorage(file);
+      
+      if (!fileUrl) {
+        console.error('Failed to upload file');
+        return;
+      }
+
+      // Determine file type
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      let fileType = 'unknown';
+      
+      if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
+        fileType = 'image';
+      } else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension)) {
+        fileType = 'video';
+      }
+
       if (addMediaMutation) {   
         await addMediaMutation.mutateAsync({
           sessionExerciseId: templateExerciseId,
-          file: {
-            name: file.name,
-            type: detectedFileType!,
-            base64: fileUrl!,
-          },
+          fileUrl,
+          fileType,
           setIds: selectedSets,
-                });
+        });
       }
+    } catch (error) {
+      console.error('Error handling file upload:', error);
     }
   };
 
@@ -243,42 +258,3 @@ const Exercise = ({
 };
 
 export default Exercise;
-
-async function uploadFileToStorage(file: File): Promise<string | null> {
-  if (process.env.NODE_ENV === 'production') {
-    // For production, return null (implement your cloud storage solution here)
-    return null;
-  } else {
-    // For development, use local storage
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        const fileName = `local_${Date.now()}_${file.name}`;
-        const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
-        let fileType = 'unknown';
-
-        // Determine file type based on extension
-        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
-          fileType = 'image';
-        } else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension)) {
-          fileType = 'video';
-        }
-
-        try {
-          localStorage.setItem(fileName, base64String);
-          resolve(`local://${fileName}|${fileType}`);
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-            console.error('Local storage quota exceeded. Unable to store file.');
-            alert('The file is too large to be stored locally. Please try a smaller file or clear some space.');
-            resolve(null);
-          } else {
-            throw error;
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-}

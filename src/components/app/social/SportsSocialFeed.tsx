@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Heart, MessageCircle, Repeat2, Activity, Bike, Dumbbell, MoreHorizontal } from "lucide-react"
+import { Heart, MessageCircle, Repeat2, Activity, Bike, Dumbbell, MoreHorizontal, Trophy } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -28,9 +28,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import  Modal  from "@/components/modal"
 import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
-import type { User } from "@prisma/client"
+import type { TrainingSession, User, Exercise, SessionExerciseSet, ExercisePersonalRecord, PRType } from "@prisma/client"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 // Helper function to calculate relative time
 function getRelativeTime(date: Date): string {
@@ -85,24 +92,112 @@ const ActivityIcon = ({ type }: { type: string }) => {
 const StatisticsTable = ({ stats }: { stats: Record<string, string | number> }) => (
   <>
   <Table>
-    <TableCaption className="text-primary-foreground">Key Statistics</TableCaption>
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[100px] text-primary-foreground">Metric</TableHead>
-        <TableHead className="text-primary-foreground">Value</TableHead>
+              {Object.entries(stats).map(([key, value]) => (
+            
+        <TableHead key={key} className="w-[100px] text-black">{key}</TableHead>
+              ))}
       </TableRow>
     </TableHeader>      
     <TableBody>
+              <TableRow >
       {Object.entries(stats).map(([key, value]) => (
-        <TableRow key={key}>
-          <TableCell className="font-medium text-primary-foreground">{key}</TableCell>
-          <TableCell className="text-primary-foreground">{value}</TableCell>
-        </TableRow>
+
+          <TableCell key={key} className="text-black">{value}</TableCell>
       ))}
+              </TableRow>
+
     </TableBody>
     </Table>
   </>
 )
+
+// Add this interface above the ExpandedPost component
+interface ExtendedTrainingSession extends TrainingSession {
+  exercises?: Array<{
+    id: number;
+    exercise: {
+      name: string;
+    };
+    sets?: Array<{
+      id: number;
+      weight: number | null;
+      reps: number | null;
+      type: string;
+      completed: boolean;
+      personalRecords: Array<{
+        prType: PRType;
+      }>;
+    }>;
+  }>;
+}
+
+// Update the component prop type
+const ExpandedPost = ({ trainingSession }: { trainingSession: ExtendedTrainingSession }) => {
+  return (
+    <div className="space-y-4">
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Start Time</TableHead>
+            <TableHead>End Time</TableHead>
+            <TableHead>Duration</TableHead>
+            <TableHead>Difficulty rating</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>{trainingSession.startTime.toLocaleTimeString()}</TableCell>
+            <TableCell>{trainingSession.endTime.toLocaleTimeString()}</TableCell>
+            <TableCell>{Math.round((trainingSession.endTime.getTime() - trainingSession.startTime.getTime()) / (1000 * 60))} minutes</TableCell>
+            <TableCell>{trainingSession.rating}/10</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+      
+      <div>
+        <h3 className="font-semibold mb-2">Exercises</h3>
+        <div className="space-y-4">
+          {trainingSession.exercises?.filter(exercise => 
+            exercise.sets?.some(set => set.completed)
+          ).map((exercise, index) => (
+            <Card key={exercise.id} className="p-4">
+              <h4 className="font-bold">{exercise.exercise.name}</h4>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Set</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Reps</TableHead>
+                    <TableHead>Weight (kg)</TableHead>
+                    <TableHead>PR</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {exercise.sets?.filter(set => set.completed).map((set, setIndex) => (
+                    <TableRow key={set.id}>
+                      <TableCell className="flex items-center gap-2">
+                        {setIndex + 1}
+                      </TableCell>
+                      <TableCell>{set.type}</TableCell>
+                      <TableCell>{set.reps}</TableCell>
+                      <TableCell>{set.weight}</TableCell>
+                      <TableCell>{set.personalRecords.length > 0 && (
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                      )}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Update the type definition for the currentUser prop to match what getCurrentUser() returns
 interface SportsSocialFeedProps {
@@ -120,6 +215,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
   const deletePostMutation = api.post.deletePost.useMutation();
   const deleteSessionMutation = api.session.deleteSession.useMutation();
+  const [expandedPost, setExpandedPost] = useState<ExtendedTrainingSession | null>(null);
 
   const toggleComments = (postId: number) => {
     setExpandedComments(prev => {
@@ -232,16 +328,24 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
             <div className="flex flex-col text-primary-foreground pl-4 gap-2">
               <h2 className="text-xl font-bold mb-2 text-black">{post.title}</h2>
               <p className="text-sm mb-4 text-gray-500">{post.note}</p>
+                    <StatisticsTable stats={{
+                      "Total Weight Lifted": `${post.totalWeightLifted} kg`,
+                      "Number of PRs": post.numberOfPRs,
+                      "Duration": post.trainingSession ? `${Math.round((post.trainingSession.endTime.getTime() - post.trainingSession.startTime.getTime()) / (1000 * 60))} minutes` : 'N/A'
+                    }} />
+              <Button 
+                variant="ghost" 
+                onClick={() => post.trainingSession && setExpandedPost(post.trainingSession)}
+                className="w-full mt-2 text-black"
+              >
+                View Full Workout Details
+              </Button>
             </div>
             <div className="relative h-[300px] overflow-hidden">
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                 <div className="p-4 w-full max-w-md">
                   <div className="bg-black bg-opacity-50 rounded-lg overflow-hidden mb-4">
-                    <StatisticsTable stats={{
-                      "Total Weight Lifted": `${post.totalWeightLifted} kg`,
-                      "Number of PRs": post.numberOfPRs,
-                      "Highlighted Exercise": post.highlightedExerciseName ?? 'N/A'
-                    }} />
+                    {/* TO DO add media */}
                   </div>
                 </div>
               </div>
@@ -291,6 +395,14 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
           </CardFooter>
         </Card>
       ))}
+      <Dialog open={!!expandedPost} onOpenChange={() => setExpandedPost(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Workout Details</DialogTitle>
+          </DialogHeader>
+          {expandedPost && <ExpandedPost trainingSession={expandedPost} />}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

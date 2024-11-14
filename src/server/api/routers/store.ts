@@ -123,6 +123,7 @@ export const storeRouter = createTRPCRouter({
           }
         }
       });
+      console.log("listing", listing)
 
       if (!listing) {
         throw new TRPCError({
@@ -148,7 +149,6 @@ export const storeRouter = createTRPCRouter({
           message: "You already have this item",
         });
       }
-
       // Create copy and acquisition in a transaction
       return ctx.db.$transaction(async (tx) => {
         let copiedItemId: number | null = null;
@@ -184,20 +184,27 @@ export const storeRouter = createTRPCRouter({
           });
           copiedItemId = copiedTemplate.id;
         }
-
+        console.log("HOI!")
+        console.log("listing", listing.training_plan)
         if (listing.training_plan) {
           const copiedPlan = await tx.trainingPlan.create({
             data: {
               ...listing.training_plan,
-              id: undefined,
+              name: listing.training_plan.name,
+              duration: listing.training_plan.duration,
+              difficulty: listing.training_plan.difficulty,
+              
               owner_id: ctx.session.user.id,
               is_copy: true,
               original_id: listing.training_plan.id,
               // Copy templates here
+              
               templates: {
                 create: listing.training_plan.templates.map(template => ({
                   ...template,
-                  id: undefined,
+                  planId: template.planId,
+                  templateId: template.planId,
+                  userId: ctx.session.user.id
                 }))
               }
             },
