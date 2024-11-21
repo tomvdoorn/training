@@ -3,9 +3,9 @@
 import { api } from "~/trpc/react"
 import { useState, useCallback } from "react"
 import Link from "next/link"
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
-import { Dumbbell, Ellipsis, Play } from "lucide-react"
+import { Dumbbell, MoreVertical, Play, Pencil, Pen } from "lucide-react"
 import WorkoutModal from "@/components/app/workouts/AddWorkoutModal"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { useToast } from '~/components/ui/use-toast'
@@ -50,14 +50,15 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
     return <div>Error loading workouts: {error.message}</div>
   }
   return (
-    <div className="container mx-auto p-6">
+
+    <div className="container mx-auto p-3">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Your Workouts</h1>
       </div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold mb-4 center"> Templates</h2>
-        <WorkoutModal user_id={user_ids} />
-      </div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold mb-4 center"> Templates</h2>
+          <WorkoutModal user_id={user_ids} />
+        </div>
       {workouts && workouts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workouts.map((template) => (
@@ -65,35 +66,42 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
               <CardHeader className="pb-1">
                 <CardTitle className="grid grid-cols-8 gap-3  items-center ">
                   <Dumbbell className="mr-2 h-5 w-5 col-span-1" />
-                  <div className="text-xl col-span-3">{template.name}</div>
-                  <div className="">
+                  <div className="text-xl col-start-2 col-end-7">{template.name}</div>
+                  <div className=" col-start-8 col-end-8">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                        <Ellipsis className="w-4 h-4 col-start-6 col-end-8" />
+                        <Button variant="ghost" size="icon" className="">
+                        <MoreVertical className="w-4 h-4" />
                       </Button>
                       </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleDeleteTemplate(template.id)}>
-
                         Delete Template</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                </div>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
+
                 <div className="text-sm text-slate-500 pb-5">
-                  {template.exercises.map((exercise, index, array) =>(
+
+                  {template.exercises.length != 0 ? template.exercises.map((exercise, index, array) =>(
                     <>
                  {exercise.exercise.name}{index < array.length - 1 ? ", " : ""} 
                 </>
                   )
-                  )}
+                  )
+                : "No exercises"}
+
                 </div>
-                <div className="grid grid-cols-3 gap-4 "> 
+              </CardContent>
+              <CardFooter className="mt-auto">
+                                <div className="grid grid-cols-3 gap-4 "> 
                   <Button asChild variant="outline" className="col-span-2" >
+
                     <Link href={`/app/workouts/edit/${template.id}`}>
+                    <Pencil className="mr-2 h-4 w-4" />
                       Edit Template
                     </Link>
                   </Button>
@@ -106,7 +114,7 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
                   </Button>
                   </Link>
                 </div>
-              </CardContent>
+              </CardFooter>
             </Card>
           ))}
         </div>
@@ -120,26 +128,9 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
         </Card>
       )}
     </div>
+
+
   )
 }
 
-function MoveHorizontalIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="18 8 22 12 18 16" />
-      <polyline points="6 8 2 12 6 16" />
-      <line x1="2" x2="22" y1="12" y2="12" />
-    </svg>
-  );
-}
+

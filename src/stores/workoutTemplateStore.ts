@@ -4,11 +4,18 @@ import type { Template, TemplateExercise, TemplateExerciseSet, Exercise, Session
 
 
 // Define more specific types for our state
+type PendingMedia = {
+  file: string;
+  fileType: string;
+  setIndices: number[];
+};
+
 type PartialTemplateExercise = Partial<TemplateExercise> & {
   isNew?: boolean;
   deleted?: boolean;
   exercise?: Exercise;
   sets?: PartialTemplateExerciseSet[];
+  pendingMedia?: PendingMedia[];
 };
 
 type PartialTemplateExerciseSet = Partial<Omit<TemplateExerciseSet, 'reps' | 'weight' | 'duration' | 'distance' | 'rpe'>> & {
@@ -28,6 +35,7 @@ interface WorkoutTemplateState {
   exercises: PartialTemplateExercise[];
   hasUnsavedChanges: boolean;
   isSessionMode: boolean;
+  generalMedia: PendingMedia[];
 }
 interface addExerciseState extends Partial<TemplateExercise> {
   exercise: Exercise;
@@ -46,12 +54,15 @@ interface WorkoutTemplateActions {
   updateSessionSet: (exerciseId: number, setId: number | string, setData: Partial<SessionExerciseSet>) => void;
   reorderExercises: (fromIndex: number, toIndex: number) => void;
   resetUnsavedChanges: () => void;
+  addPendingMedia: (exerciseId: number, media: { file: string; fileType: string; setIndices: number[] }) => void;
+  addGeneralMedia: (media: PendingMedia) => void;
 }
 const initialState: WorkoutTemplateState = {
   template: null,
   exercises: [],
   hasUnsavedChanges: false,
   isSessionMode: false,
+  generalMedia: [],
 };
 
 export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemplateActions>((set) => ({
@@ -222,6 +233,28 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
     set(
       produce((state: WorkoutTemplateState) => {
         state.hasUnsavedChanges = false;
+      })
+    ),
+
+  addPendingMedia: (exerciseId:number, media: PendingMedia) =>
+    set(
+      produce((state: WorkoutTemplateState) => {
+        const exercise = state.exercises.find((e) => e.id === exerciseId);
+        if (exercise) {
+          if (!exercise.pendingMedia) {
+            exercise.pendingMedia = [];
+          }
+          exercise.pendingMedia.push(media);
+          state.hasUnsavedChanges = true;
+        }
+      })
+    ),
+
+  addGeneralMedia: (media: PendingMedia) =>
+    set(
+      produce((state: WorkoutTemplateState) => {
+        state.generalMedia.push(media);
+        state.hasUnsavedChanges = true;
       })
     ),
 }));

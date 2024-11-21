@@ -9,7 +9,11 @@ export const trainingPlanRouter = createTRPCRouter({
       return ctx.db.trainingPlan.findMany({
         where: { userId: input.userId },
         include: {
-          templates: true,
+          templates:{
+            include: {
+            template: true
+            }
+          },
           store_listing: true
         }
       });

@@ -62,7 +62,7 @@ export const postRouter = createTRPCRouter({
       privacy: z.enum(['public', 'friends', 'private']).optional(),
       numberOfPRs: z.number().optional(),
       totalWeightLifted: z.number().optional(),
-      mediaIds: z.array(z.string()).optional(),
+      mediaIds: z.array(z.number()).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const { id, mediaIds, ...updateData } = input;
@@ -82,10 +82,10 @@ export const postRouter = createTRPCRouter({
           await ctx.db.media.updateMany({
             where: {
               id: {
-                in: mediaIds.map(mid => parseInt(mid)),
+                in: mediaIds,
               },
             },
-            data: { postId: post.id },
+            data: { postId: post.id},
           });
         }
       }
@@ -120,6 +120,7 @@ export const postRouter = createTRPCRouter({
         include: {
           user: true,
           likes: true,
+          media: true,
           comments: {
             include: {
               user: true,

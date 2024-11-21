@@ -3,15 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Heart, MessageCircle, Repeat2, Activity, Bike, Dumbbell, MoreHorizontal, Trophy } from "lucide-react"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { api } from "~/trpc/react"
 import { CommentSection } from "./CommentSection"
 import { useState } from "react"
@@ -28,16 +19,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import  Modal  from "@/components/modal"
 import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
-import type { TrainingSession, User, Exercise, SessionExerciseSet, ExercisePersonalRecord, PRType } from "@prisma/client"
+import type { TrainingSession, User, PRType } from "@prisma/client"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { MediaCarousel } from './MediaCarousel'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 // Helper function to calculate relative time
 function getRelativeTime(date: Date): string {
@@ -91,24 +83,23 @@ const ActivityIcon = ({ type }: { type: string }) => {
 
 const StatisticsTable = ({ stats }: { stats: Record<string, string | number> }) => (
   <>
-  <Table>
-    <TableHeader>
-      <TableRow>
-              {Object.entries(stats).map(([key, value]) => (
-            
-        <TableHead key={key} className="w-[100px] text-black">{key}</TableHead>
-              ))}
-      </TableRow>
-    </TableHeader>      
-    <TableBody>
-              <TableRow >
-      {Object.entries(stats).map(([key, value]) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {Object.entries(stats).map(([key, _value]) => (
+            <TableHead key={key} className="w-[100px] text-black">{key}</TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow >
+          {Object.entries(stats).map(([key, value]) => (
 
-          <TableCell key={key} className="text-black">{value}</TableCell>
-      ))}
-              </TableRow>
+            <TableCell key={key} className="text-black">{value}</TableCell>
+          ))}
+        </TableRow>
 
-    </TableBody>
+      </TableBody>
     </Table>
   </>
 )
@@ -156,13 +147,13 @@ const ExpandedPost = ({ trainingSession }: { trainingSession: ExtendedTrainingSe
           </TableRow>
         </TableBody>
       </Table>
-      
+
       <div>
         <h3 className="font-semibold mb-2">Exercises</h3>
         <div className="space-y-4">
-          {trainingSession.exercises?.filter(exercise => 
+          {trainingSession.exercises?.filter(exercise =>
             exercise.sets?.some(set => set.completed)
-          ).map((exercise, index) => (
+          ).map((exercise, _index) => (
             <Card key={exercise.id} className="p-4">
               <h4 className="font-bold">{exercise.exercise.name}</h4>
               <Table>
@@ -205,12 +196,55 @@ interface SportsSocialFeedProps {
   profileUserId?: string;
 }
 
+interface PostWithLikes {
+  id: number;
+  likes: Array<{ userId: string }>;
+  trainingSessionId: number;
+}
+
 export default function SportsSocialFeed({ currentUser, profileUserId }: SportsSocialFeedProps) {
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
   const { data: posts, isLoading, error } = api.post.getAllPosts.useQuery(
     profileUserId ? { profileUserId: profileUserId } : undefined
   );
-  const toggleLikeMutation = api.post.toggleLike.useMutation();
+  console.log('posts', posts);
+  const toggleLikeMutation = api.post.toggleLike.useMutation({
+    onMutate: async ({ postId }) => {
+      await queryClient.cancelQueries({ queryKey: ['post.getAllPosts'] });
+
+      const previousPosts = queryClient.getQueryData(['post.getAllPosts']);
+
+      queryClient.setQueryData(['post.getAllPosts'], (old: PostWithLikes[] | undefined) => {
+        return old?.map((post) => {
+          if (post.id === postId) {
+            const hasLiked = post.likes.some((like) => like.userId === currentUser?.id);
+            return {
+              ...post,
+              likes: hasLiked
+                ? post.likes.filter((like) => like.userId !== currentUser?.id)
+                : [...post.likes, { userId: currentUser?.id }],
+            };
+          }
+          return post;
+        });
+      });
+
+      return { previousPosts };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData(['post.getAllPosts'], context.previousPosts);
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update like. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
+    },
+  });
   const queryClient = useQueryClient();
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
   const deletePostMutation = api.post.deletePost.useMutation();
@@ -230,11 +264,17 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
   };
 
   const handleToggleLike = async (postId: number) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to like posts",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       await toggleLikeMutation.mutateAsync({ postId });
-      await queryClient.invalidateQueries({ queryKey: ['post.getAllPosts'] });
     } catch (error) {
       console.error('Error toggling post like:', error);
     }
@@ -284,43 +324,43 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
             <div className="ml-auto flex items-center gap-2">
               <ActivityIcon type={post.trainingSession?.template?.name ?? 'weightlifting'} />
               {post.user.id === currentUser?.id && (
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <DropdownMenu>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <DropdownMenu>
                     <DropdownMenuTrigger>
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">More options</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">More options</span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            Delete
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete your
+                              post and the associated training session.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {
+                              if (post.trainingSessionId) {
+                                void handleDeletePost(post.trainingSessionId);
+                              }
+                              setPostToDelete(post.id);
+                            }}>
                               Delete
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your
-                                post and the associated training session.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => {
-                                if (post.trainingSessionId) {
-                                void  handleDeletePost(post.trainingSessionId);
-                                }
-                                setPostToDelete(post.id);
-                              }}>
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </DropdownMenuContent>
-                </DropdownMenu>
+                  </DropdownMenu>
                 </Button>)}
             </div>
           </CardHeader>
@@ -328,44 +368,47 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
             <div className="flex flex-col text-primary-foreground pl-4 gap-2">
               <h2 className="text-xl font-bold mb-2 text-black">{post.title}</h2>
               <p className="text-sm mb-4 text-gray-500">{post.note}</p>
-                    <StatisticsTable stats={{
-                      "Total Weight Lifted": `${post.totalWeightLifted} kg`,
-                      "Number of PRs": post.numberOfPRs,
-                      "Duration": post.trainingSession ? `${Math.round((post.trainingSession.endTime.getTime() - post.trainingSession.startTime.getTime()) / (1000 * 60))} minutes` : 'N/A'
-                    }} />
-              <Button 
-                variant="ghost" 
+              <StatisticsTable stats={{
+                "Total Weight Lifted": `${post.totalWeightLifted} kg`,
+                "Number of PRs": post.numberOfPRs,
+                "Duration": post.trainingSession ? `${Math.round((post.trainingSession.endTime.getTime() - post.trainingSession.startTime.getTime()) / (1000 * 60))} minutes` : 'N/A'
+              }} />
+              <Button
+                variant="ghost"
                 onClick={() => post.trainingSession && setExpandedPost(post.trainingSession)}
                 className="w-full mt-2 text-black"
               >
                 View Full Workout Details
               </Button>
             </div>
-            <div className="relative h-[300px] overflow-hidden">
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="p-4 w-full max-w-md">
-                  <div className="bg-black bg-opacity-50 rounded-lg overflow-hidden mb-4">
-                    {/* TO DO add media */}
-                  </div>
-                </div>
+            {post.media && post.media.length > 0 && (
+              <div className="relative h-[300px] mt-2 ml-2 ">
+                <MediaCarousel media={post.media} />
               </div>
-            </div>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col">
+            {/* TODO: FIX STATE UPDATE LIKES AND COMMENTS */}
             <div className="flex justify-between w-full">
               <div className="flex gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="flex items-center gap-1"
                   onClick={() => handleToggleLike(post.id)}
+                  disabled={toggleLikeMutation.isPending}
                 >
-                  <Heart className={`h-4 w-4 ${post.likes.some(like => like.userId === currentUser?.id) ? 'fill-current text-red-500' : ''}`} />
+                  <Heart
+                    className={`h-4 w-4 ${post.likes.some(like => like.userId === currentUser?.id)
+                      ? 'fill-current text-red-500'
+                      : ''
+                      }`}
+                  />
                   <span>{post.likes.length}</span>
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="flex items-center gap-1"
                   onClick={() => toggleComments(post.id)}
                 >
@@ -379,12 +422,12 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
               </Button>
             </div>
             <div className="w-full">
-                <CommentSection
-                  postId={post.id}
-                  comments={post.comments}
-                  currentUser={currentUser!}
-                  isExpanded={expandedComments.has(post.id)}
-                />
+              <CommentSection
+                postId={post.id}
+                comments={post.comments}
+                currentUser={currentUser!}
+                isExpanded={expandedComments.has(post.id)}
+              />
 
             </div>
             {post.privacy === 'private' && currentUser?.id === post.user.id && (

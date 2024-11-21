@@ -10,6 +10,7 @@ import {
 } from "~/components/ui/dialog"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { useSession } from "next-auth/react"
+import { PlusCircle } from "lucide-react"
 
 export default function AddTemplateButton() {
   const { data: session } = useSession()
@@ -21,7 +22,8 @@ export default function AddTemplateButton() {
         <DialogTitle>
             </DialogTitle>
       <DialogTrigger asChild>
-        <Button>Create Training Plan</Button>
+        <Button>
+        <PlusCircle className="mr-2 h-4 w-4" /> Create Training Plan</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-description">
         <CompactTrainingPlanCreatorComponent 

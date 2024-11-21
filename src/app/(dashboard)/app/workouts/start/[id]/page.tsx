@@ -30,6 +30,17 @@ interface MediaItem {
   setIds: number[];
 }
 
+interface PartialTemplateExercise extends Partial<TemplateExercise> {
+  pendingMedia?: Array<{
+    file: string;
+    fileType: string;
+    setIndices: number[];
+  }>;
+  sets?: (TemplateExerciseSet & { completed?: boolean, deleted?: boolean })[]
+  exercise?: (typeof Exercise & { id?: number })
+  deleted?: boolean;
+}
+
 function StartWorkout({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -55,7 +66,8 @@ function StartWorkout({ params }: PageProps) {
     updateTemplate,
     initializeExercises,
     resetChanges,
-    reorderExercises
+    reorderExercises,
+    generalMedia,
   } = useSessionHandler();
 
     const handleReorderExercises = useCallback((fromIndex: number, toIndex: number) => {
@@ -99,6 +111,8 @@ function StartWorkout({ params }: PageProps) {
         exerciseId: item.sessionExerciseId ?? 0,
         setIds: Array.isArray(item.sessionExerciseSetId) ? item.sessionExerciseSetId : [item.sessionExerciseSetId ?? -1]
       })));
+        console.log('Initial availableMedia:', availableMedia);
+    
     }
   }, [exerciseMediaQuery.data]);
 
@@ -158,13 +172,13 @@ function StartWorkout({ params }: PageProps) {
           privacy: data.privacy,
           note: data.note,
           title: data.title,
-          mediaIds: data.selectedMedia,
+          mediaIds: [],
         });
 
         let totalPRs = 0;
         let totalWeight = 0;
-
-        for (const exercise of exercises) {
+        const newMediaIds: number[] = [];
+        for (const exercise of exercises as PartialTemplateExercise[]) {
           if (exercise.deleted) {
             console.log("Skipping deleted exercise:", exercise);
             continue;
@@ -173,9 +187,15 @@ function StartWorkout({ params }: PageProps) {
           console.log("Processing exercise:", exercise);
           console.log("exercise.id", exercise.id);  
 
+          const exerciseId = exercise.exercise?.id;
+          if (!exerciseId) {
+            console.error('Missing exercise ID');
+            continue;
+          }
+
           const newSessionExercise = await createSessionExerciseMutation.mutateAsync({
             sessionId: newTrainingSession.id,
-            exerciseId: exercise.exercise!.id,
+            exerciseId: exerciseId,
             order: exercise.order!,
             ...(exercise.id && { templateExerciseId: exercise.id }),
           });
@@ -202,7 +222,7 @@ function StartWorkout({ params }: PageProps) {
 
               if (set.completed) {
                 const prResult = await checkAndCreatePRMutation.mutateAsync({
-                  exerciseId: exercise.exercise!.id,
+                  exerciseId: exerciseId,
                   sessionExerciseId: newSessionExercise.id,
                   setId: newSessionSet.id,
                   reps: set.reps ?? 0,
@@ -215,12 +235,42 @@ function StartWorkout({ params }: PageProps) {
               }
             }
           }
+
+          if (exercise.pendingMedia?.length) {
+            for (const media of exercise.pendingMedia) {
+              if (data.selectedMedia.includes(media.file)) {
+                const newMedia = await uploadSessionExerciseMediaMutation.mutateAsync({
+                  sessionExerciseId: newSessionExercise.id,
+                  fileUrl: media.file,
+                  fileType: media.fileType,
+                  setIds: media.setIndices.map(index => exercise?.sets?.[index]?.id).filter(Boolean) as number[],
+                  postId: newPost.id,
+                });
+                newMediaIds.push(newMedia.id);
+              }
+            }
+          }
+        }
+
+        if (generalMedia.length) {
+          for (const media of generalMedia) {
+            if (data.selectedMedia.includes(media.file)) {
+              const newMedia = await uploadSessionExerciseMediaMutation.mutateAsync({
+                fileUrl: media.file,
+                fileType: media.fileType,
+                setIds: [],
+                postId: newPost.id,
+              });
+              newMediaIds.push(newMedia.id);
+            }
+          }
         }
 
         await updatePostMutation.mutateAsync({
           id: newPost.id,
           numberOfPRs: totalPRs,
           totalWeightLifted: totalWeight,
+          mediaIds: newMediaIds,
         });
 
         console.log("Post updated with PR information");
@@ -354,7 +404,6 @@ function StartWorkout({ params }: PageProps) {
                   sets={exercise.sets as TemplateExerciseSet[]}
                   workoutIndex={index}
                   onReorder={handleReorderExercises}
-                  addMediaMutation={uploadSessionExerciseMediaMutation}
                   start
                   setDataOption={setDataOption}
                   lastSessionData={lastSessionQuery.data }
@@ -382,7 +431,6 @@ function StartWorkout({ params }: PageProps) {
               sets={exercise.sets as TemplateExerciseSet[]}
               workoutIndex={index}
               start
-              addMediaMutation={uploadSessionExerciseMediaMutation}
               onReorder={handleReorderExercises}
               setDataOption={setDataOption}
               lastSessionData={lastSessionQuery.data ?? undefined}
@@ -412,7 +460,6 @@ function StartWorkout({ params }: PageProps) {
         isLoading={isSaving}
         defaultTitle={workout?.name ?? 'Workout'}
         startTime={startTime ?? new Date()}
-        availableMedia={availableMedia}
       />
     </div>
   );

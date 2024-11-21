@@ -40,7 +40,6 @@ export default function Home() {
           Your best in class training tool. With support from real and the best AI coaches. Hybrid, pure strength, always the best you need to improve.
         </p>
       </MaxWidthWrapper>
-
     </div>
           <section className='border-t border-gray-200 bg-gray-50'>
           <MaxWidthWrapper className='py-20'>

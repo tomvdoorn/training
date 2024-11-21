@@ -13,6 +13,7 @@ import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 import type { TemplateExercise } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
+import Image from 'next/image'
 
 interface AddExerciseToTemplateProps {
   templateId: number;
@@ -46,7 +47,7 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
 
   const filteredExercises = useMemo(() => {
     if (!exercises) return [];
-    return exercises.filter(exercise => 
+    return exercises.filter(exercise =>
       exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [exercises, searchTerm]);
@@ -64,7 +65,7 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-grow"
           />
-          <AddExercise 
+          <AddExercise
             templateId={templateId}
             onExerciseAdded={addExercise}
           >
@@ -79,7 +80,12 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
         {filteredExercises.map((exercise) => (
           <div className="bg-slate-50 p-2 mb-2" key={exercise.id}>
             <div className="flex flex-row mb-2 mt-2">
-              <img src={exercise.image ?? undefined } alt='img' className="w-10 h-10 object-cover rounded-lg basis-1/3" />
+              <Image
+                src={exercise.image ?? ''}
+                alt={exercise.name}
+                width={100}
+                height={100}
+              />
               <div className="font-medium basis-2/3">{exercise.name}</div>
               <Button className="align" onClick={() => selectExercise(exercise.id)}>Add</Button>
             </div>

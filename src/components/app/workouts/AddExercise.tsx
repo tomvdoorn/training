@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { api } from "~/trpc/react";
-import Modal from "@/components/modal" 
+import Modal from "@/components/modal"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MuscleGroup } from '@prisma/client' 
+import { MuscleGroup } from '@prisma/client'
 import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 import type { Exercise } from '@prisma/client';
 
@@ -77,6 +77,13 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
     setVideoUrl('');
   };
 
+  if (error) {
+    return <div>Error loading exercises: {error.message}</div>;
+  }
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       {children ? (
@@ -89,7 +96,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
           Add New Exercise
         </Button>
       )}
-      
+
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
           <form onSubmit={handleSubmit}>
@@ -159,8 +166,8 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="Compound">Compound</SelectItem>
-                    <SelectItem value="Isolation">Isolation</SelectItem>
+                  <SelectItem value="Compound">Compound</SelectItem>
+                  <SelectItem value="Isolation">Isolation</SelectItem>
                 </SelectContent>
               </Select>
             </div>

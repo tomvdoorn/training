@@ -8,9 +8,8 @@ import { ChevronUp, ChevronDown, CheckCircle, MoreHorizontal } from "lucide-reac
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
 import FileUploadModal from '~/components/app/workouts/FileUploadModal'
 import { Textarea } from "~/components/ui/textarea";
-import type { api } from "~/trpc/react";
 import type { Exercise as ExerciseType, SessionExerciseSet, TemplateExerciseSet, SetType } from "@prisma/client";
-import { uploadFileToStorage } from '~/utils/supabase';
+import { supabase } from '~/utils/supabaseClient'
 
 type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
@@ -35,7 +34,6 @@ interface ExerciseProps {
     sets?: PartialTemplateExerciseSet[];
     is_copy?: boolean;
   };
-  addMediaMutation?: typeof api.media.create.useMutation extends () => infer R ? R : never;
   setDataOption?: 'lastSession' | 'prSession' | 'template' | undefined;
   lastSessionData?: {
     exercises: Array<{
@@ -63,6 +61,21 @@ const setTypeColors = {
   // Add more types and colors as needed
 };
 
+const uploadFileToStorage = async (file: File) => {
+  const fileName = `${Date.now()}-${file.name}`;
+  const { data, error } = await supabase.storage
+    .from(process.env.NODE_ENV === 'development' ? 'dev' : 'prod')
+    .upload(fileName, file)
+
+  if (error) {
+    console.error('Error uploading file:', error);
+    return null;
+  }
+  const url_base = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  return `${url_base}/${data.fullPath}`;
+};
+
 const Exercise = ({
   templateExerciseId,
   exerciseIndex,
@@ -71,13 +84,12 @@ const Exercise = ({
   workoutIndex,
   start,
   onReorder,
-  addMediaMutation,
   setDataOption,
   lastSessionData,
   prSessionData,
   templateExercise
 }: ExerciseProps) => {
-  const { addSet, removeExercise, updateExercise, reorderExercises } = useWorkoutTemplateStore();
+  const { addSet, removeExercise, updateExercise, addPendingMedia } = useWorkoutTemplateStore();
   const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false);
   const [showNotes, setShowNotes] = useState(!!templateExercise?.notes);
   const [notes, setNotes] = useState(templateExercise?.notes ?? '');
@@ -115,7 +127,6 @@ const Exercise = ({
 
   const handleFileUploadComplete = async (file: File, selectedSets: number[]) => {
     try {
-      // Upload to Supabase and get URL
       const fileUrl = await uploadFileToStorage(file);
       
       if (!fileUrl) {
@@ -123,7 +134,6 @@ const Exercise = ({
         return;
       }
 
-      // Determine file type
       const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
       let fileType = 'unknown';
       
@@ -133,14 +143,14 @@ const Exercise = ({
         fileType = 'video';
       }
 
-      if (addMediaMutation) {   
-        await addMediaMutation.mutateAsync({
-          sessionExerciseId: templateExerciseId,
-          fileUrl,
-          fileType,
-          setIds: selectedSets,
-        });
-      }
+      addPendingMedia(templateExerciseId, {
+        file: fileUrl,
+        fileType,
+        setIndices: selectedSets
+      })
+      console.log(addPendingMedia)
+
+      ;
     } catch (error) {
       console.error('Error handling file upload:', error);
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -18,8 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Card, CardContent } from "~/components/ui/card";
-import Image from "next/image";
+import { MediaSelector } from './MediaSelector';
+import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
+import { Upload } from 'lucide-react';
+import { uploadFileToStorage } from '~/utils/supabase';
 
 interface MediaItem {
   id: string;
@@ -43,7 +45,6 @@ interface FinishWorkoutModalProps {
   isLoading: boolean;
   defaultTitle: string;
   startTime: Date;
-  availableMedia: MediaItem[];
 }
 
 export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
@@ -53,14 +54,12 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
   isLoading,
   defaultTitle,
   startTime,
-  availableMedia = [],
 }) => {
-  const [privacy, setPrivacy] = useState<'public' | 'friends' | 'private'>('public');
+    const [privacy, setPrivacy] = useState<'public' | 'friends' | 'private'>('public');
   const [note, setNote] = useState('');
   const [title, setTitle] = useState(defaultTitle);
   const [rating, setRating] = useState(5);
   const [endTime, setEndTime] = useState(new Date());
-  const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
 
   const handleEndTimeChange = (newTime: string) => {
     const newEndTime = new Date(newTime);
@@ -76,17 +75,80 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
         : [...prev, mediaId]
     );
   };
+  const exercises = useWorkoutTemplateStore(state => state.exercises);
+  const generalMedia = useWorkoutTemplateStore(state => state.generalMedia);
+  const { addGeneralMedia } = useWorkoutTemplateStore();
+  const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
+  
+  // Get all pending media from exercises
+  const getAllPendingMedia = useCallback(() => {
+    // Get exercise-specific media
+    const exerciseMedia = exercises.flatMap(exercise => 
+      exercise.pendingMedia?.map(media => ({
+        file: media.file,
+        fileType: media.fileType,
+        setIndices: media.setIndices,
+        exerciseId: exercise.id
+      })) ?? []
+    );
+    
+    // Get general media
+    const generalMediaItems = generalMedia.map(media => ({
+      file: media.file,
+      fileType: media.fileType,
+      setIndices: [],
+      exerciseId: null
+    }));
+    
+    return [...exerciseMedia, ...generalMediaItems];
+  }, [exercises, generalMedia]);
+
+  // Add handleFileUpload function
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    try {
+      for (const file of Array.from(files)) {
+        const fileUrl = await uploadFileToStorage(file);
+        console.log('fileUrl', fileUrl);
+        if (!fileUrl) {
+          console.error('Failed to upload file');
+          return;
+        }
+
+        const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
+        let fileType = 'unknown';
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
+          fileType = 'image';
+        } else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(fileExtension)) {
+          fileType = 'video';
+        }
+
+        addGeneralMedia({
+          file: fileUrl,
+          fileType,
+          setIndices: []
+        });
+        console.log('addPendingMedia', addGeneralMedia);
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle>Create Workout Post</DialogTitle>
+          <DialogTitle>Finish Workout</DialogTitle>
           <DialogDescription>
-            Customize how your workout will appear in your feed
+            Save your workout and share your progress
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+
+        <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title">Post Title</Label>
             <Input
@@ -101,62 +163,61 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
             <Label htmlFor="note">Description</Label>
             <Textarea
               id="note"
-              placeholder="How did your workout go? Share your thoughts..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
+              placeholder="How did your workout go? Share your thoughts..."
               className="h-24"
             />
           </div>
 
-          {availableMedia.length > 0 && (
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Workout Media</Label>
-              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                {availableMedia.map((media) => (
-                  <Card 
-                    key={media.id}
-                    className={`cursor-pointer transition-all ${
-                      selectedMedia.includes(media.id) ? 'ring-2 ring-primary' : ''
-                    }`}
-                    onClick={() => toggleMediaSelection(media.id)}
-                  >
-                    <CardContent className="p-2">
-                      {media.type === 'image' ? (
-                        <Image
-                          src={media.url}
-                          alt="Exercise media"
-                          width={100}
-                          height={100}
-                          className="object-cover rounded-md"
-                        />
-                      ) : (
-                        <video
-                          src={media.url}
-                          className="w-full h-[100px] object-cover rounded-md"
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+              <Label>Add Photos/Videos</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Media
+                </Button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
               </div>
             </div>
-          )}
+
+            {getAllPendingMedia().length > 0 && (
+              <MediaSelector
+                pendingMedia={getAllPendingMedia()}
+                onSelectionChange={setSelectedMedia}
+                maxSelections={5}
+              />
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="endTime">End Time</Label>
             <Input
               id="endTime"
               type="datetime-local"
+              max={new Date().toISOString().slice(0, 16)}
               value={endTime.toISOString().slice(0, 16)}
               onChange={(e) => handleEndTimeChange(e.target.value)}
-              max={new Date().toISOString().slice(0, 16)}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="rating">How tough was this workout? (1-10)</Label>
             <Select 
-              value={rating.toString()} 
+              defaultValue="5"
+              value={rating.toString()}
               onValueChange={(value) => setRating(parseInt(value))}
             >
               <SelectTrigger>
@@ -175,8 +236,9 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
           <div className="space-y-2">
             <Label htmlFor="privacy">Who can see this post?</Label>
             <Select 
-              value={privacy} 
-              onValueChange={(value: 'public' | 'friends' | 'private') => setPrivacy(value)}
+              defaultValue="public"
+              value={privacy}
+              onValueChange={(value) => setPrivacy(value as 'public' | 'friends' | 'private')}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select privacy" />
@@ -189,8 +251,11 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
             </Select>
           </div>
         </div>
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button 
             onClick={() => onConfirm({ 
               privacy, 

@@ -374,14 +374,15 @@ Table Media {
   fileUrl String [not null]
   fileType String [not null]
   createdAt DateTime [default: `now()`, not null]
-  trainingSession TrainingSession
-  trainingSessionId Int
-  sessionExercise SessionExercise
+  updatedAt DateTime [not null]
   sessionExerciseId Int
-  sessionExerciseSet SessionExerciseSet
+  sessionExercise SessionExercise
   sessionExerciseSetId Int
-  post Post
   postId Int
+  post Post
+  TrainingSession TrainingSession
+  trainingSessionId Int
+  SessionExerciseSet SessionExerciseSet
 }
 
 Enum TrainingPlanDifficulty {
@@ -519,10 +520,10 @@ Ref: Acquisition.template_id > Template.id
 
 Ref: Acquisition.training_plan_id > TrainingPlan.id
 
-Ref: Media.trainingSessionId > TrainingSession.id
-
 Ref: Media.sessionExerciseId > SessionExercise.id
 
-Ref: Media.sessionExerciseSetId > SessionExerciseSet.id
-
 Ref: Media.postId > Post.id
+
+Ref: Media.trainingSessionId > TrainingSession.id
+
+Ref: Media.sessionExerciseSetId > SessionExerciseSet.id

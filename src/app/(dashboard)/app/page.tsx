@@ -72,7 +72,7 @@ const Dashboard = async () => {
                         <div>
                             <h3>Follow these users to see their workouts in your feed</h3>
                         </div>
-                        {/* Add recent sales content here */}
+                        {/* TODO: Add follow recommendations here */}
                     </CardContent>
                 </Card>
             </div>

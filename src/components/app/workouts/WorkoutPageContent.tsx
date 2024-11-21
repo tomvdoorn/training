@@ -11,19 +11,18 @@ interface WorkoutPageContentProps {
 
 export default function WorkoutPageContent({ userId }: WorkoutPageContentProps) {
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 md:p-6 space-y-8">
+    <div className="w-full max-w-4xl mx-auto p-2 pt-0 md:p-2 space-y-8">
       <div>
-        <div className="flex items-center justify-between mb-6">
-        </div>
         <AllTemplatesUser user_id={userId} />
       </div>
-      <div className="p-6">
+      <div className="p-3">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Training Plans</h2>
           <AddTemplateButton />
         </div>
-        <div className="border-b border-gray-200 mb-4"></div>
+        <div className="border-b border-gray-200 mb-4">
         <TrainingPlans userId={userId} />
+        </div>
       </div>
     </div>
   )

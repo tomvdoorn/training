@@ -12,7 +12,8 @@ export function useSessionHandler() {
     updateTemplate,
     initializeExercises,
     resetChanges,
-    reorderExercises
+    reorderExercises,
+    generalMedia
   } = useWorkoutTemplateStore();
 
   const { 
@@ -45,7 +46,8 @@ export function useSessionHandler() {
     updateTemplate,
     initializeExercises,
     resetChanges,
-    reorderExercises
+    reorderExercises,
+    generalMedia
     // Return other session-specific functions
   };
 }

@@ -114,10 +114,9 @@ export function StoreListingDialog({ type, itemId, existingListing }: StoreListi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 w-full justify-start">
-          <Store className="h-4 w-4" />
+        <>
           {existingListing ? "Edit Store Listing" : "Add to Store"}
-        </Button>
+</>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

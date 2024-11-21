@@ -9,7 +9,7 @@ import SportsSocialFeed from "@/components/app/social/SportsSocialFeed";
 import { api } from "~/trpc/react";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil } from "lucide-react";
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 interface ProfilePageProps {
   params: {
     id: string;
@@ -22,7 +22,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [bio, setBio] = useState('');
   const [isEditingBio, setIsEditingBio] = useState(false);
   const { data: currentUser, isLoading: isCurrentUserLoading }: { data: User | undefined, isLoading: boolean } = api.user.getCurrentUser.useQuery();
-  const { data: profileUser, isLoading: isProfileUserLoading }: { data: User | undefined, isLoading: boolean }   = api.user.getById.useQuery({ id: params.id });
+  const { data: profileUser, isLoading: isProfileUserLoading }: { data: User | undefined, isLoading: boolean } = api.user.getById.useQuery({ id: params.id });
   const { data: followersCount } = api.user.getFollowersCount.useQuery({ userId: params.id });
   const { data: followingCount } = api.user.getFollowingCount.useQuery({ userId: params.id });
   const { data: isFollowingData } = api.user.isFollowing.useQuery(
@@ -33,7 +33,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const followMutation = api.user.followUser.useMutation();
   const unfollowMutation = api.user.unfollowUser.useMutation();
   const updateBioMutation = api.user.updateBio.useMutation();
-  
+
   useEffect(() => {
     if (isFollowingData !== undefined) {
       setIsFollowing(isFollowingData);
@@ -138,8 +138,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 </div>
               </div>
               {!isOwnProfile && (
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   variant={isFollowing ? "outline" : "default"}
                   onClick={handleFollowToggle}
                 >
