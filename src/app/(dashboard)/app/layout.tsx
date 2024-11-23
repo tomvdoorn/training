@@ -7,7 +7,7 @@ import { cn } from "~/lib/utils";
 import { getCurrentUser } from "@/lib/session"
 import { notFound } from "next/navigation"
 import { Toaster } from "~/components/ui/toaster";
-  
+
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -18,30 +18,21 @@ const fontSans = FontSans({
 export const metadata = {
   title: "TrainTogether",
   description: "Share the pain and grow together fuelled by the best AI coaches",
-  icons: [
-    { rel: "icon", url: "/favicon.ico" },
-    // { rel: "apple-touch-icon", sizes: "57x57", href: "/favicon-57x57.png" },
-    // { rel: "apple-touch-icon", sizes: "60x60", href: "/favicon-60x60.png" },
-    // { rel: "apple-touch-icon", sizes: "72x72", href: "/favicon-72x72.png" },
-    // { rel: "apple-touch-icon", sizes: "76x76", href: "/favicon-76x76.png" },
-    // { rel: "apple-touch-icon", sizes: "114x114", href: "/favicon-114x114.png" },
-    // { rel: "apple-touch-icon", sizes: "120x120", href: "/favicon-120x120.png" },
-    // { rel: "apple-touch-icon", sizes: "144x144", href: "/favicon-144x144.png" },
-    // { rel: "apple-touch-icon", sizes: "152x152", href: "/favicon-152x152.png" },  
-    // { rel: "apple-touch-icon", sizes: "180x180", href: "/favicon-180x180.png" },
-    // { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-    // { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
-    // { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
-    // { rel: "icon", type: "image/png", sizes: "96x96", href: "/favicon-96x96.png" },
-    // { rel: "icon", type: "image/png", sizes: "192x192", href: "/favicon-192x192.png" },
-    // { rel: "shortcut icon", type: "image/x-icon", href: "/favicon.ico" },
-    // { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-    // { name: "msapplication-TileColor", content: "#ffffff" },
-    // { name: "msapplication-TileImage", content: "/favicon-144x144.png" },
-    // { name: "msapplication-config", content: "/browserconfig.xml" },
-    // { rel: "manifest", href: "/manifest.json" },
-    // { name: "theme-color", content: "#ffffff" },
-  ]
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: { url: "/favicon.ico" },
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" }
+    ],
+  },
+  manifest: "/site.webmanifest",
+  appleWebApp: {
+    title: "TrainTogether"
+  }
 }
 
 export default async function RootLayout({
@@ -54,28 +45,28 @@ export default async function RootLayout({
     return notFound()
   }
   return (
-  <html lang="en">
-    <body 
+    <html lang="en">
+      <body
         className={cn(
-        "font-sans antialiased grainy",
-        fontSans.variable
-       )}>
+          "font-sans antialiased grainy",
+          fontSans.variable
+        )}>
 
-      <div className="flex min-h-screen w-full flex-col bg-muted/40">
-        <Sidebar/> 
-        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-          <TRPCReactProvider>
-                    <Topbar/>
+        <div className="flex min-h-screen w-full flex-col bg-muted/40">
+          <Sidebar />
+          <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+            <TRPCReactProvider>
+              <Topbar />
 
-              <main>  
+              <main>
                 {children}
               </main>
-          </TRPCReactProvider>
-        <Toaster />
+            </TRPCReactProvider>
+            <Toaster />
+          </div>
         </div>
-      </div>
 
-    </body>
-  </html>   
+      </body>
+    </html>
   );
 }
