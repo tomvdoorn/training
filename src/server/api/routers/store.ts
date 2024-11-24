@@ -189,21 +189,17 @@ export const storeRouter = createTRPCRouter({
         if (listing.training_plan) {
           const copiedPlan = await tx.trainingPlan.create({
             data: {
-              ...listing.training_plan,
               name: listing.training_plan.name,
               duration: listing.training_plan.duration,
               difficulty: listing.training_plan.difficulty,
-              
+              userId: ctx.session.user.id,
               owner_id: ctx.session.user.id,
               is_copy: true,
               original_id: listing.training_plan.id,
-              // Copy templates here
-              
               templates: {
                 create: listing.training_plan.templates.map(template => ({
-                  ...template,
-                  planId: template.planId,
-                  templateId: template.planId,
+                  day: template.day,
+                  templateId: template.templateId,
                   userId: ctx.session.user.id
                 }))
               }
