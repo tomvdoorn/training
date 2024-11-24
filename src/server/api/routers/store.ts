@@ -281,7 +281,7 @@ export const storeRouter = createTRPCRouter({
       // Verify ownership
       if (listing.template && listing.template.owner_id !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
+          code:  "FORBIDDEN",
           message: "You can only edit your own listings",
         });
       }

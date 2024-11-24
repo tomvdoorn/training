@@ -13,8 +13,8 @@ import { useToast } from '~/components/ui/use-toast'
 interface AllTemplatesUserProps {
   user_id: string;
 }
-export default function AllTemplatesUser({ user_id }:AllTemplatesUserProps) {
-    const { toast } = useToast()
+export default function AllTemplatesUser({ user_id }: AllTemplatesUserProps) {
+  const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
   const user_ids = user_id
   const { data: workouts, error, refetch } = api.template.getTemplatesUser.useQuery(
@@ -22,7 +22,7 @@ export default function AllTemplatesUser({ user_id }:AllTemplatesUserProps) {
 
 
 
-const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
+  const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
     onSuccess: () => {
       void refetch()
       toast({
@@ -45,7 +45,7 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
       onSettled: () => setIsDeleting(false)
     })
   }, [deleteTemplateMutation, isDeleting])
-  
+
   if (error) {
     return <div>Error loading workouts: {error.message}</div>
   }
@@ -55,10 +55,10 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Your Workouts</h1>
       </div>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold mb-4 center"> Templates</h2>
-          <WorkoutModal user_id={user_ids} />
-        </div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold mb-4 center"> Templates</h2>
+        <WorkoutModal user_id={user_ids} />
+      </div>
       {workouts && workouts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workouts.map((template) => (
@@ -71,47 +71,47 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
                       </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleDeleteTemplate(template.id)}>
-                        Delete Template</DropdownMenuItem>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDeleteTemplate(template.id)}>
+                          Delete Template</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-grow">
 
                 <div className="text-sm text-slate-500 pb-5">
 
-                  {template.exercises.length != 0 ? template.exercises.map((exercise, index, array) =>(
+                  {template.exercises.length != 0 ? template.exercises.map((exercise, index, array) => (
                     <>
-                 {exercise.exercise.name}{index < array.length - 1 ? ", " : ""} 
-                </>
+                      {exercise.exercise.name}{index < array.length - 1 ? ", " : ""}
+                    </>
                   )
                   )
-                : "No exercises"}
+                    : "No exercises"}
 
                 </div>
               </CardContent>
               <CardFooter className="mt-auto">
-                                <div className="grid grid-cols-3 gap-4 "> 
+                <div className="grid grid-cols-3 gap-4 w-full">
                   <Button asChild variant="outline" className="col-span-2" >
 
                     <Link href={`/app/workouts/edit/${template.id}`}>
-                    <Pencil className="mr-2 h-4 w-4" />
+                      <Pencil className="mr-2 h-4 w-4" />
                       Edit Template
                     </Link>
                   </Button>
                   <Link href={`/app/workouts/start/${template.id}`}>
-                  <Button>
-                    
-                    <Play  className="">
-                      
-                    </Play>
-                  </Button>
+                    <Button>
+
+                      <Play className="">
+
+                      </Play>
+                    </Button>
                   </Link>
                 </div>
               </CardFooter>
@@ -122,7 +122,7 @@ const deleteTemplateMutation = api.template.deleteTemplate.useMutation({
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-40">
             <p className="text-lg text-gray-500 mb-4">No workout templates found.</p>
-         <WorkoutModal user_id={user_ids} />
+            <WorkoutModal user_id={user_ids} />
 
           </CardContent>
         </Card>

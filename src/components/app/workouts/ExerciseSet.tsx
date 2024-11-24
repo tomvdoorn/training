@@ -30,8 +30,8 @@ interface ExerciseSetProps {
     }>;
   };
   prSessionData?: Array<{
-      id: number;
-      sets: Array<Partial<SessionExerciseSet>>;
+    id: number;
+    sets: Array<Partial<SessionExerciseSet>>;
   }>;
 }
 
@@ -88,8 +88,8 @@ const ExerciseSet = ({
 
 
   return (
-    <TableRow 
-      key={setIndex} 
+    <TableRow
+      key={setIndex}
       className={cn(
         set.completed ? 'bg-green-100 hover:bg-green-200' : 'hover:bg-gray-100',
         'transition-colors duration-200'
@@ -97,7 +97,7 @@ const ExerciseSet = ({
     >
       <TableCell>{setIndex + 1}</TableCell>
       <TableCell>
-        <Select 
+        <Select
           value={set.type}
           onValueChange={(value) => handleInputChange('type', value as SetType)}
         >
@@ -127,6 +127,11 @@ const ExerciseSet = ({
           value={set.completed ? (set.weight?.toString() ?? '') : (start ? undefined : set.weight?.toString() ?? '')}
           onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) ?? 0)}
           placeholder={placeholderData.weight?.toString() ?? ''}
+          pattern="[0-9]*" // For iOS numeric keyboard
+          inputMode="numeric" // Better for reps input (whole numbers)
+          style={{ fontSize: '16px' }} // Prevent zoom on iOS
+          className="text-base" // Ensure text is readable without zoom
+
         />
       </TableCell>
       <TableCell>
@@ -136,23 +141,28 @@ const ExerciseSet = ({
           value={set.completed ? (set.reps?.toString() ?? '') : (start ? undefined : set.reps?.toString() ?? '')}
           onChange={(e) => handleInputChange('reps', parseInt(e.target.value) ?? 0)}
           placeholder={placeholderData.reps?.toString() ?? ''}
+          pattern="[0-9]*" // For iOS numeric keyboard
+          inputMode="numeric" // Better for reps input (whole numbers)
+          style={{ fontSize: '16px' }} // Prevent zoom on iOS
+          className="text-base" // Ensure text is readable without zoom
+
         />
       </TableCell>
-      {start ? 
-      <TableCell className="items-center">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <Checkbox
-                checked={set.completed ?? false}
-                onCheckedChange={(checked) => handleInputChange('completed', checked)}
-                aria-label="Mark set as completed"
-              />
-            </TooltipTrigger>
-            <TooltipContent>Mark set as completed</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </TableCell> : null
+      {start ?
+        <TableCell className="items-center">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Checkbox
+                  checked={set.completed ?? false}
+                  onCheckedChange={(checked) => handleInputChange('completed', checked)}
+                  aria-label="Mark set as completed"
+                />
+              </TooltipTrigger>
+              <TooltipContent>Mark set as completed</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </TableCell> : null
       }
       <TableCell className="text-right">
         <Button
