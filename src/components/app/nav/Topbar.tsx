@@ -8,9 +8,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import TopbarUser from "./TopbarUser"
 import { navigationItems } from "@/config/navigation"
 import { BRAND } from '@/config/name'
-import { Icons } from '@/components/Icons'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import  SearchResults  from "./SearchResults" 
+import SearchResults from "./SearchResults"
 import { useDebounce } from "~/hooks/useDebounce"
 import { api } from "~/trpc/react"
 
@@ -43,11 +43,16 @@ const Topbar = () => {
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/app"
-              className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+              className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground md:text-base"
               onClick={() => handleLinkClick("/app")}
             >
-              <Icons.logo className="h-4 w-4 transition-all group-hover:scale-110" />
-              <span className="sr-only">{BRAND.name}</span>
+              <Image
+                src="/favicon.svg"
+                alt={BRAND.name}
+                width={48}
+                height={48}
+                className="transition-all group-hover:scale-110 rounded-full"
+              />              <span className="sr-only">{BRAND.name}</span>
             </Link>
             {navigationItems.map((item) => (
               <button

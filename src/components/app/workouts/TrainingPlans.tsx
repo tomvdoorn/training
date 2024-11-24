@@ -37,8 +37,8 @@ const TrainingPlans = ({ userId }: TrainingPlansProps) => {
   } | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { data: trainingPlans, isLoading, error } = api.trainingPlan.getTrainingPlans.useQuery({ 
-    userId 
+  const { data: trainingPlans, isLoading, error } = api.trainingPlan.getTrainingPlans.useQuery({
+    userId
   });
 
   const deletePlanMutation = api.trainingPlan.deletePlan.useMutation({
@@ -72,60 +72,64 @@ const TrainingPlans = ({ userId }: TrainingPlansProps) => {
         {trainingPlans?.map((plan) => (
           <Card key={plan.id} className="flex flex-col">
             <CardHeader>
-                  <CardTitle>
-                      <div className="grid grid-cols-8">
-                        <h2 className="col-start-1 col-end-7 text-xl ">{plan.name}</h2>
-                    <div className="col-start-8 item-right">
-                          <DropdownMenu >
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => {
-                                setEditingPlan({
-                                  id: plan.id.toString(),
-                                  name: plan.name,
-                                  duration: plan.duration,
-                                  templates: plan.templates
-                                });
-                                setIsEditModalOpen(true);
-                              }}>
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <StoreListingDialog 
-                                  type="TrainingPlan"
-                                  itemId={parseInt(plan.id.toString())}
-                                  existingListing={plan.store_listing}
-                                />
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="text-destructive"
-                                onClick={() => handleDeletePlan(plan.id.toString())}
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        <span className="col-span-3 text-muted-foreground">{plan.duration} days</span>
+              <CardTitle>
+                <div className="grid grid-cols-8">
+                  <h2 className="col-start-1 col-end-7 text-xl ">{plan.name}</h2>
+                  <div className="col-start-8 item-right">
+                    <DropdownMenu >
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => {
+                          setEditingPlan({
+                            id: plan.id.toString(),
+                            name: plan.name,
+                            duration: plan.duration,
+                            templates: plan.templates
+                          });
+                          setIsEditModalOpen(true);
+                        }}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={(e) => {
+                          // Prevent the dropdown from closing
+                          e.preventDefault()
+                        }}>
+                          <StoreListingDialog
+                            type="TrainingPlan"
+                            itemId={parseInt(plan.id.toString())}
+                            existingListing={plan.store_listing}
+                            trigger={<div className="w-full">List in Store</div>}
+                          />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDeletePlan(plan.id.toString())}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <span className="col-span-3 text-muted-foreground">{plan.duration} days</span>
 
-                        <Badge variant="secondary" className="col-span-3">
-                        {plan.difficulty.charAt(0).toUpperCase() + plan.difficulty.slice(1).toLowerCase()}
-                        </Badge>
-                      </div>
-                  </CardTitle>
+                  <Badge variant="secondary" className="col-span-3">
+                    {plan.difficulty.charAt(0).toUpperCase() + plan.difficulty.slice(1).toLowerCase()}
+                  </Badge>
+                </div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-                <CardDescription className="flex items-center  ">
-                    {plan.templates.length != 0 ? plan.templates.map((template, index, array) =>(
-                      <>
-                      {template.template?.name ? template.template.name :"Rest Day"}{index < array.length - 1 ? ", " : ""} 
-                      </>
-                    )) : "No Sessions" }
-                </CardDescription>
+              <CardDescription className="flex items-center  ">
+                {plan.templates.length != 0 ? plan.templates.map((template, index, array) => (
+                  <>
+                    {template.template?.name ? template.template.name : "Rest Day"}{index < array.length - 1 ? ", " : ""}
+                  </>
+                )) : "No Sessions"}
+              </CardDescription>
             </CardContent>
             <CardFooter className="mt-auto">
               <div className="flex justify-between w-full gap-2">

@@ -6,12 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { api } from "~/trpc/react"
 import { useToast } from "~/components/ui/use-toast"
-import { Store } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { TRPCClientErrorLike } from "@trpc/client"
-import { type AppRouter } from "~/server/api/root"
+
 
 interface StoreListingDialogProps {
   type: "Template" | "TrainingPlan"
@@ -23,12 +21,13 @@ interface StoreListingDialogProps {
     preview_image?: string | null
     status: 'Active' | 'Inactive'
   } | null
+  trigger?: React.ReactNode
 }
 
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Expert"
 
-export function StoreListingDialog({ type, itemId, existingListing }: StoreListingDialogProps) {
+export function StoreListingDialog({ type, itemId, existingListing, trigger }: StoreListingDialogProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState(existingListing?.title ?? "")
   const [description, setDescription] = useState(existingListing?.description ?? "")
@@ -114,9 +113,7 @@ export function StoreListingDialog({ type, itemId, existingListing }: StoreListi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <>
-          {existingListing ? "Edit Store Listing" : "Add to Store"}
-</>
+        {trigger ?? <Button>List in Store</Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
