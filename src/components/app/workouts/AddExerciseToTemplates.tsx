@@ -81,7 +81,7 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
           <div className="bg-slate-50 p-2 mb-2" key={exercise.id}>
             <div className="flex flex-row mb-2 mt-2">
               <Image
-                src={exercise.image ?? ''}
+                src={exercise.image ?? '/No-Image-Placeholder.svg'}
                 alt={exercise.name}
                 width={100}
                 height={100}

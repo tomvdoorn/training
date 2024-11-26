@@ -50,18 +50,18 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     return <div>Loading...</div>;
   }
 
-  if (!currentUser ?? !profileUser) {
+  if (currentUser ?? profileUser) {
     router.push("/404");
     return null;
   }
   let isOwnProfile = false
-  isOwnProfile = currentUser?.id === profileUser.id;
+  isOwnProfile = currentUser!.id === profileUser!.id;
 
   const handleFollowToggle = async () => {
     if (isFollowing) {
-      await unfollowMutation.mutateAsync({ followingId: profileUser.id });
+      await unfollowMutation.mutateAsync({ followingId: profileUser!.id });
     } else {
-      await followMutation.mutateAsync({ followingId: profileUser.id });
+      await followMutation.mutateAsync({ followingId: profileUser!.id });
     }
     setIsFollowing(!isFollowing);
   };
@@ -90,10 +90,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardHeader className="flex flex-col items-center">
               <Avatar className="w-32 h-32">
-                <AvatarImage src={profileUser.image ?? undefined} alt={profileUser.firstName ?? ''} />
-                <AvatarFallback>{profileUser.firstName?.charAt(0) ?? ''}</AvatarFallback>
+                <AvatarImage src={profileUser!.image ?? undefined} alt={profileUser!.firstName ?? ''} />
+                <AvatarFallback>{profileUser!.firstName?.charAt(0) ?? ''}</AvatarFallback>
               </Avatar>
-              <CardTitle className="mt-4 text-2xl">{profileUser.firstName} {profileUser.lastName}</CardTitle>
+              <CardTitle className="mt-4 text-2xl">{profileUser!.firstName} {profileUser!.lastName}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-4 relative">
@@ -150,7 +150,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           </Card>
         </div>
         <div className="w-full md:w-2/3">
-          <SportsSocialFeed currentUser={currentUser} profileUserId={profileUser.id} />
+          <SportsSocialFeed currentUser={currentUser} profileUserId={profileUser!.id} />
         </div>
       </div>
     </div>

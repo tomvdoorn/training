@@ -22,20 +22,14 @@ import { MediaSelector } from './MediaSelector';
 import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 import { Upload } from 'lucide-react';
 import { uploadFileToStorage } from '~/utils/supabase';
+import { useAuthSession } from '~/hooks/useSession';
 
-interface MediaItem {
-  id: string;
-  url: string;
-  type: 'image' | 'video';
-  exerciseId: number;
-  setIds: number[];
-}
 
 interface FinishWorkoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (data: {
-    privacy: 'public' | 'friends' | 'private';
+    privacy: 'public' | 'followers' | 'private';
     note: string;
     title: string;
     rating: number;
@@ -55,7 +49,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
   defaultTitle,
   startTime,
 }) => {
-    const [privacy, setPrivacy] = useState<'public' | 'friends' | 'private'>('public');
+  const [privacy, setPrivacy] = useState<'public' | 'followers' | 'private'>('public');
   const [note, setNote] = useState('');
   const [title, setTitle] = useState(defaultTitle);
   const [rating, setRating] = useState(5);
@@ -69,8 +63,8 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
   };
 
   const toggleMediaSelection = (mediaId: string) => {
-    setSelectedMedia(prev => 
-      prev.includes(mediaId) 
+    setSelectedMedia(prev =>
+      prev.includes(mediaId)
         ? prev.filter(id => id !== mediaId)
         : [...prev, mediaId]
     );
@@ -79,11 +73,11 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
   const generalMedia = useWorkoutTemplateStore(state => state.generalMedia);
   const { addGeneralMedia } = useWorkoutTemplateStore();
   const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
-  
+
   // Get all pending media from exercises
   const getAllPendingMedia = useCallback(() => {
     // Get exercise-specific media
-    const exerciseMedia = exercises.flatMap(exercise => 
+    const exerciseMedia = exercises.flatMap(exercise =>
       exercise.pendingMedia?.map(media => ({
         file: media.file,
         fileType: media.fileType,
@@ -91,7 +85,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
         exerciseId: exercise.id
       })) ?? []
     );
-    
+
     // Get general media
     const generalMediaItems = generalMedia.map(media => ({
       file: media.file,
@@ -99,18 +93,24 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
       setIndices: [],
       exerciseId: null
     }));
-    
+
     return [...exerciseMedia, ...generalMediaItems];
   }, [exercises, generalMedia]);
+  const session = useAuthSession();
 
+  if (!session?.user?.id) {
+    console.error('No user session found');
+    return null;
+  }
   // Add handleFileUpload function
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
     const files = e.target.files;
     if (!files) return;
 
     try {
       for (const file of Array.from(files)) {
-        const fileUrl = await uploadFileToStorage(file);
+        const fileUrl = await uploadFileToStorage(file, session.user.id);
         console.log('fileUrl', fileUrl);
         if (!fileUrl) {
           console.error('Failed to upload file');
@@ -119,7 +119,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
 
         const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
         let fileType = 'unknown';
-        
+
         if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
           fileType = 'image';
         } else if (['mp4', 'avi', 'mkv', 'mov', 'wmv'].includes(fileExtension)) {
@@ -215,7 +215,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="rating">How tough was this workout? (1-10)</Label>
-            <Select 
+            <Select
               defaultValue="5"
               value={rating.toString()}
               onValueChange={(value) => setRating(parseInt(value))}
@@ -235,17 +235,17 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="privacy">Who can see this post?</Label>
-            <Select 
+            <Select
               defaultValue="public"
               value={privacy}
-              onValueChange={(value) => setPrivacy(value as 'public' | 'friends' | 'private')}
+              onValueChange={(value) => setPrivacy(value as 'public' | 'followers' | 'private')}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select privacy" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">Everyone</SelectItem>
-                <SelectItem value="friends">Friends Only</SelectItem>
+                <SelectItem value="followers">Followers Only</SelectItem>
                 <SelectItem value="private">Only Me</SelectItem>
               </SelectContent>
             </Select>
@@ -256,15 +256,15 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            onClick={() => onConfirm({ 
-              privacy, 
-              note, 
-              title, 
-              rating, 
+          <Button
+            onClick={() => onConfirm({
+              privacy,
+              note,
+              title,
+              rating,
               endTime,
-              selectedMedia 
-            })} 
+              selectedMedia
+            })}
             disabled={isLoading}
           >
             {isLoading ? 'Publishing...' : 'Publish Workout'}

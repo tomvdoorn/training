@@ -1,9 +1,8 @@
 import { getCurrentUser } from "~/lib/session"
 import UserSettings from "~/components/app/settings/UserSettings"
-import type { User } from '@prisma/client'
 export default async function Dashboard() {
   const user = await getCurrentUser()
-  
+
   interface UserSettingsProps {
     id: string;
     firstName: string;
@@ -22,8 +21,8 @@ export default async function Dashboard() {
   }
 
   return (
-    <> 
-      <UserSettings {...userSettings} />    
-    </>
+    <div className="">
+      <UserSettings {...userSettings} />
+    </div>
   )
 }

@@ -34,7 +34,7 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
   const toggleCommentLikeMutation = api.post.toggleCommentLike.useMutation();
 
   const handleAddComment = async () => {
-    if (!currentUser ?? !commentText.trim()) return;
+    if (!currentUser || !commentText.trim()) return;
 
     try {
       await addCommentMutation.mutateAsync({ postId, content: commentText });
@@ -89,7 +89,7 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
   return (
     <div className="mt-4">
       <div className="mb-4">
-      {comments.slice(-3).map(renderComment)}
+        {comments.slice(-3).map(renderComment)}
       </div>
       {currentUser && isExpanded && (
         <div className="flex items-start space-x-2">

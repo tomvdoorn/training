@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { supabase } from "~/utils/supabase";
+import { createServerSupabaseClient } from "~/utils/supabase-server";
 import { TRPCError } from "@trpc/server";
+
+const supabase = createServerSupabaseClient();
 
 export const mediaRouter = createTRPCRouter({
   create: protectedProcedure

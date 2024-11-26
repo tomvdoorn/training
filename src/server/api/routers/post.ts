@@ -11,7 +11,7 @@ export const postRouter = createTRPCRouter({
     .input(z.object({
       trainingSessionId: z.number(),
       templateId: z.number().optional(),
-      privacy: z.enum(['public', 'friends', 'private']),
+      privacy: z.enum(['public', 'followers', 'private']),
       note: z.string().optional(),
       title: z.string(),
       mediaIds: z.array(z.string()).optional(),

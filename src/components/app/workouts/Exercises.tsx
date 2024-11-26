@@ -10,6 +10,8 @@ import FileUploadModal from '~/components/app/workouts/FileUploadModal'
 import { Textarea } from "~/components/ui/textarea";
 import type { Exercise as ExerciseType, SessionExerciseSet, TemplateExerciseSet, SetType } from "@prisma/client";
 import { supabase } from '~/utils/supabaseClient'
+import { useAuthSession } from "~/hooks/useSession";
+import { uploadFileToStorage } from '~/utils/supabase';
 
 type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
   isNew?: boolean;
@@ -61,20 +63,7 @@ const setTypeColors = {
   // Add more types and colors as needed
 };
 
-const uploadFileToStorage = async (file: File) => {
-  const fileName = `${Date.now()}-${file.name}`;
-  const { data, error } = await supabase.storage
-    .from(process.env.NODE_ENV === 'development' ? 'dev' : 'prod')
-    .upload(fileName, file)
 
-  if (error) {
-    console.error('Error uploading file:', error);
-    return null;
-  }
-  const url_base = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-  return `${url_base}/${data.fullPath}`;
-};
 
 const Exercise = ({
   templateExerciseId,
@@ -125,10 +114,16 @@ const Exercise = ({
     setIsFileUploadModalOpen(true);
   };
 
+  const session = useAuthSession();
+  if (!session?.user?.id) {
+    console.error('No user session found');
+    return null;
+  }
+
   const handleFileUploadComplete = async (file: File, selectedSets: number[]) => {
     try {
-      const fileUrl = await uploadFileToStorage(file);
-      
+      const fileUrl = await uploadFileToStorage(file, session.user.id);
+
       if (!fileUrl) {
         console.error('Failed to upload file');
         return;
@@ -136,7 +131,7 @@ const Exercise = ({
 
       const fileExtension = file.name.split('.').pop()?.toLowerCase() ?? '';
       let fileType = 'unknown';
-      
+
       if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension)) {
         fileType = 'image';
       } else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension)) {
@@ -150,7 +145,7 @@ const Exercise = ({
       })
       console.log(addPendingMedia)
 
-      ;
+        ;
     } catch (error) {
       console.error('Error handling file upload:', error);
     }
@@ -170,7 +165,7 @@ const Exercise = ({
 
   return (
     <>
-      <div 
+      <div
         className={`mb-6 p-4 mt-8 rounded-lg ${exerciseIndex % 2 === 0 ? 'bg-slate-50' : 'bg-zinc-50'} shadow-sm transition-all duration-200 hover:shadow-md`}
       >
         <div className="flex items-center justify-between mb-4">
@@ -219,22 +214,22 @@ const Exercise = ({
               {start ? (
                 <TableHead className="text-left">
                   <TooltipProvider>
-                  
-                  <Tooltip>
-                    <TooltipTrigger>
-                    <span className="sr-only">Completed</span>
-                    <CheckCircle className="w-4 h-4 mx-auto lg:hidden" />
-                    <p className="align-left text-sm hidden lg:block">Completed</p>
-                    </TooltipTrigger>
-                    <TooltipContent>Mark set as completed</TooltipContent>
-                  </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="sr-only">Completed</span>
+                        <CheckCircle className="w-4 h-4 mx-auto lg:hidden" />
+                        <p className="align-left text-sm hidden lg:block">Completed</p>
+                      </TooltipTrigger>
+                      <TooltipContent>Mark set as completed</TooltipContent>
+                    </Tooltip>
                   </TooltipProvider>
                 </TableHead>
               ) : null}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sets ? (sets.filter((set): set is TemplateExerciseSet => !('deleted' in set) ?? !set.deleted).map((set, setIndex) => (
+            {sets ? (sets.filter((set): set is TemplateExerciseSet => !('deleted' in set) || !set.deleted).map((set, setIndex) => (
               <ExerciseSet
                 key={`${exerciseIndex}-${setIndex}`}
                 setIndex={setIndex}
@@ -249,11 +244,11 @@ const Exercise = ({
                 prSessionData={prSessionData}
               />
             )))
-          : 
-          (
-            <div className="p-4 text-center">No Sets Added</div>
-          )
-        }
+              :
+              (
+                <div className="p-4 text-center">No Sets Added</div>
+              )
+            }
           </TableBody>
         </Table>
       </div>

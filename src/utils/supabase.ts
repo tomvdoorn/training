@@ -1,26 +1,48 @@
 /* eslint-disable */
 import { createClient } from '@supabase/supabase-js';
+import { useAuthSession } from '~/hooks/useSession';
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export async function uploadFileToStorage(file: File): Promise<string | null> {
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
+
+// Constants for bucket names
+export const STORAGE_BUCKET = process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
+
+export async function uploadFileToStorage(file: File, userId: string): Promise<string | null> {
   try {
     const fileName = `${Date.now()}-${file.name}`;
+    const filePath = `users/${userId}/${fileName}`; // Organize files in user-specific folders
+    
     const { data, error } = await supabase.storage
-      .from(process.env.NODE_ENV === 'development' ? 'dev' : 'prod')
-      .upload(fileName, file)
+      .from(STORAGE_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
     if (error) {
-      console.error('Error uploading file:', error);
+      console.error('Upload error details:', {
+        error,
+        bucket: STORAGE_BUCKET,
+        filePath,
+      });
       return null;
     }
-    const url_base = process.env.NEXT_PUBLIC_SUPABASE_URL
 
-    return `${url_base}/${data.fullPath}`;
+    return supabase.storage
+      .from(STORAGE_BUCKET)
+      .getPublicUrl(data.path).data.publicUrl;
   } catch (error) {
     console.error('Error in uploadFileToStorage:', error);
     return null;
@@ -32,7 +54,7 @@ export async function getSignedUrls(paths: string[], expiresIn = 3600): Promise<
     const signedUrls = await Promise.all(
       paths.map(async (path) => {
         const { data } = await supabase.storage
-          .from('media')
+          .from(STORAGE_BUCKET)
           .createSignedUrl(path, expiresIn);
         return { [path]: data?.signedUrl ?? '' };
       })

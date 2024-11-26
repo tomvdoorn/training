@@ -85,13 +85,13 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
             ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
+                .map(([key, itemConfig]) => {
+                  const color =
+                    itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
+                    itemConfig.color
+                  return color ? `  --color-${key}: ${color};` : null
+                })
+                .join("\n")}
 }
 `
           )
@@ -115,13 +115,13 @@ type TooltipPayload = {
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<"div"> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: "line" | "dot" | "dashed"
-      nameKey?: string
-      labelKey?: string
-    }
+  React.ComponentProps<"div"> & {
+    hideLabel?: boolean
+    hideIndicator?: boolean
+    indicator?: "line" | "dot" | "dashed"
+    nameKey?: string
+    labelKey?: string
+  }
 >(
   (
     {
@@ -179,7 +179,7 @@ const ChartTooltipContent = React.forwardRef<
       labelKey,
     ])
 
-    if (!active ?? !payload?.length) {
+    if (!active || !payload?.length) {
       return null
     }
 
@@ -199,11 +199,11 @@ const ChartTooltipContent = React.forwardRef<
             const key = `${String(nameKey ?? item.dataKey ?? "value")}`
             const itemConfig = getPayloadConfigFromPayload(
               config,
-              payload ,
+              payload,
               key
             )
-            const indicatorColor:string | undefined = color ?? 
-              (typeof item?.payload === 'object' && item.payload ? item.payload.fill : undefined) ?? 
+            const indicatorColor: string | undefined = color ??
+              (typeof item?.payload === 'object' && item.payload ? item.payload.fill : undefined) ??
               item.color
 
             return (
@@ -220,7 +220,7 @@ const ChartTooltipContent = React.forwardRef<
                     item.name ?? '',
                     item as TooltipPayload,
                     index,
-                    [item.payload as Record<string, unknown>] ?? []
+                    [item.payload as Record<string, unknown>]
                   )
                 ) : (
                   <>
@@ -283,10 +283,10 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean
-      nameKey?: string
-    }
+  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+    hideIcon?: boolean
+    nameKey?: string
+  }
 >(
   (
     { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
@@ -350,8 +350,8 @@ function getPayloadConfigFromPayload(
 
   const payloadPayload =
     "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null
+      typeof payload.payload === "object" &&
+      payload.payload !== null
       ? payload.payload
       : undefined
 

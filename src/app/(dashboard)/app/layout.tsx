@@ -7,6 +7,7 @@ import { cn } from "~/lib/utils";
 import { getCurrentUser } from "@/lib/session"
 import { notFound } from "next/navigation"
 import { Toaster } from "~/components/ui/toaster";
+import { Viewport } from "next";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -29,15 +30,17 @@ export const metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180" }
     ],
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1
-  },
+
   manifest: "/site.webmanifest",
-  appleWebApp: {
+  mobileWebAppCapable: {
     title: "TrainTogether"
   }
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1
 }
 
 export default async function RootLayout({

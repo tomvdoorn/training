@@ -1,0 +1,3 @@
+1. This is a NextJS project using Supabase for storage and NextAuth for authentication. It uses Prisma and TRPC.
+2. Use typesafe code and adhere to linting settings
+3. Use SSR where possible. Prefer it over client side code.

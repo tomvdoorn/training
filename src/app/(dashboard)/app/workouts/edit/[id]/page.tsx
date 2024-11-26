@@ -38,7 +38,7 @@ function WorkoutPage({ params }: PageProps) {
   const templateId = parseInt(params.id);
   const { data: workout, refetch } = api.template.getTemplateById.useQuery<TemplateWithExercises>(
     { id: templateId },
-    { 
+    {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
@@ -54,11 +54,11 @@ function WorkoutPage({ params }: PageProps) {
     reorderExercises,
   } = useWorkoutTemplateStore();
 
-  const { 
-    showModal, 
-    checkUnsavedChanges, 
-    handleConfirmNavigation, 
-    handleCancelNavigation 
+  const {
+    showModal,
+    checkUnsavedChanges,
+    handleConfirmNavigation,
+    handleCancelNavigation
   } = useHandleUnsavedChanges();
 
   const [isSaving, setIsSaving] = useState(false);
@@ -68,7 +68,7 @@ function WorkoutPage({ params }: PageProps) {
   useEffect(() => {
     if (workout) {
       setTemplateName(workout.name);
-      setTemplateNotes(workout.note  ?? '');
+      setTemplateNotes(workout.note ?? '');
     }
   }, [workout]);
 
@@ -81,7 +81,7 @@ function WorkoutPage({ params }: PageProps) {
   };
 
   const handleNameBlur = async () => {
-    if (workout && (templateName !== workout.name ?? templateNotes !== workout.note)) {
+    if (workout && (templateName !== workout.name || templateNotes !== workout.note)) {
       try {
         await updateTemplateMutation.mutateAsync({
           id: templateId,
@@ -256,7 +256,7 @@ function WorkoutPage({ params }: PageProps) {
         </div>
         <div className="md:hidden">
           {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
-            <Exercise 
+            <Exercise
               key={exercise.id}
               templateExerciseId={exercise.id!}
               template_id={workout?.id}
@@ -303,7 +303,7 @@ function WorkoutPage({ params }: PageProps) {
               rows={templateNotes ? undefined : 3}
             />
             {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
-              <Exercise 
+              <Exercise
                 key={exercise.id}
                 templateExerciseId={exercise.id!}
                 template_id={workout?.id}
@@ -331,7 +331,7 @@ function WorkoutPage({ params }: PageProps) {
       <div className="hidden md:block w-1/3">
         <Card className="h-[calc(100vh-2rem)] flex flex-col">
           <CardContent className="py-4">
-            <AddExerciseToTemplate 
+            <AddExerciseToTemplate
               templateId={templateId}
               onExerciseAdded={handleExerciseAdded}
               isModal={false}
@@ -340,22 +340,22 @@ function WorkoutPage({ params }: PageProps) {
         </Card>
       </div>
       <div className="md:hidden fixed bottom-4 left-4 right-4 flex justify-between items-center">
-        <AddExerciseToTemplate 
-          templateId={templateId} 
+        <AddExerciseToTemplate
+          templateId={templateId}
           onExerciseAdded={handleExerciseAdded}
         />
         <SaveButton onSave={handleSaveChanges} isLoading={isSaving} />
       </div>
-      <LeavingConfirmationModal 
-        isOpen={showModal} 
-        onClose={handleCancelNavigation} 
+      <LeavingConfirmationModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
         onConfirm={() => {
           handleSaveChanges().then(() => {
             handleConfirmNavigation();
           }).catch((error) => {
             console.error('Error during save and navigation:', error);
           });
-        }} 
+        }}
       />
     </div>
   );

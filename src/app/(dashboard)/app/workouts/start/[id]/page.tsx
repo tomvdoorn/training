@@ -48,7 +48,7 @@ function StartWorkout({ params }: PageProps) {
   const [sessionId, setSessionId] = useState<number | null>(null);
   const { data: workout, refetch } = api.template.getTemplateById.useQuery(
     { id: templateId },
-    { 
+    {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
@@ -70,7 +70,7 @@ function StartWorkout({ params }: PageProps) {
     generalMedia,
   } = useSessionHandler();
 
-    const handleReorderExercises = useCallback((fromIndex: number, toIndex: number) => {
+  const handleReorderExercises = useCallback((fromIndex: number, toIndex: number) => {
     reorderExercises(fromIndex, toIndex);
   }, [reorderExercises]);
 
@@ -94,8 +94,8 @@ function StartWorkout({ params }: PageProps) {
   const createSessionExerciseMutation = api.session.createSessionExercise.useMutation();
   const createSessionSetMutation = api.session.createSessionSet.useMutation();
   const uploadSessionExerciseMediaMutation = api.media.create.useMutation();
-  const updatePostMutation = api.post.updatePost.useMutation();   
-  const checkAndCreatePRMutation = api.exercise.checkAndCreatePR.useMutation(); 
+  const updatePostMutation = api.post.updatePost.useMutation();
+  const checkAndCreatePRMutation = api.exercise.checkAndCreatePR.useMutation();
   const [availableMedia, setAvailableMedia] = useState<MediaItem[]>([]);
   const exerciseMediaQuery = api.media.getBySessionExercise.useQuery(
     { sessionExerciseId: sessionId ?? -1 },
@@ -111,8 +111,8 @@ function StartWorkout({ params }: PageProps) {
         exerciseId: item.sessionExerciseId ?? 0,
         setIds: Array.isArray(item.sessionExerciseSetId) ? item.sessionExerciseSetId : [item.sessionExerciseSetId ?? -1]
       })));
-        console.log('Initial availableMedia:', availableMedia);
-    
+      console.log('Initial availableMedia:', availableMedia);
+
     }
   }, [exerciseMediaQuery.data]);
 
@@ -122,12 +122,12 @@ function StartWorkout({ params }: PageProps) {
         ...exercise,
         sets: exercise.sets?.map(set => ({
           ...set,
-        //   weight: undefined,
-        //   reps: undefined
+          //   weight: undefined,
+          //   reps: undefined
         })
-      // 
-      )
-      //  ?? []
+          // 
+        )
+        //  ?? []
       }));
       initializeExercises(initialExercises);
       updateTemplate(workout);
@@ -148,7 +148,7 @@ function StartWorkout({ params }: PageProps) {
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
 
   const handleSaveChanges = useCallback(async (data: {
-    privacy: 'public' | 'friends' | 'private';
+    privacy: 'public' | 'followers' | 'private';
     note: string;
     title: string;
     rating: number;
@@ -185,7 +185,7 @@ function StartWorkout({ params }: PageProps) {
           }
 
           console.log("Processing exercise:", exercise);
-          console.log("exercise.id", exercise.id);  
+          console.log("exercise.id", exercise.id);
 
           const exerciseId = exercise.exercise?.id;
           if (!exerciseId) {
@@ -229,7 +229,7 @@ function StartWorkout({ params }: PageProps) {
                   weight: set.weight ?? 0,
                 });
                 if (set.weight && set.reps) {
-                totalWeight += (set.weight  * set.reps )
+                  totalWeight += (set.weight * set.reps)
                 }
                 totalPRs += prResult.newPRsCount;
               }
@@ -349,8 +349,8 @@ function StartWorkout({ params }: PageProps) {
     <div className="flex flex-col md:flex-row justify-center min-h-screen">
       <div className="flex-1 w-full md:p-6 pb-20 md:pb-6 overflow-x-hidden">
         <div className="mb-4 md:mb-6 px-4 md:px-0">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => handleNavigation("/app/workouts/")}
             className="md:static fixed top-4 left-4 z-10 bg-background"
           >
@@ -376,26 +376,26 @@ function StartWorkout({ params }: PageProps) {
                     Elapsed Time: {formatElapsedTime(elapsedTime)}
                   </div>
                 </div>
-                <AddExerciseToTemplate 
-                  templateId={templateId} 
+                <AddExerciseToTemplate
+                  templateId={templateId}
                   onExerciseAdded={handleExerciseAdded}
-                />            
+                />
               </div>
             </CardHeader>
             <CardContent>
               <SetDataSelector value={setDataOption} onChange={setSetDataOption} />
               {workout?.note && (
-              <div className="mt-4"> 
-                <label className="text-sm font-semibold mb-2">Notes</label>
-                          <textarea
-              value={workout?.note} 
-              className="w-full p-2 text-sm text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled
+                <div className="mt-4">
+                  <label className="text-sm font-semibold mb-2">Notes</label>
+                  <textarea
+                    value={workout?.note}
+                    className="w-full p-2 text-sm text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled
                   />
-              </div>
+                </div>
               )}
               {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
-                <Exercise 
+                <Exercise
                   key={exercise.id ?? `new-${index}`}
                   templateExerciseId={exercise.id!}
                   template_id={workout?.id}
@@ -406,7 +406,7 @@ function StartWorkout({ params }: PageProps) {
                   onReorder={handleReorderExercises}
                   start
                   setDataOption={setDataOption}
-                  lastSessionData={lastSessionQuery.data }
+                  lastSessionData={lastSessionQuery.data}
                   prSessionData={prSessionQuery.data ?? undefined}
                   templateExercise={exercise as Partial<TemplateExercise>}
                 />
@@ -422,7 +422,7 @@ function StartWorkout({ params }: PageProps) {
         <div className="md:hidden px-4">
           <SetDataSelector value={setDataOption} onChange={setSetDataOption} />
           {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
-            <Exercise 
+            <Exercise
               key={exercise.id ?? `new-${index}`}
               templateExerciseId={exercise.id!}
               template_id={workout?.id}
@@ -440,17 +440,17 @@ function StartWorkout({ params }: PageProps) {
         </div>
       </div>
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-gray-200 p-4 flex justify-between items-center">
-        <AddExerciseToTemplate 
-          templateId={templateId} 
+        <AddExerciseToTemplate
+          templateId={templateId}
           onExerciseAdded={handleExerciseAdded}
         />
         <Button onClick={() => setIsFinishModalOpen(true)} disabled={isSaving}>
           Finish Workout
         </Button>
       </div>
-      <LeavingConfirmationModal 
-        isOpen={showModal} 
-        onClose={handleCancelNavigation} 
+      <LeavingConfirmationModal
+        isOpen={showModal}
+        onClose={handleCancelNavigation}
         onConfirm={handleConfirmNavigation}
       />
       <FinishWorkoutModal

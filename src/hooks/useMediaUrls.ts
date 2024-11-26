@@ -1,40 +1,72 @@
-import { useState, useEffect } from 'react';
-import { getSignedUrls } from '~/utils/supabase';
+import { useState, useEffect, useMemo } from 'react';
+import { getSignedUrls, STORAGE_BUCKET } from '~/utils/supabase';
 import { getCachedUrl, setCachedUrl } from '~/utils/mediaCache';
+import { useAuthSession } from './useSession';
 
 export function useMediaUrls(paths: string[]) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const session = useAuthSession();
+
+  // Memoize paths array to prevent unnecessary effect triggers
+  const memoizedPaths = useMemo(() => paths, [paths.join(',')]);
 
   useEffect(() => {
-    const uncachedPaths = paths.filter(path => !getCachedUrl(path));
-    
-    if (uncachedPaths.length === 0) {
-      const cachedUrls = Object.fromEntries(
-        paths.map(path => [path, getCachedUrl(path)!])
-      );
-      setUrls(cachedUrls);
+    if (!session?.user?.id || !memoizedPaths.length) return;
+
+    const getFullPath = (path: string) => {
+      if (path.includes('token=')) return path;
+      const fileName = path.split('/').pop();
+      return fileName ? `users/${session.user.id}/${fileName}` : path;
+    };
+
+    // Check cache first
+    const allUrls: Record<string, string> = {};
+    const pathsToFetch: string[] = [];
+
+    memoizedPaths.forEach(path => {
+      const fullPath = getFullPath(path);
+      const cachedUrl = getCachedUrl(fullPath);
+      if (cachedUrl) {
+        allUrls[path] = cachedUrl;
+      } else if (!path.includes('token=')) {
+        pathsToFetch.push(fullPath);
+      } else {
+        allUrls[path] = path;
+      }
+    });
+
+    // If all URLs are cached, set them and return
+    if (pathsToFetch.length === 0) {
+      setUrls(allUrls);
       return;
     }
 
-    const fetchUrls = async () => {
-      const signedUrls = await getSignedUrls(uncachedPaths);
+    // Fetch missing URLs
+    let mounted = true;
+    void getSignedUrls(pathsToFetch).then(signedUrls => {
+      if (!mounted) return;
+
+      // Cache new URLs
       Object.entries(signedUrls).forEach(([path, url]) => {
         setCachedUrl(path, url, 3300);
       });
 
-      setUrls(prev => ({
-        ...prev,
-        ...signedUrls,
+      // Combine cached and new URLs
+      setUrls({
+        ...allUrls,
         ...Object.fromEntries(
-          paths
-            .filter(path => !uncachedPaths.includes(path))
-            .map(path => [path, getCachedUrl(path)!])
+          memoizedPaths.map(path => {
+            const fullPath = getFullPath(path);
+            return [path, signedUrls[fullPath] ?? allUrls[path] ?? path];
+          })
         )
-      }));
-    };
+      });
+    });
 
-    void fetchUrls();
-  }, [paths]);
+    return () => {
+      mounted = false;
+    };
+  }, [memoizedPaths, session?.user?.id]);
 
   return urls;
 } 
