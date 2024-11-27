@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import {
   getServerSession,
@@ -8,9 +9,10 @@ import { type Adapter } from "next-auth/adapters";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
-
 import { env } from "~/env";
 import { db } from "~/server/db";
+import jwt from "jsonwebtoken";
+
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -19,6 +21,7 @@ declare module "next-auth" {
       firstName: string | null;
       lastName: string | null;
     } & DefaultSession["user"];
+    supabaseAccessToken?: string;
   }
 
   interface User {
@@ -34,11 +37,22 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/sign-in', // Redirect errors back to sign-in page
   },
   callbacks: {
-    jwt: ({ token, user }) => {
+    jwt: async ({ token, user }) => {
       if (user) {
         token.id = user.id;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        // Generate a Supabase token using your service role key
+        const supabaseAccessToken: string = jwt.sign(
+          { 
+            sub: user.id,
+            role: 'authenticated',
+            aud: 'authenticated'
+          },
+          process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+          { expiresIn: '1h' }
+        );
+        token.supabaseAccessToken = supabaseAccessToken;
       }
       return token;
     },
@@ -51,6 +65,7 @@ export const authOptions: NextAuthOptions = {
           firstName: token.firstName as string | null,
           lastName: token.lastName as string | null,
         },
+        supabaseAccessToken: token.supabaseAccessToken,
       };
     },
   },

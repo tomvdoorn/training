@@ -1,5 +1,7 @@
 /* eslint-disable */
 import { createClient } from '@supabase/supabase-js';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '~/server/auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -7,20 +9,26 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
+  const session = await getServerSession(authOptions);
 
-// Create a basic client for public operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: true,
   },
+  global: {
+    headers: {
+      authorization: session ? `Bearer ${session.user.id}` : '',
+    }
+  }
 });
 
 // Constants for bucket names
 export const STORAGE_BUCKET = process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
 
-// Create an authenticated client function
-export const createAuthenticatedClient = (userId: string) => {
+// Add logging to createAuthenticatedClient
+export const createAuthenticatedClient = (token: string) => {
+  console.log('Creating authenticated client with token');
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: false,
@@ -28,18 +36,27 @@ export const createAuthenticatedClient = (userId: string) => {
     },
     global: {
       headers: {
-        Authorization: `Bearer ${userId}`,
+        Authorization: `Bearer ${token}`,
       },
     },
   });
 };
 
-export async function uploadFileToStorage(file: File, userId: string): Promise<string | null> {
+export async function uploadFileToStorage(file: File, token: string): Promise<string | null> {
   try {
-    const authenticatedClient = createAuthenticatedClient(userId);
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = `users/${userId}/${fileName}`;
+    console.log('Starting file upload with token');
+    const authenticatedClient = createAuthenticatedClient(token);
     
+    const fileName = `${Date.now()}-${file.name}`;
+    const filePath = `users/${token}/${fileName}`;
+    
+    console.log('Attempting upload:', {
+      bucket: STORAGE_BUCKET,
+      filePath,
+      fileSize: file.size,
+      fileType: file.type
+    });
+
     const { data, error } = await authenticatedClient.storage
       .from(STORAGE_BUCKET)
       .upload(filePath, file, {
@@ -50,17 +67,31 @@ export async function uploadFileToStorage(file: File, userId: string): Promise<s
     if (error) {
       console.error('Upload error details:', {
         error,
+        errorMessage: error.message,
         bucket: STORAGE_BUCKET,
         filePath,
       });
       return null;
     }
 
-    return authenticatedClient.storage
+    console.log('Upload successful:', {
+      path: data.path,
+      bucket: STORAGE_BUCKET,
+    });
+
+    const publicUrl = authenticatedClient.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(data.path).data.publicUrl;
+
+    console.log('Generated public URL:', publicUrl);
+    return publicUrl;
   } catch (error) {
-    console.error('Error in uploadFileToStorage:', error);
+    console.error('Error in uploadFileToStorage:', {
+      error,
+      token,
+      fileName: file.name,
+      fileSize: file.size,
+    });
     return null;
   }
 }

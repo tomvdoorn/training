@@ -10,9 +10,12 @@ export function useMediaUrls(paths: string[]) {
   const memoizedPaths = useMemo(() => paths, [paths.join(',')]);
 
   useEffect(() => {
-    if (!session?.user?.id || !memoizedPaths.length) return;
+    if (!session?.supabaseAccessToken || !memoizedPaths.length) {
+      console.log('Missing token or paths');
+      return;
+    }
 
-    const authenticatedClient = createAuthenticatedClient(session.user.id);
+    const authenticatedClient = createAuthenticatedClient(session.supabaseAccessToken);
 
     const getFullPath = (path: string) => {
       if (path.includes('token=')) return path;
@@ -67,7 +70,7 @@ export function useMediaUrls(paths: string[]) {
     return () => {
       mounted = false;
     };
-  }, [memoizedPaths, session?.user?.id]);
+  }, [memoizedPaths, session?.supabaseAccessToken]);
 
   return urls;
 } 
