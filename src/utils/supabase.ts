@@ -1,6 +1,5 @@
 /* eslint-disable */
 import { createClient } from '@supabase/supabase-js';
-import { useAuthSession } from '~/hooks/useSession';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -9,9 +8,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// Create a basic client for public operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
+    persistSession: false,
     autoRefreshToken: true,
   },
 });
@@ -19,12 +19,28 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Constants for bucket names
 export const STORAGE_BUCKET = process.env.NODE_ENV === 'development' ? 'dev' : 'prod';
 
+// Create an authenticated client function
+export const createAuthenticatedClient = (userId: string) => {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: true,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${userId}`,
+      },
+    },
+  });
+};
+
 export async function uploadFileToStorage(file: File, userId: string): Promise<string | null> {
   try {
+    const authenticatedClient = createAuthenticatedClient(userId);
     const fileName = `${Date.now()}-${file.name}`;
-    const filePath = `users/${userId}/${fileName}`; // Organize files in user-specific folders
+    const filePath = `users/${userId}/${fileName}`;
     
-    const { data, error } = await supabase.storage
+    const { data, error } = await authenticatedClient.storage
       .from(STORAGE_BUCKET)
       .upload(filePath, file, {
         cacheControl: '3600',
@@ -40,7 +56,7 @@ export async function uploadFileToStorage(file: File, userId: string): Promise<s
       return null;
     }
 
-    return supabase.storage
+    return authenticatedClient.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(data.path).data.publicUrl;
   } catch (error) {

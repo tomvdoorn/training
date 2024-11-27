@@ -19,12 +19,15 @@ async function createTemplates() {
   };
 
   // Push Template
-  const pushTemplate = await prisma.template.create({
-    data: {
-      name: "Push Day",
-      userId: "system",
-      owner_id: "system",
-      exercises: {
+
+  let pushTemplate;
+  try {
+    pushTemplate = await prisma.template.create({
+        data: {
+          name: "Push Day",
+          userId: "system",
+          owner_id: "system",
+          exercises: {
         create: [
           {
             exerciseId: 2, // Bench Press
@@ -48,13 +51,18 @@ async function createTemplates() {
           }
         ]
       }
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating push template:', error)
+  }
 
   // Pull Template
-  const pullTemplate = await prisma.template.create({
-    data: {
-      name: "Pull Day",
+  let pullTemplate;
+  try {
+    pullTemplate = await prisma.template.create({
+      data: {
+        name: "Pull Day",
       userId: "system",
       owner_id: "system",
       exercises: {
@@ -81,13 +89,18 @@ async function createTemplates() {
           }
         ]
       }
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating pull template:', error)
+  }
 
   // Legs Template
-  const legsTemplate = await prisma.template.create({
-    data: {
-      name: "Leg Day",
+  let legsTemplate;
+  try {
+    legsTemplate = await prisma.template.create({
+      data: {
+        name: "Leg Day",
       userId: "system",
       owner_id: "system",
       exercises: {
@@ -114,13 +127,18 @@ async function createTemplates() {
           }
         ]
       }
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating legs template:', error)
+  }
 
   // Upper Body Template
-  const upperTemplate = await prisma.template.create({
-    data: {
-      name: "Upper Body",
+  let upperTemplate;
+  try {
+    upperTemplate = await prisma.template.create({
+      data: {
+        name: "Upper Body",
       userId: "system",
       owner_id: "system",
       exercises: {
@@ -152,13 +170,18 @@ async function createTemplates() {
           }
         ]
       }
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating upper template:', error)
+  }
 
   // Lower Body Template
-  const lowerTemplate = await prisma.template.create({
-    data: {
-      name: "Lower Body",
+  let lowerTemplate;
+  try {
+    lowerTemplate = await prisma.template.create({
+      data: {
+        name: "Lower Body",
       userId: "system",
       owner_id: "system",
       exercises: {
@@ -190,13 +213,18 @@ async function createTemplates() {
           }
         ]
       }
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating lower template:', error)
+  }
 
   // Full Body Template
-  const fullBodyTemplate = await prisma.template.create({
-    data: {
-      name: "Full Body",
+  let fullBodyTemplate;
+  try {
+    fullBodyTemplate = await prisma.template.create({
+      data: {
+        name: "Full Body",
       userId: "system",
       owner_id: "system",
       exercises: {
@@ -233,8 +261,11 @@ async function createTemplates() {
           }
         ]
       }
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating full body template:', error)
+  }
 
   return { 
     pushTemplate, 
@@ -248,9 +279,11 @@ async function createTemplates() {
 
 async function createTrainingPlans(templates: any) {
   // 4-day Split (Upper/Lower + Full Body)
-  const fourDayPlan = await prisma.trainingPlan.create({
-    data: {
-      name: "4-Day Strength Focus",
+  let fourDayPlan;
+  try {
+    fourDayPlan = await prisma.trainingPlan.create({
+      data: {
+        name: "4-Day Strength Focus",
       duration: 7,
       userId: "system",
       owner_id: "system",
@@ -267,12 +300,17 @@ async function createTrainingPlans(templates: any) {
         ]
       }
     }
-  });
+    });
+  } catch (error) {
+    console.error('Error creating four day plan:', error)
+  }
 
   // 5-day Split (Upper/Lower + PPL)
-  const fiveDayPlan = await prisma.trainingPlan.create({
-    data: {
-      name: "5-Day Hybrid Split",
+  let fiveDayPlan;
+  try {
+    fiveDayPlan = await prisma.trainingPlan.create({
+      data: {
+        name: "5-Day Hybrid Split",
       duration: 7,
       userId: "system",
       owner_id: "system",
@@ -289,12 +327,17 @@ async function createTrainingPlans(templates: any) {
         ]
       }
     }
-  });
+    });
+  } catch (error) {
+    console.error('Error creating five day plan:', error)
+  }
 
   // 6-day PPL (Original PPL twice per week)
-  const sixDayPlan = await prisma.trainingPlan.create({
-    data: {
-      name: "6-Day PPL Split",
+  let sixDayPlan;
+  try {
+    sixDayPlan = await prisma.trainingPlan.create({
+      data: {
+        name: "6-Day PPL Split",
       duration: 7,
       userId: "system",
       owner_id: "system",
@@ -312,6 +355,10 @@ async function createTrainingPlans(templates: any) {
       }
     }
   });
+  } catch (error) {
+    console.error('Error creating six day plan:', error)
+    
+  }
 
   return {
     fourDayPlan,
@@ -322,7 +369,8 @@ async function createTrainingPlans(templates: any) {
 
 async function createStoreListings(templates: any, trainingPlans: any) {
   // Create store listings for templates
-  await prisma.storeListing.create({
+  try {
+    await prisma.storeListing.create({
     data: {
       title: "Push Day Template",
       description: "A comprehensive push workout focusing on chest, shoulders, and triceps.",
@@ -412,6 +460,9 @@ async function createStoreListings(templates: any, trainingPlans: any) {
       status: "Active"
     }
   });
+  } catch (error) {
+    console.error('Error creating store listings:', error)
+  }
 }
 
 async function main() {
@@ -440,16 +491,26 @@ async function main() {
   ];
 
   for (const category of categories) {
-    await prisma.exerciseCategory.create({
-      data: category,
-    });
+    try {
+      await prisma.exerciseCategory.create({
+        data: category,
+      })
+    } catch (error) {
+      console.error(`Error creating category ${category.name}:`, error)
+      continue;
+    }
   }
 
   for (const type of types) {
-    await prisma.exerciseType.create({
-      data: type,
-    });
-  }
+    try {
+      await prisma.exerciseType.create({
+        data: type,
+      });
+    } catch (error) {
+      console.error(`Error creating type ${type.name}:`, error)
+      continue;
+    }
+    }
 
   const exercises = [
     // Barbell Exercises (typeId: 1)
@@ -627,19 +688,40 @@ async function main() {
 
   for (const exercise of exercises) {
     console.log(exercise.name)
-    await prisma.exercise.create({
-      data: exercise,
-    });
+    try {
+      await prisma.exercise.create({
+        data: exercise,
+      });
+    } catch (error) {
+      console.error(`Error creating exercise ${exercise.name}:`, error)
+      await prisma.exercise.update({
+        where: {
+          name: exercise.name
+        },
+        data: exercise
+      })
+    }
   }
-
-  const systemUser = await prisma.user.create({
-    data: {
+  try {
+    const systemUser = await prisma.user.create({
+      data: {
       id: "system",
       firstName: "System",
       lastName: "User",
       email: "system@example.com",
-    }
-  });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating system user:', error)
+    await prisma.user.update({
+      where: {
+        id: "system"
+      },
+      data: {
+        email: "system@example.com"
+      }
+    }) 
+  }
 
   const templates = await createTemplates();
   const trainingPlans = await createTrainingPlans(templates);

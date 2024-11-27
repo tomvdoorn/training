@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getSignedUrls, STORAGE_BUCKET } from '~/utils/supabase';
+import { getSignedUrls, STORAGE_BUCKET, createAuthenticatedClient } from '~/utils/supabase';
 import { getCachedUrl, setCachedUrl } from '~/utils/mediaCache';
 import { useAuthSession } from './useSession';
 
@@ -7,11 +7,12 @@ export function useMediaUrls(paths: string[]) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const session = useAuthSession();
 
-  // Memoize paths array to prevent unnecessary effect triggers
   const memoizedPaths = useMemo(() => paths, [paths.join(',')]);
 
   useEffect(() => {
     if (!session?.user?.id || !memoizedPaths.length) return;
+
+    const authenticatedClient = createAuthenticatedClient(session.user.id);
 
     const getFullPath = (path: string) => {
       if (path.includes('token=')) return path;
