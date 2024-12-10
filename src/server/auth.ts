@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import {
   getServerSession,
@@ -28,6 +27,10 @@ declare module "next-auth" {
     firstName: string | null;
     lastName: string | null;
   }
+
+  interface JWT {
+    supabaseAccessToken?: string;
+  }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -42,32 +45,35 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
-        // Generate a Supabase token using your service role key
-        const supabaseAccessToken: string = jwt.sign(
+        token.supabaseAccessToken = jwt.sign(
           { 
             sub: user.id,
             role: 'authenticated',
-            aud: 'authenticated'
+            aud: 'authenticated',
+            email: user.email,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour from now
+            iat: Math.floor(Date.now() / 1000),
+            app_metadata: {
+              provider: 'credentials',
+              provider_id: user.id,
+            },
           },
-          process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
-          { expiresIn: '1h' }
+          process.env.SUPABASE_JWT_SECRET ?? '', // Use JWT secret instead of service role key
+          { algorithm: 'HS256' }
         );
-        token.supabaseAccessToken = supabaseAccessToken;
       }
       return token;
     },
-    session: ({ session, token }) => {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.id as string,
-          firstName: token.firstName as string | null,
-          lastName: token.lastName as string | null,
-        },
-        supabaseAccessToken: token.supabaseAccessToken,
-      };
-    },
+    session: ({ session, token }) => ({
+      ...session,
+      user: {
+        ...session.user,
+        id: token.id as string,
+        firstName: token.firstName as string | null,
+        lastName: token.lastName as string | null,
+      },
+      supabaseAccessToken: token.supabaseAccessToken,
+    }),
   },
   session: {
     strategy: "jwt",

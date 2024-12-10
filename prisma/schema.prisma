@@ -9,11 +9,10 @@ generator dbml {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model Account {
-  id                       String  @id @default(cuid())
+  id                       String  @id @default(uuid())
   userId                   String
   type                     String
   provider                 String
@@ -40,7 +39,7 @@ model Session {
 }
 
 model User {
-  id                    String                   @id @default(cuid())
+  id                    String                   @id @default(uuid())
   firstName             String?
   lastName              String?
   email                 String?                  @unique

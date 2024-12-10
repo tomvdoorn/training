@@ -122,7 +122,7 @@ const Exercise = ({
 
   const handleFileUploadComplete = async (file: File, selectedSets: number[]) => {
     try {
-      const fileUrl = await uploadFileToStorage(file, session.user.id);
+      const fileUrl = await uploadFileToStorage(file, session?.supabaseAccessToken ?? '');
 
       if (!fileUrl) {
         console.error('Failed to upload file');

@@ -1,7 +1,6 @@
-/* eslint-disable */
+
 import { createClient } from '@supabase/supabase-js';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '~/server/auth';
+import jwt from 'jsonwebtoken';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -9,18 +8,13 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
-  const session = await getServerSession(authOptions);
 
+// Create a basic client for public operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: true,
   },
-  global: {
-    headers: {
-      authorization: session ? `Bearer ${session.user.id}` : '',
-    }
-  }
 });
 
 // Constants for bucket names
@@ -31,7 +25,7 @@ export const createAuthenticatedClient = (token: string) => {
   console.log('Creating authenticated client with token');
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: false,
+      persistSession: true,
       autoRefreshToken: true,
     },
     global: {
@@ -41,14 +35,24 @@ export const createAuthenticatedClient = (token: string) => {
     },
   });
 };
+const sanitizeFileName = (fileName: string): string => {
+  return fileName.replace(/[^a-zA-Z0-9-_\.]/g, '_'); // Replace invalid characters with underscores
+};
 
 export async function uploadFileToStorage(file: File, token: string): Promise<string | null> {
   try {
     console.log('Starting file upload with token');
     const authenticatedClient = createAuthenticatedClient(token);
     
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = `users/${token}/${fileName}`;
+    // Decode the JWT to get the user ID
+    const decodedToken = jwt.decode(token) as { sub?: string };
+    if (!decodedToken?.sub) {
+      console.error('Invalid token: no user ID found');
+      return null;
+    }
+    const sanitizedFileName = sanitizeFileName(file.name);
+    const fileName = `${Date.now()}-${sanitizedFileName}`;
+    const filePath = `users/${decodedToken.sub}/${fileName}`;
     
     console.log('Attempting upload:', {
       bucket: STORAGE_BUCKET,
@@ -74,24 +78,11 @@ export async function uploadFileToStorage(file: File, token: string): Promise<st
       return null;
     }
 
-    console.log('Upload successful:', {
-      path: data.path,
-      bucket: STORAGE_BUCKET,
-    });
-
-    const publicUrl = authenticatedClient.storage
+    return authenticatedClient.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(data.path).data.publicUrl;
-
-    console.log('Generated public URL:', publicUrl);
-    return publicUrl;
   } catch (error) {
-    console.error('Error in uploadFileToStorage:', {
-      error,
-      token,
-      fileName: file.name,
-      fileSize: file.size,
-    });
+    console.error('Error in uploadFileToStorage:', error);
     return null;
   }
 }
@@ -106,7 +97,7 @@ export async function getSignedUrls(paths: string[], expiresIn = 3600): Promise<
         return { [path]: data?.signedUrl ?? '' };
       })
     );
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return Object.assign({}, ...signedUrls);
   } catch (error) {
     console.error('Error in getSignedUrls:', error);

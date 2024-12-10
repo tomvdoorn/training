@@ -97,9 +97,8 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
     return [...exerciseMedia, ...generalMediaItems];
   }, [exercises, generalMedia]);
   const session = useAuthSession();
-
-  if (!session?.user?.id) {
-    console.error('No user session found');
+  if (!session?.supabaseAccessToken) {
+    console.error('No user session found token ');
     return null;
   }
   // Add handleFileUpload function
@@ -110,7 +109,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
 
     try {
       for (const file of Array.from(files)) {
-        const fileUrl = await uploadFileToStorage(file, session.user.id);
+        const fileUrl = await uploadFileToStorage(file, session?.supabaseAccessToken ?? '');
         console.log('fileUrl', fileUrl);
         if (!fileUrl) {
           console.error('Failed to upload file');
