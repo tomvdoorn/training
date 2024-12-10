@@ -1,17 +1,23 @@
 import React, { useState } from 'react'
 import { useSchedulingStore } from '@/stores/schedulingStore'
-import { api as trpc } from "~/trpc/react"  
+import { api as trpc } from "~/trpc/react"
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/use-toast'
-
+import { Label } from "@/components/ui/label"
 
 const ScheduleSession = () => {
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const now = new Date()
+  now.setMinutes(Math.round(now.getMinutes() / 15) * 15)
+  now.setSeconds(0)
+  const [selectedTime, setSelectedTime] = useState<string>(
+    `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  )
   const { selectedDate, selectedTemplateId, setSelectedDate, setSelectedTemplateId, resetState } = useSchedulingStore()
   const scheduleSessionMutation = trpc.session.scheduleSession.useMutation()
   const templatesQuery = trpc.template.getTemplatesUser.useQuery()
@@ -20,32 +26,27 @@ const ScheduleSession = () => {
   const handleSchedule = async () => {
     if (selectedDate && selectedTemplateId) {
       try {
-        // Get the user's local timezone offset in minutes
-        const timezoneOffset = new Date().getTimezoneOffset()
-
-        // Create a new Date object set to noon UTC on the selected date
-        const dateToSend = new Date(Date.UTC(
+        const [hours, minutes] = selectedTime.split(':').map(Number)
+        const dateToSend = new Date(
           selectedDate.getFullYear(),
           selectedDate.getMonth(),
           selectedDate.getDate(),
-          12, 0, 0, 0
-        ))
-
-        // Adjust for the timezone offset
-        dateToSend.setMinutes(dateToSend.getMinutes() - timezoneOffset)
+          hours,
+          minutes,
+          0
+        )
 
         await scheduleSessionMutation.mutateAsync({
           templateId: selectedTemplateId,
           date: dateToSend,
         })
-        
+
         resetState()
         setOpen(false)
-        
-        // Invalidate and refetch relevant queries
+
         await utils.session.invalidate()
         await utils.template.invalidate()
-        
+
         toast({
           title: "Success",
           description: "Training session scheduled successfully.",
@@ -60,6 +61,12 @@ const ScheduleSession = () => {
       }
     }
   }
+
+  const timeOptions = Array.from({ length: 96 }, (_, i) => {
+    const hour = Math.floor(i / 4)
+    const minute = (i % 4) * 15
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+  })
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -77,18 +84,33 @@ const ScheduleSession = () => {
             onSelect={(date) => date && setSelectedDate(date)}
             className="rounded-md border w-full"
           />
+          <div className="space-y-2">
+            <Label>Time</Label>
+            <Select value={selectedTime} onValueChange={setSelectedTime}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeOptions.map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Select onValueChange={(value) => setSelectedTemplateId(Number(value))}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a template" />
             </SelectTrigger>
             <SelectContent>
-              {templatesQuery.data && templatesQuery.data.length > 0 ? 
+              {templatesQuery.data && templatesQuery.data.length > 0 ?
                 templatesQuery.data.map((template) => (
                   <SelectItem key={template.id} value={template.id.toString()}>
                     {template.name}
                   </SelectItem>
                 )) :
-                <Button 
+                <Button
                   onClick={() => {
                     setOpen(false)
                     router.push('/app/workouts')
