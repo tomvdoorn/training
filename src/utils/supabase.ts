@@ -87,11 +87,12 @@ export async function uploadFileToStorage(file: File, token: string): Promise<st
   }
 }
 
-export async function getSignedUrls(paths: string[], expiresIn = 3600): Promise<Record<string, string>> {
+export async function getSignedUrls(paths: string[], expiresIn = 3600, token: string): Promise<Record<string, string>> {
   try {
+    const authenticatedClient = createAuthenticatedClient(token);
     const signedUrls = await Promise.all(
       paths.map(async (path) => {
-        const { data } = await supabase.storage
+        const { data } = await authenticatedClient.storage
           .from(STORAGE_BUCKET)
           .createSignedUrl(path, expiresIn);
         return { [path]: data?.signedUrl ?? '' };

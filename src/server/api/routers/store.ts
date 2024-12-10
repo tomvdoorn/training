@@ -137,8 +137,8 @@ export const storeRouter = createTRPCRouter({
         where: {
           user_id: ctx.session.user.id,
           OR: [
-            { template_id: listing.template_id },
-            { training_plan_id: listing.training_plan_id },
+            { template_id: listing.template_id ,
+            training_plan_id: listing.training_plan_id },
           ],
         },
       });

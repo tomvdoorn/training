@@ -75,7 +75,7 @@ export default function StorePage() {
           <h1 className="text-4xl font-bold mb-2 ">Store</h1>
           <p className="text-gray-600">Discover and acquire new workout templates and training plans</p>
         </header>
-        
+
         <div className="flex flex-wrap gap-4 mb-8">
           <Select onValueChange={(value: string) => setTypeFilter(value as "Template" | "TrainingPlan" | "all")}>
             <SelectTrigger className="w-[180px]">
@@ -110,7 +110,7 @@ export default function StorePage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button 
+                <Button
                   className="w-full bg-indigo-600 hover:bg-indigo-700"
                   onClick={() => handleAcquire(listing.id)}
                   disabled={isPending}

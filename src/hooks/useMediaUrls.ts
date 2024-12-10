@@ -15,12 +15,13 @@ export function useMediaUrls(paths: string[]) {
       return;
     }
 
-    const authenticatedClient = createAuthenticatedClient(session.supabaseAccessToken);
 
     const getFullPath = (path: string) => {
+          console.log('paths', path);
       if (path.includes('token=')) return path;
-      const fileName = path.split('/').pop();
-      return fileName ? `users/${session.user.id}/${fileName}` : path;
+      const pathSegments = path.split('/');
+      const path_full = pathSegments.slice(-3).join('/'); // Take the last 3 elements
+      return path_full
     };
 
     // Check cache first
@@ -47,7 +48,7 @@ export function useMediaUrls(paths: string[]) {
 
     // Fetch missing URLs
     let mounted = true;
-    void getSignedUrls(pathsToFetch).then(signedUrls => {
+    void getSignedUrls(pathsToFetch, 3600, session.supabaseAccessToken).then(signedUrls => {
       if (!mounted) return;
 
       // Cache new URLs
