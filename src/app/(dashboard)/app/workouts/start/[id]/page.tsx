@@ -92,10 +92,10 @@ function StartWorkout({ params }: PageProps) {
   const createTrainingSessionMutation = api.session.createTrainingSession.useMutation();
   const createPostMutation = api.post.createPost.useMutation();
   const createSessionExerciseMutation = api.session.createSessionExercise.useMutation();
-  const createSessionSetMutation = api.session.createSessionSet.useMutation();
+  const createSessionSetsMutation = api.session.createSessionSets.useMutation();
   const uploadSessionExerciseMediaMutation = api.media.create.useMutation();
   const updatePostMutation = api.post.updatePost.useMutation();
-  const checkAndCreatePRMutation = api.exercise.checkAndCreatePR.useMutation();
+  const checkAndCreatePRsMutation = api.exercise.checkAndCreatePRs.useMutation();
   const [availableMedia, setAvailableMedia] = useState<MediaItem[]>([]);
   const exerciseMediaQuery = api.media.getBySessionExercise.useQuery(
     { sessionExerciseId: sessionId ?? -1 },
@@ -178,6 +178,14 @@ function StartWorkout({ params }: PageProps) {
         let totalPRs = 0;
         let totalWeight = 0;
         const newMediaIds: number[] = [];
+        const completedSets: Array<{
+          exerciseId: number;
+          sessionExerciseId: number;
+          setId: number;
+          reps: number;
+          weight: number;
+        }> = [];
+
         for (const exercise of exercises as PartialTemplateExercise[]) {
           if (exercise.deleted) {
             console.log("Skipping deleted exercise:", exercise);
@@ -202,37 +210,32 @@ function StartWorkout({ params }: PageProps) {
 
           if (exercise.sets) {
             console.log(`Processing ${exercise.sets.length} sets for exercise ${exercise.id}`);
-            for (const set of exercise.sets) {
-              if (set.deleted) {
-                console.log("Skipping deleted set:", set);
-                continue;
-              }
+            const validSets = exercise.sets.filter(set => !set.deleted);
 
-              console.log("Processing set:", set);
-
-              const newSessionSet = await createSessionSetMutation.mutateAsync({
-                sessionExerciseId: newSessionExercise.id,
-                reps: set.reps ?? 0,
-                weight: set.weight ?? 0,
-                type: set.type ?? 'Regular',
-                completed: set.completed ?? false,
-              });
-
-              console.log("Session set created:", newSessionSet);
-
-              if (set.completed) {
-                const prResult = await checkAndCreatePRMutation.mutateAsync({
-                  exerciseId: exerciseId,
+            if (validSets.length > 0) {
+              const newSessionSets = await createSessionSetsMutation.mutateAsync(
+                validSets.map(set => ({
                   sessionExerciseId: newSessionExercise.id,
-                  setId: newSessionSet.id,
                   reps: set.reps ?? 0,
                   weight: set.weight ?? 0,
-                });
-                if (set.weight && set.reps) {
-                  totalWeight += (set.weight * set.reps)
+                  type: set.type ?? 'Regular',
+                  completed: set.completed ?? false,
+                }))
+              );
+
+              // Track completed sets for PR checking
+              validSets.forEach((set, index) => {
+                if (set.completed && set.weight && set.reps) {
+                  totalWeight += (set.weight * set.reps);
+                  completedSets.push({
+                    exerciseId: exerciseId,
+                    sessionExerciseId: newSessionExercise.id,
+                    setId: index + 1, // Assuming the sets are created in order
+                    reps: set.reps,
+                    weight: set.weight,
+                  });
                 }
-                totalPRs += prResult.newPRsCount;
-              }
+              });
             }
           }
 
@@ -250,6 +253,12 @@ function StartWorkout({ params }: PageProps) {
               }
             }
           }
+        }
+
+        // Check PRs in batch
+        if (completedSets.length > 0) {
+          const prResults = await checkAndCreatePRsMutation.mutateAsync(completedSets);
+          totalPRs = prResults.newPRsCount;
         }
 
         if (generalMedia.length) {
@@ -306,13 +315,14 @@ function StartWorkout({ params }: PageProps) {
     createTrainingSessionMutation,
     createPostMutation,
     createSessionExerciseMutation,
-    createSessionSetMutation,
-    checkAndCreatePRMutation,
+    createSessionSetsMutation,
+    checkAndCreatePRsMutation,
     updatePostMutation,
     refetch,
     resetChanges,
     toast,
-    router
+    router,
+    generalMedia
   ]);
 
   const formatElapsedTime = (seconds: number) => {

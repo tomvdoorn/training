@@ -111,6 +111,26 @@ export const sessionRouter = createTRPCRouter({
       });
     }),
 
+  createSessionSets: protectedProcedure
+    .input(z.array(z.object({
+      sessionExerciseId: z.number(),
+      reps: z.number(),
+      weight: z.number().optional(),
+      type: z.enum(['Warmup', 'Regular', 'Dropset', 'Superset', 'Partials']),
+      completed: z.boolean(),
+    })))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.sessionExerciseSet.createMany({
+        data: input.map(set => ({
+          sessionExerciseId: set.sessionExerciseId,
+          reps: set.reps,
+          weight: set.weight,
+          type: set.type,
+          completed: set.completed,
+        })),
+      });
+    }),
+
   updateSessionSet: protectedProcedure
     .input(z.object({
       id: z.number(),

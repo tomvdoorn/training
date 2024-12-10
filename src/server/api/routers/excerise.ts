@@ -138,7 +138,7 @@ export const exerciseRouter = router({
             break;
         }
 
-        const existingPR = await prisma.exercisePersonalRecord.findFirst({
+        const existingPR = await ctx.db.exercisePersonalRecord.findFirst({
           where: {
             exerciseId: input.exerciseId,
             userId: userId,
@@ -150,7 +150,7 @@ export const exerciseRouter = router({
         });
 
         if (!existingPR || value > existingPR.value) {
-          await prisma.exercisePersonalRecord.create({
+          await ctx.db.exercisePersonalRecord.create({
             data: {
               exerciseId: input.exerciseId,
               userId: userId,
@@ -165,5 +165,78 @@ export const exerciseRouter = router({
       }
 
       return { newPRsCount };
+    }),
+
+  checkAndCreatePRs: publicProcedure
+    .input(z.array(z.object({
+      exerciseId: z.number(),
+      sessionExerciseId: z.number(),
+      setId: z.number(),
+      reps: z.number(),
+      weight: z.number(),
+    })))
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session?.user?.id;
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      let totalNewPRs = 0;
+      const prTypes = ['HighestWeight', 'HighestVolume', 'HighestOneRepMax'] as const;
+
+      // First, get all existing PRs for all exercises in one query
+      const existingPRs = await ctx.db.exercisePersonalRecord.findMany({
+        where: {
+          exerciseId: { in: input.map(i => i.exerciseId) },
+          userId: userId,
+        },
+        orderBy: {
+          value: 'desc',
+        },
+      });
+
+      const newPRs = [];
+      
+      for (const set of input) {
+        for (const prType of prTypes) {
+          let value: number;
+          switch (prType) {
+            case 'HighestWeight':
+              value = set.weight;
+              break;
+            case 'HighestVolume':
+              value = set.reps * set.weight;
+              break;
+            case 'HighestOneRepMax':
+              value = set.weight * (1 + set.reps / 30);
+              break;
+          }
+
+          const existingPR = existingPRs.find(pr => 
+            pr.exerciseId === set.exerciseId && 
+            pr.prType === prType
+          );
+
+          if (!existingPR || value > existingPR.value) {
+            newPRs.push({
+              exerciseId: set.exerciseId,
+              userId: userId,
+              sessionExerciseId: set.sessionExerciseId,
+              setId: set.setId,
+              prType: prType,
+              value: value,
+            });
+            totalNewPRs++;
+          }
+        }
+      }
+
+      if (newPRs.length > 0) {
+        await ctx.db.exercisePersonalRecord.createMany({
+          data: newPRs,
+        });
+      }
+
+      return { newPRsCount: totalNewPRs };
     }),
 });
