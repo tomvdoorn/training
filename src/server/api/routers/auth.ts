@@ -64,6 +64,6 @@ changePassword: protectedProcedure
         },
       });
 
-      return { success: true, user: updatedUser };
+      return { success: true, user: updatedUser, redirect: '/auth/sign-in' };
     }),
 });
