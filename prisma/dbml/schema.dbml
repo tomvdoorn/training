@@ -385,6 +385,16 @@ Table Media {
   SessionExerciseSet SessionExerciseSet
 }
 
+Table PasswordResetToken {
+  identifier String [not null]
+  token String [unique, not null]
+  expires DateTime [not null]
+
+  indexes {
+    (identifier, token) [unique]
+  }
+}
+
 Enum TrainingPlanDifficulty {
   Beginner
   Intermediate

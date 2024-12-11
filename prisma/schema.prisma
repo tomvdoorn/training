@@ -427,3 +427,11 @@ model Media {
   trainingSessionId    Int?
   SessionExerciseSet   SessionExerciseSet? @relation(fields: [sessionExerciseSetId], references: [id])
 }
+
+model PasswordResetToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

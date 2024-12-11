@@ -17,7 +17,7 @@ const fontSans = FontSans({
 })
 
 export const metadata = {
-  title: "TrainTogether",
+  title: "ToTrain",
   description: "Share the pain and grow together fuelled by the best AI coaches",
   icons: {
     icon: [
@@ -33,7 +33,7 @@ export const metadata = {
 
   manifest: "/site.webmanifest",
   mobileWebAppCapable: {
-    title: "TrainTogether"
+    title: "ToTrain"
   }
 }
 
