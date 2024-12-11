@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { useToast} from "~/components/ui/use-toast";
+import { useToast } from "~/components/ui/use-toast";
 
 interface signUpProps {
   firstName: string;
@@ -24,7 +24,7 @@ interface signUpProps {
 
 const SignUpPage = () => {
   const router = useRouter()
-  const {toast } = useToast()
+  const { toast } = useToast()
   const [data, setData] = useState<signUpProps>({
     firstName: "",
     lastName: "",
@@ -33,29 +33,50 @@ const SignUpPage = () => {
   })
 
   const { mutate: signUp } = api.auth.signUp.useMutation({
-  onSuccess: () => {
+    onSuccess: async (user) => {
+      try {
+        // Send verification email
+        await fetch('/api/auth/send-verification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: data.email,
+            name: `${data.firstName} ${data.lastName}`,
+          }),
+        });
+
+        toast({
+          title: "Sign-up successful",
+          description: "Please check your email to verify your account",
+          variant: "default"
+        });
+        router.push("/auth/sign-in");
+      } catch (error) {
+        console.error("Error sending verification email:", error);
+        toast({
+          title: "Warning",
+          description: "Account created but verification email could not be sent",
+          variant: "destructive"
+        });
+      }
+    },
+    onError: (error) => {
+      const message = error.message
       toast({
-      title: "Sign-up successful",
-      description: "You have successfully signed up!",
-      variant: "default"
-    })
-    router.push("/auth/sign-in");
-  },
-  onError: (error) => {
-    const message = error.message
-    toast({
-      title: "Sign-up error",
-      description: message,
-      variant: "destructive"
-    })
-    console.error("Sign-up error:", error);
-  },
-});
+        title: "Sign-up error",
+        description: message,
+        variant: "destructive"
+      })
+      console.error("Sign-up error:", error);
+    },
+  });
 
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-       signUp(data);
+      signUp(data);
     } catch (error) {
       // Handle sign-up error
     }
@@ -76,18 +97,18 @@ const SignUpPage = () => {
               <div className="grid gap-2">
                 <Label htmlFor="first-name">First name</Label>
                 <Input id="first-name" placeholder="Max"
-                value={data.firstName}
-                onChange={(e) => setData({ ...data, firstName: e.target.value })}
-                required />
+                  value={data.firstName}
+                  onChange={(e) => setData({ ...data, firstName: e.target.value })}
+                  required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="last-name">Last name</Label>
-                <Input 
-                id="last-name" 
-                placeholder="Robinson" 
-                value= {data.lastName}
-                onChange={(e) => setData({ ...data, lastName: e.target.value })}
-                required />
+                <Input
+                  id="last-name"
+                  placeholder="Robinson"
+                  value={data.lastName}
+                  onChange={(e) => setData({ ...data, lastName: e.target.value })}
+                  required />
               </div>
             </div>
             <div className="grid gap-2">
@@ -96,25 +117,22 @@ const SignUpPage = () => {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                value= {data.email}
+                value={data.email}
                 onChange={(e) => setData({ ...data, email: e.target.value })}
                 required
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" 
-              value = {data.password}
-              onChange={(e) => setData({ ...data, password: e.target.value })}
-              required
+              <Input id="password" type="password"
+                value={data.password}
+                onChange={(e) => setData({ ...data, password: e.target.value })}
+                required
               />
             </div>
             <Button type="submit" className="w-full">
               Create an account
             </Button>
-            {/* <Button variant="outline" className="w-full">
-              Sign up with Google
-            </Button> */}
           </div>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}

@@ -12,9 +12,11 @@ import { Input } from "@/components/ui/input"
 import { useEffect, useState, useRef } from "react"
 import { api } from "~/trpc/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { supabase } from "~/utils/supabase"
+import { createAuthenticatedClient, supabase } from "~/utils/supabase"
 import { toast } from "~/components/ui/use-toast"
 import { Camera } from "lucide-react"
+import { getCurrentUser } from "~/lib/session"
+import { getSession } from "next-auth/react"
 
 interface User {
   id: string,
@@ -87,15 +89,17 @@ export default function UserSettings({ id, firstName, lastName, email, image }: 
   }
 
   const handleImageUpload = async () => {
+
     if (!selectedFile) return
 
     setIsUploading(true)
     try {
+      const session = await getSession()
       const fileExt = selectedFile.name.split('.').pop()
-      const fileName = `${id}-${Date.now()}.${fileExt}`
+      const fileName = `users/${id}/${Date.now()}.${fileExt}`
       const bucket = process.env.NODE_ENV === 'development' ? 'dev_profile' : 'prod_profile'
-
-      const { error: uploadError, data } = await supabase.storage
+      const authenticatedClient = createAuthenticatedClient(session?.supabaseAccessToken ?? '');
+      const { error: uploadError, data } = await authenticatedClient.storage
         .from(bucket)
         .upload(fileName, selectedFile, {
           upsert: true,
@@ -103,7 +107,7 @@ export default function UserSettings({ id, firstName, lastName, email, image }: 
 
       if (uploadError) throw uploadError
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = authenticatedClient.storage
         .from(bucket)
         .getPublicUrl(fileName)
 

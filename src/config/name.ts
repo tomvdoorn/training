@@ -1,5 +1,5 @@
 export const BRAND =
     {
-    name: "Programmify",
+    name: "ToTrain",
     }
 ;  

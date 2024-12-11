@@ -12,13 +12,13 @@ import { env } from "~/env";
 import { db } from "~/server/db";
 import jwt from "jsonwebtoken";
 
-
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
       firstName: string | null;
       lastName: string | null;
+      emailVerified: Date | null;
     } & DefaultSession["user"];
     supabaseAccessToken?: string;
   }
@@ -26,6 +26,7 @@ declare module "next-auth" {
   interface User {
     firstName: string | null;
     lastName: string | null;
+    emailVerified: Date | null;
   }
 
   interface JWT {
@@ -45,6 +46,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.emailVerified = user.emailVerified;
         token.supabaseAccessToken = jwt.sign(
           { 
             sub: user.id,
@@ -71,6 +73,7 @@ export const authOptions: NextAuthOptions = {
         id: token.id as string,
         firstName: token.firstName as string | null,
         lastName: token.lastName as string | null,
+        emailVerified: token.emailVerified as Date | null,
       },
       supabaseAccessToken: token.supabaseAccessToken,
     }),
@@ -95,7 +98,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials.password) {
-            return null; // Return null instead of throwing an error
+            throw new Error("Please enter your email and password");
           }
 
           const user = await db.user.findUnique({
@@ -103,13 +106,17 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user?.password) {
-            return null; // Return null instead of throwing an error
+            throw new Error("No account found with this email");
+          }
+
+          if (!user.emailVerified) {
+            throw new Error("Please verify your email before signing in");
           }
 
           const isPasswordValid = await compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
-            return null; // Return null instead of throwing an error
+            throw new Error("Invalid password");
           }
 
           return {
@@ -117,11 +124,15 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            emailVerified: user.emailVerified,
             image: null 
           };
         } catch (error) {
-          console.error("Error in authorize function:", error);
-          return null; // Return null for any unexpected errors
+          // Throw the error message to display it to the user
+          if (error instanceof Error) {
+            throw new Error(error.message);
+          }
+          throw new Error("An unexpected error occurred");
         }
       }
     })

@@ -62,7 +62,6 @@ model User {
   bio                   String?
   personalRecords       ExercisePersonalRecord[]
   trainingPlanTemplates TrainingPlanTemplate[]
-  // Add these new relations
   ownedTemplates        Template[]               @relation("TemplateOwner")
   ownedTrainingPlans    TrainingPlan[]           @relation("TrainingPlanOwner")
   acquisitions          Acquisition[]

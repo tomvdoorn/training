@@ -1,7 +1,9 @@
 "use client"
 
-import { Suspense } from "react"
+import { signIn } from "next-auth/react"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -12,108 +14,137 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signIn } from "next-auth/react"
-import { useState, type FormEvent } from "react"
 import { useToast } from "~/components/ui/use-toast"
 
-interface SignInProps {
-  email: string;
-  password: string;
-}
+function SignInForm() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const searchParams = useSearchParams()
+  const [isLoading, setIsLoading] = useState(false)
 
-const LoginFormContent = () => {
-  const { toast } = useToast();
-  const [data, setData] = useState<SignInProps>({
-    email: "",
-    password: "",
-  })
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const result = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-      callbackUrl: "/app",
-    });
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
-    if (result?.error) {
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        // Handle specific error messages
+        if (result.error.includes("verify your email")) {
+          // Show the first toast
+          toast({
+            title: "Email not verified",
+            description: "Please check your email for a verification link.",
+            variant: "destructive",
+            duration: 4000, // Show for 4 seconds
+          })
+
+          // Option to resend verification email
+          const resendResponse = await fetch("/api/auth/send-verification", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              name: email.split("@")[0], // Use email username as name
+            }),
+          })
+
+          if (resendResponse.ok) {
+            // Show the second toast after a delay
+            setTimeout(() => {
+              toast({
+                title: "Verification email sent",
+                description: "We've sent you a new verification link.",
+                duration: 4000, // Show for 4 seconds
+              })
+            }, 4000) // Wait for the first toast to finish
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+            duration: 4000,
+          })
+        }
+      } else {
+        // Redirect to the intended page or default to /app
+        const callbackUrl = searchParams.get("callbackUrl") ?? "/app"
+        router.push(callbackUrl)
+      }
+    } catch (error) {
       toast({
-        title: "Login failed",
-        description: "An error occurred during sign in. Please try again.",
-        variant: "destructive"
-      });
-    } else if (result?.url) {
-      window.location.href = result.url;
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+        duration: 4000,
+      })
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
+        <CardTitle>Sign In</CardTitle>
         <CardDescription>
-          Enter your email below to login to your account
+          Enter your email and password to sign in to your account
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              onChange={(e) => setData({ ...data, email: e.target.value })}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
-              <Link href="#" className="ml-auto inline-block text-sm underline">
-                Forgot your password?
-              </Link>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+              />
             </div>
-            <Input 
-              id="password" 
-              onChange={(e) => setData({ ...data, password: e.target.value })}
-              type="password" 
-              required 
-            />
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+              />
+            </div>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
           </div>
-          <Button type="submit" className="w-full">
-            Login
-          </Button>
-          <Button type="button" variant="outline" className="w-full">
-            Login with Google
-          </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="w-full" 
-            onClick={() => signIn("discord", {callbackUrl: "/app"})}
-          >
-            Login with Discord
-          </Button>
+          <div className="mt-4 text-center text-sm">
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/sign-up" className="underline">
+              Sign up
+            </Link>
+          </div>
         </form>
-        <div className="mt-4 text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link href="/auth/sign-up" className="underline">
-            Sign up
-          </Link>
-        </div>
       </CardContent>
     </Card>
   )
 }
 
-const LoginForm = () => {
+export default function SignInPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <LoginFormContent />
+      <SignInForm />
     </Suspense>
   )
 }
-
-export default LoginForm
