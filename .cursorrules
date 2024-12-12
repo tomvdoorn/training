@@ -1,3 +1,10 @@
 1. This is a NextJS project using Supabase for storage and NextAuth for authentication. It uses Prisma and TRPC.
 2. Use typesafe code and adhere to linting settings
 3. Use SSR where possible. Prefer it over client side code.
+4. Use TailwindCSS for styling.
+5. Use Shadcn UI for components.
+6. Use NextAuth for authentication.
+7. Use Prisma for database.
+8. Use TRPC for API.
+9. Use Supabase for storage.
+10. Use Vercel for deployment.  

@@ -369,7 +369,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
               <h2 className="text-xl font-bold mb-2 text-black">{post.title}</h2>
               <p className="text-sm mb-4 text-gray-500">{post.note}</p>
               <StatisticsTable stats={{
-                "Total Weight Lifted": `${post.totalWeightLifted} kg`,
+                "Total Weight Lifted": `${Math.round(post.totalWeightLifted)} kg`,
                 "Number of PRs": post.numberOfPRs,
                 "Duration": post.trainingSession ? `${Math.round((post.trainingSession.endTime.getTime() - post.trainingSession.startTime.getTime()) / (1000 * 60))} minutes` : 'N/A'
               }} />
