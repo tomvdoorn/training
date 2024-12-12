@@ -87,6 +87,7 @@ export default function ResetPasswordPage() {
                                 type="email"
                                 placeholder="m@example.com"
                                 required
+                                autoComplete="email"
                             />
                         </div>
                         <Button type="submit" disabled={isLoading}>

@@ -114,6 +114,7 @@ function SignInForm() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                autoComplete="email"
               />
             </div>
             <div className="grid gap-2">
@@ -130,6 +131,7 @@ function SignInForm() {
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="current-password"
                 required
               />
             </div>

@@ -165,6 +165,7 @@ function NewPasswordForm() {
                                 required
                                 minLength={8}
                                 placeholder="At least 8 characters"
+                                autoComplete="new-password"
                             />
                         </div>
                         <div className="grid gap-2">
@@ -175,6 +176,7 @@ function NewPasswordForm() {
                                 type="password"
                                 required
                                 placeholder="Confirm your new password"
+                                autoComplete="new-password"
                             />
                         </div>
                         <Button type="submit" disabled={isLoading}>
