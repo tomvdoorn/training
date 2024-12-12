@@ -146,10 +146,10 @@ function NewPasswordForm() {
     }
 
     return (
-        <Card className="mx-auto p-8">
+        <Card className="mx-auto max-w-sm bg-gray-800 border-gray-700">
             <CardHeader>
-                <CardTitle>Reset Password</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-brand-light">Reset Password</CardTitle>
+                <CardDescription className="text-brand-skyblue">
                     Enter your new password below
                 </CardDescription>
             </CardHeader>
@@ -157,7 +157,7 @@ function NewPasswordForm() {
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="password">New Password</Label>
+                            <Label htmlFor="password" className="text-brand-light">New Password</Label>
                             <Input
                                 id="password"
                                 name="password"
@@ -166,10 +166,11 @@ function NewPasswordForm() {
                                 minLength={8}
                                 placeholder="At least 8 characters"
                                 autoComplete="new-password"
+                                className="bg-gray-700 border-gray-600 text-brand-light"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Label htmlFor="confirmPassword" className="text-brand-light">Confirm Password</Label>
                             <Input
                                 id="confirmPassword"
                                 name="confirmPassword"
@@ -177,15 +178,17 @@ function NewPasswordForm() {
                                 required
                                 placeholder="Confirm your new password"
                                 autoComplete="new-password"
+                                className="bg-gray-700 border-gray-600 text-brand-light"
                             />
                         </div>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button type="submit" disabled={isLoading} className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
                             {isLoading ? "Resetting..." : "Reset Password"}
                         </Button>
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => router.push("/auth/sign-in")}
+                            className="bg-gray-700 text-brand-light hover:text-brand-lime-from border-gray-600"
                         >
                             Back to Sign In
                         </Button>

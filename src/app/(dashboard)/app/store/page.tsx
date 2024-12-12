@@ -65,53 +65,56 @@ export default function StorePage() {
   const isPending = acquireMutation.status === 'pending';
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="text-brand-light">Loading...</div>
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br p-6">
+    <div className="min-h-screen bg-brand-dark p-6">
       <div className="container mx-auto">
         <header className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-2 ">Store</h1>
-          <p className="text-gray-600">Discover and acquire new workout templates and training plans</p>
+          <h1 className="text-4xl font-bold mb-2 text-brand-light">Store</h1>
+          <p className="text-brand-skyblue">Discover and acquire new workout templates and training plans</p>
         </header>
 
         <div className="flex flex-wrap gap-4 mb-8">
           <Select onValueChange={(value: string) => setTypeFilter(value as "Template" | "TrainingPlan" | "all")}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-gray-800 border-gray-700 text-brand-light">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="Template">Template</SelectItem>
-              <SelectItem value="TrainingPlan">Training Plan</SelectItem>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="all" className="text-brand-light hover:bg-gray-700">All Types</SelectItem>
+              <SelectItem value="Template" className="text-brand-light hover:bg-gray-700">Template</SelectItem>
+              <SelectItem value="TrainingPlan" className="text-brand-light hover:bg-gray-700">Training Plan</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {listings?.map((listing: StoreListingWithRelations) => (
-            <Card key={listing.id} className="overflow-hidden">
+            <Card key={listing.id} className="overflow-hidden bg-gray-800 border-gray-700">
               {listing.preview_image && (
                 <Image src={listing.preview_image} alt={listing.title} className="w-full h-40 object-cover" />
               )}
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{listing.title}</CardTitle>
-                  <Badge variant={listing.type === "Template" ? "default" : "secondary"}>
+                  <CardTitle className="text-lg text-brand-light">{listing.title}</CardTitle>
+                  <Badge
+                    variant={listing.type === "Template" ? "default" : "secondary"}
+                    className={listing.type === "Template" ? "bg-brand-gradient-r text-gray-900" : "bg-gray-700 text-brand-light"}
+                  >
                     {listing.type}
                   </Badge>
                 </div>
-                <CardDescription>{listing.description}</CardDescription>
+                <CardDescription className="text-brand-skyblue">{listing.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-brand-skyblue">
                   Downloaded {listing.purchase_count} times
                 </div>
               </CardContent>
               <CardFooter>
                 <Button
-                  className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  className="w-full bg-brand-gradient-r text-gray-900 hover:opacity-90"
                   onClick={() => handleAcquire(listing.id)}
                   disabled={isPending}
                 >

@@ -69,10 +69,10 @@ export default function ResetPasswordPage() {
     };
 
     return (
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto max-w-sm bg-gray-800 border-gray-700">
             <CardHeader>
-                <CardTitle>Reset Password</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-brand-light">Reset Password</CardTitle>
+                <CardDescription className="text-brand-skyblue">
                     Enter your email address and we&apos;ll send you a link to reset your password
                 </CardDescription>
             </CardHeader>
@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" className="text-brand-light">Email</Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -88,15 +88,17 @@ export default function ResetPasswordPage() {
                                 placeholder="m@example.com"
                                 required
                                 autoComplete="email"
+                                className="bg-gray-700 border-gray-600 text-brand-light"
                             />
                         </div>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button type="submit" disabled={isLoading} className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
                             {isLoading ? "Sending..." : "Send Reset Link"}
                         </Button>
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => router.push("/auth/sign-in")}
+                            className="bg-gray-700 text-brand-light hover:text-brand-lime-from border-gray-600"
                         >
                             Back to Sign In
                         </Button>

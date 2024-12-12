@@ -83,10 +83,10 @@ const SignUpPage = () => {
   };
 
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="mx-auto max-w-sm bg-gray-800 border-gray-700">
       <CardHeader>
-        <CardTitle className="text-xl">Sign Up</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl text-brand-light">Sign Up</CardTitle>
+        <CardDescription className="text-brand-skyblue">
           Enter your information to create an account
         </CardDescription>
       </CardHeader>
@@ -95,24 +95,30 @@ const SignUpPage = () => {
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
-                <Input id="first-name" placeholder="Max"
+                <Label htmlFor="first-name" className="text-brand-light">First name</Label>
+                <Input
+                  id="first-name"
+                  placeholder="Max"
                   value={data.firstName}
                   onChange={(e) => setData({ ...data, firstName: e.target.value })}
-                  required />
+                  required
+                  className="bg-gray-700 border-gray-600 text-brand-light"
+                />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
+                <Label htmlFor="last-name" className="text-brand-light">Last name</Label>
                 <Input
                   id="last-name"
                   placeholder="Robinson"
                   value={data.lastName}
                   onChange={(e) => setData({ ...data, lastName: e.target.value })}
-                  required />
+                  required
+                  className="bg-gray-700 border-gray-600 text-brand-light"
+                />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-brand-light">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -120,23 +126,27 @@ const SignUpPage = () => {
                 value={data.email}
                 onChange={(e) => setData({ ...data, email: e.target.value })}
                 required
+                className="bg-gray-700 border-gray-600 text-brand-light"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password"
+              <Label htmlFor="password" className="text-brand-light">Password</Label>
+              <Input
+                id="password"
+                type="password"
                 value={data.password}
                 onChange={(e) => setData({ ...data, password: e.target.value })}
                 required
+                className="bg-gray-700 border-gray-600 text-brand-light"
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-brand-gradient-r text-gray-900 hover:opacity-90">
               Create an account
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm text-brand-skyblue">
             Already have an account?{" "}
-            <Link href="/auth/sign-in" className="underline">
+            <Link href="/auth/sign-in" className="text-brand-lime-from hover:underline">
               Sign in
             </Link>
           </div>

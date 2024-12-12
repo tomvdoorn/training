@@ -4,12 +4,12 @@ import { CardHeader, CardTitle, CardContent, Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
 import ScheduleSession from "./ScheduleSessions";
-import { api as trpc } from "~/trpc/react"  
+import { api as trpc } from "~/trpc/react"
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Play, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils"; 
+import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
@@ -91,16 +91,16 @@ const CarouselItems: React.FC = () => {
           return (
             <div key={session.id} className={cn(
               "mb-4 relative p-3 rounded-md",
-              session.completed ? "border-green-500" : (isPastDue ? "border-red-500" : "border-gray-200"),
+              session.completed ? "border-green-500 bg-green-500/10" : (isPastDue ? "border-red-500 bg-red-500/10" : "border-gray-700 bg-gray-800/50"),
               "border"
             )}>
-              <div className="text-xl font-semibold">
+              <div className="text-xl font-semibold text-brand-light">
                 {session.template.name}
               </div>
-              <div className="text-sm">
+              <div className="text-sm text-gray-400">
                 Time: {session.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
-              <div className="text-sm">
+              <div className="text-sm text-gray-400">
                 Duration: {Math.round((session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60))} minutes
               </div>
               <Badge variant={badgeVariant} className={cn(
@@ -116,6 +116,7 @@ const CarouselItems: React.FC = () => {
                       variant="outline"
                       size="icon"
                       title="Start Workout"
+                      className="bg-brand-gradient-r border-gray-700 text-brand-light hover:bg-gray-700"
                     >
                       <Play className="h-4 w-4" />
                     </Button>
@@ -126,6 +127,7 @@ const CarouselItems: React.FC = () => {
                   size="icon"
                   title="Delete Workout"
                   onClick={() => handleDeleteClick(session)}
+                  className="border-gray-700 text-brand-light hover:bg-gray-700"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -180,26 +182,26 @@ const CarouselItems: React.FC = () => {
 
   const renderEmptyState = (date: Date) => (
     <div className="text-center">
-      <ScheduleSession  />
+      <ScheduleSession />
     </div>
   );
 
   return (
     <>
-      <Carousel className="w-full overflow-hidden relative" opts={ {startIndex: 4, breakpoints: { '(max-width: 1024px)': {startIndex: 5}} } }>
+      <Carousel className="w-full overflow-hidden relative" opts={{ startIndex: 4, breakpoints: { '(max-width: 1024px)': { startIndex: 5 } } }}>
         <CarouselContent className="flex w-full px-12 -ml-2 md:-ml-4">
           {dates.map((date, index) => {
             const dateStr = getFormattedDate(date);
             const displayDate = date.toDateString() === today.toDateString()
               ? "Today"
               : date.toDateString() === new Date(today.getTime() - 86400000).toDateString()
-              ? "Yesterday"
-              : date.toDateString() === new Date(today.getTime() + 86400000).toDateString()
-              ? "Tomorrow"
-              : getDisplayDate(date);
-            
+                ? "Yesterday"
+                : date.toDateString() === new Date(today.getTime() + 86400000).toDateString()
+                  ? "Tomorrow"
+                  : getDisplayDate(date);
+
             const dailySessions = getAllSessions.data
-              ?.filter((session): session is SessionWithTemplate => 
+              ?.filter((session): session is SessionWithTemplate =>
                 getFormattedDate(session.startTime) === dateStr && session.template !== null)
               .map((session): SessionsProps => ({
                 ...session,
@@ -208,9 +210,9 @@ const CarouselItems: React.FC = () => {
 
             return (
               <CarouselItem className="pl-1 md:pl-2 md:basis-1/1 lg:basis-1/3" key={index}>
-                <Card className="min-w-[250px]">
+                <Card className="min-w-[250px] bg-gray-800 border-gray-800">
                   <CardHeader>
-                    <CardTitle>{displayDate}</CardTitle>
+                    <CardTitle className="text-brand-light">{displayDate}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {dailySessions && dailySessions.length > 0 ? (

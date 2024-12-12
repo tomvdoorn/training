@@ -102,7 +102,7 @@ export default async function DashboardPage() {
         <main className="flex flex-1 flex-col gap-4 p-2 md:gap-8 md:p-8 bg-brand-dark">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold py-5 text-brand-light">Training</h1>
-                <Button asChild variant="outline" size="sm" className="text-brand-light hover:text-brand-lime-from">
+                <Button asChild size="sm" className="ml-auto gap-1 bg-brand-gradient-r text-gray-900 hover:opacity-90">
                     <Link href="/app/schedule">
                         View Full Schedule
                     </Link>
@@ -112,42 +112,32 @@ export default async function DashboardPage() {
                 <CarouselItems />
             </div>
             <div className="grid gap-4 md:gap-8 lg:grid-cols-4 xl:grid-cols-4">
-                <Card className="xl:col-span-1 bg-gray-800 border-gray-700">
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle className="text-brand-light">Weekly Training Overview</CardTitle>
-                            <Button asChild size="sm" className="ml-auto gap-1 bg-brand-gradient-r text-gray-900 hover:opacity-90">
-                                <Link href="/app/analytics">
-                                    View More
-                                    <ArrowUpRight className="h-4 w-4" />
-                                </Link>
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <StatsDisplay currentStats={currentStats} previousStats={previousStats} />
-                    </CardContent>
-                </Card>
-
-                {/* Feed section - Card only shown on md and up */}
-                <div className="xl:col-span-2 -mx-2 md:mx-0">
-                    <Card className="hidden md:block bg-gray-800 border-gray-700">
-                        <CardHeader className="flex flex-row items-center">
-                            <div className="grid gap-2">
-                                <CardTitle className="text-brand-light">Feed</CardTitle>
-                                <CardDescription className="text-brand-skyblue">
-                                    Recent workouts completed by the community.
-                                </CardDescription>
+                <div className="h-30" >
+                    <Card className="xl:col-span-1 bg-gray-800 border-gray-700  ">
+                        <CardHeader>
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-brand-light">Weekly Training Overview</CardTitle>
+                                <Button asChild size="sm" className="ml-auto gap-1 bg-brand-gradient-r text-gray-900 hover:opacity-90">
+                                    <Link href="/app/analytics">
+                                        View More
+                                        <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
-                            {session?.user ? (
-                                <SportsSocialFeed currentUser={session.user as User} />
-                            ) : (
-                                <div className="text-brand-light">Please sign in to view the feed</div>
-                            )}
+                            <StatsDisplay currentStats={currentStats} previousStats={previousStats} />
                         </CardContent>
                     </Card>
+                </div>
+                {/* Feed section - Card only shown on md and up */}
+                <div className="xl:col-span-2">
+
+                    {session?.user ? (
+                        <SportsSocialFeed currentUser={session.user as User} />
+                    ) : (
+                        <div className="text-brand-light">Please sign in to view the feed</div>
+                    )}
 
                     {/* Feed content shown directly on mobile */}
                     <div className="md:hidden w-full">
@@ -170,7 +160,7 @@ export default async function DashboardPage() {
                         {/* TODO: Add follow recommendations here */}
                     </CardContent>
                 </Card>
-            </div>
-        </main>
+            </div >
+        </main >
     );
 }

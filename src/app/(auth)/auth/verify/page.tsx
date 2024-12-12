@@ -62,37 +62,37 @@ function VerifyForm() {
     };
 
     return (
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto max-w-sm bg-gray-800 border-gray-700">
             <CardHeader>
-                <CardTitle>Email Verification</CardTitle>
+                <CardTitle className="text-brand-light">Email Verification</CardTitle>
             </CardHeader>
             <CardContent>
                 {status === "loading" && (
-                    <p className="text-gray-600">Verifying your email...</p>
+                    <p className="text-brand-skyblue">Verifying your email...</p>
                 )}
                 {status === "success" && (
                     <div>
-                        <p className="text-green-600">Email verified successfully!</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-brand-lime-from">Email verified successfully!</p>
+                        <p className="text-sm text-brand-skyblue">
                             Redirecting you to sign in...
                         </p>
                     </div>
                 )}
                 {(status === "error" || status === "invalid" || status === "expired") && (
                     <div className="space-y-4">
-                        <p className="text-red-600">
+                        <p className="text-red-400">
                             {status === "expired"
                                 ? "This verification link has expired."
                                 : status === "invalid"
                                     ? "Invalid verification link."
                                     : errorMessage}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-brand-skyblue">
                             {status === "expired"
                                 ? "Please request a new verification link."
                                 : "Please try signing up again or contact support."}
                         </p>
-                        <Button onClick={handleTryAgain} className="w-full">
+                        <Button onClick={handleTryAgain} className="w-full bg-brand-gradient-r text-gray-900 hover:opacity-90">
                             Try Again
                         </Button>
                     </div>

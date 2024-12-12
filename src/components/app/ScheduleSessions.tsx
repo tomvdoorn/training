@@ -71,9 +71,9 @@ const ScheduleSession = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Schedule a training</Button>
+        <Button variant="ghost" className="bg-brand-gradient-r text-gray-900 hover:opacity-90">Schedule a training</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-brand-dark border-gray-700">
         <DialogHeader>
           <DialogTitle>Schedule a Training Session</DialogTitle>
         </DialogHeader>
@@ -90,9 +90,9 @@ const ScheduleSession = () => {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-brand-dark border-gray-700">
                 {timeOptions.map((time) => (
-                  <SelectItem key={time} value={time}>
+                  <SelectItem key={time} value={time} className="text-brand-light">
                     {time}
                   </SelectItem>
                 ))}
@@ -103,10 +103,10 @@ const ScheduleSession = () => {
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a template" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-brand-dark border-gray-700">
               {templatesQuery.data && templatesQuery.data.length > 0 ?
                 templatesQuery.data.map((template) => (
-                  <SelectItem key={template.id} value={template.id.toString()}>
+                  <SelectItem key={template.id} value={template.id.toString()} className="text-brand-light">
                     {template.name}
                   </SelectItem>
                 )) :
@@ -122,7 +122,7 @@ const ScheduleSession = () => {
               }
             </SelectContent>
           </Select>
-          <Button onClick={handleSchedule} disabled={!selectedDate || !selectedTemplateId}>
+          <Button variant="ghost" onClick={handleSchedule} className="bg-brand-gradient-r text-gray-900 hover:opacity-90 disabled:opacity-20" disabled={!selectedDate || !selectedTemplateId}>
             Schedule Session
           </Button>
         </div>

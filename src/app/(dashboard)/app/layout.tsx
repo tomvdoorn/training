@@ -56,16 +56,15 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "font-sans antialiased grainy",
+          "font-sans antialiased bg-brand-dark text-brand-light",
           fontSans.variable
         )}>
 
-        <div className="flex min-h-screen w-full flex-col bg-muted/40">
+        <div className="flex min-h-screen w-full flex-col">
           <Sidebar />
           <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
             <TRPCReactProvider>
               <Topbar />
-
               <main>
                 {children}
               </main>

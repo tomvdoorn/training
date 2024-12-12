@@ -31,15 +31,15 @@ const Topbar = () => {
   )
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-gray-800 bg-brand-dark px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button size="icon" variant="outline" className="sm:hidden">
+          <Button size="icon" variant="outline" className="sm:hidden border-gray-700 text-brand-light hover:text-brand-light hover:bg-gray-800">
             <PanelLeft className="h-5 w-5" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="sm:max-w-xs">
+        <SheetContent side="left" className="sm:max-w-xs bg-brand-dark border-gray-800">
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/app"
@@ -68,11 +68,11 @@ const Topbar = () => {
         </SheetContent>
       </Sheet>
       <div className="relative ml-auto flex-1 md:grow-0">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
         <Input
           type="search"
           placeholder="Search users or templates..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
+          className="w-full rounded-lg bg-gray-800/50 border-gray-700 text-brand-light placeholder:text-gray-400 pl-8 md:w-[200px] lg:w-[336px]"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

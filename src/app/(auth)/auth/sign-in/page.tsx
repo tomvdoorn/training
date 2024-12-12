@@ -96,10 +96,10 @@ function SignInForm() {
   }
 
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="mx-auto max-w-sm bg-gray-800 border-gray-700">
       <CardHeader>
-        <CardTitle>Sign In</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-brand-light">Sign In</CardTitle>
+        <CardDescription className="text-brand-skyblue">
           Enter your email and password to sign in to your account
         </CardDescription>
       </CardHeader>
@@ -107,7 +107,7 @@ function SignInForm() {
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-brand-light">Email</Label>
               <Input
                 id="email"
                 name="email"
@@ -115,14 +115,15 @@ function SignInForm() {
                 placeholder="m@example.com"
                 required
                 autoComplete="email"
+                className="bg-gray-700 border-gray-600 text-brand-light"
               />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-brand-light">Password</Label>
                 <Link
                   href="/auth/reset-password"
-                  className="text-sm text-muted-foreground hover:underline"
+                  className="text-sm text-brand-skyblue hover:text-brand-lime-from"
                 >
                   Forgot password?
                 </Link>
@@ -133,15 +134,16 @@ function SignInForm() {
                 type="password"
                 autoComplete="current-password"
                 required
+                className="bg-gray-700 border-gray-600 text-brand-light"
               />
             </div>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm text-brand-skyblue">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/sign-up" className="underline">
+            <Link href="/auth/sign-up" className="text-brand-lime-from hover:underline">
               Sign up
             </Link>
           </div>

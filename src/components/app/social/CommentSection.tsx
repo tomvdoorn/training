@@ -71,13 +71,13 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
         <AvatarFallback>{comment.user?.firstName?.charAt(0) ?? ''}</AvatarFallback>
       </Avatar>
       <div className="flex-grow">
-        <p className="text-sm font-semibold">{comment.user?.firstName} {comment.user?.lastName}</p>
-        <p className="text-sm">{comment.content}</p>
+        <p className="text-sm font-semibold text-brand-light">{comment.user?.firstName} {comment.user?.lastName}</p>
+        <p className="text-sm text-gray-400">{comment.content}</p>
       </div>
       <Button
         variant="ghost"
         size="sm"
-        className="flex items-center gap-1 p-0"
+        className="flex items-center gap-1 p-0 text-brand-light hover:bg-gray-700"
         onClick={() => handleToggleLike(comment.id)}
       >
         <Heart className={`h-4 w-4 ${comment.likes && comment.likes.some(like => like.userId === currentUser?.id) ? 'fill-red-500 text-red-500' : ''}`} />
@@ -103,10 +103,10 @@ export function CommentSection({ postId, comments, currentUser, isExpanded }: Co
               onChange={(e) => setCommentText(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Write a comment..."
-              className="w-full"
+              className="w-full bg-gray-800/50 border-gray-700 text-brand-light placeholder:text-gray-400"
               rows={1}
             />
-            <Button onClick={handleAddComment} className="mt-2">
+            <Button onClick={handleAddComment} className="mt-2 bg-brand-gradient-r text-gray-900 hover:opacity-90">
               Add
             </Button>
           </div>

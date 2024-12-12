@@ -87,7 +87,7 @@ const StatisticsTable = ({ stats }: { stats: Record<string, string | number> }) 
       <TableHeader>
         <TableRow>
           {Object.entries(stats).map(([key, _value]) => (
-            <TableHead key={key} className="w-[100px] text-black">{key}</TableHead>
+            <TableHead key={key} className="w-[100px] text-brand-light">{key}</TableHead>
           ))}
         </TableRow>
       </TableHeader>
@@ -95,7 +95,7 @@ const StatisticsTable = ({ stats }: { stats: Record<string, string | number> }) 
         <TableRow >
           {Object.entries(stats).map(([key, value]) => (
 
-            <TableCell key={key} className="text-black">{value}</TableCell>
+            <TableCell key={key} className="text-brand-light">{value}</TableCell>
           ))}
         </TableRow>
 
@@ -126,7 +126,7 @@ interface ExtendedTrainingSession extends TrainingSession {
 // Update the component prop type
 const ExpandedPost = ({ trainingSession }: { trainingSession: ExtendedTrainingSession }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-brand-dark border-gray-700 p-4">
 
       <Table>
         <TableHeader>
@@ -306,9 +306,9 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
   if (!posts || posts.length === 0) return <div>No posts yet</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-4">
+    <div className="max-w-4xl mx-auto space-y-4">
       {posts.map((post) => (
-        <Card key={post.id} className="w-full overflow-hidden">
+        <Card key={post.id} className="w-full overflow-hidden bg-gray-800 border-gray-800">
           <CardHeader className="flex flex-row items-center gap-4">
             <Link href={`/app/profile/${post.user.id}`} className="flex items-center gap-4">
               <Avatar className="w-10 h-10">
@@ -316,21 +316,21 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
                 <AvatarFallback>{post.user.firstName?.charAt(0) ?? ''}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <p className="text-sm font-semibold">{post.user.firstName} {post.user.lastName}</p>
-                <p className="text-xs text-muted-foreground">{getRelativeTime(new Date(post.createdAt))}</p>
+                <p className="text-sm font-semibold text-brand-light">{post.user.firstName} {post.user.lastName}</p>
+                <p className="text-xs text-gray-400">{getRelativeTime(new Date(post.createdAt))}</p>
               </div>
             </Link>
             <div className="ml-auto flex items-center gap-2">
               <ActivityIcon type={post.trainingSession?.template?.name ?? 'weightlifting'} />
               {post.user.id === currentUser?.id && (
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" size="icon" className="rounded-full text-brand-light hover:bg-gray-700">
                   <DropdownMenu>
                     <DropdownMenuTrigger>
                       <MoreHorizontal className="h-4 w-4" />
                       <span className="sr-only">More options</span>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuContent className="bg-gray-800 border-gray-700">
+                      <DropdownMenuItem className="text-brand-light hover:bg-gray-700">Edit</DropdownMenuItem>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -364,9 +364,9 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
             </div>
           </CardHeader>
           <CardContent className="p-0 relative">
-            <div className="flex flex-col text-primary-foreground pl-4 gap-2">
-              <h2 className="text-xl font-bold mb-2 text-black">{post.title}</h2>
-              <p className="text-sm mb-4 text-gray-500">{post.note}</p>
+            <div className="flex flex-col text-brand-light pl-4 gap-2">
+              <h2 className="text-xl font-bold mb-2 text-brand-light">{post.title}</h2>
+              <p className="text-sm mb-4 text-gray-400">{post.note}</p>
               <StatisticsTable stats={{
                 "Total Weight Lifted": `${Math.round(post.totalWeightLifted)} kg`,
                 "Number of PRs": post.numberOfPRs,
@@ -375,7 +375,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
               <Button
                 variant="ghost"
                 onClick={() => post.trainingSession && setExpandedPost(post.trainingSession)}
-                className="w-full mt-2 text-black"
+                className="w-full mt-2 text-brand-light hover:bg-gray-700"
               >
                 View Full Workout Details
               </Button>
@@ -393,7 +393,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-brand-light hover:bg-gray-700"
                   onClick={() => handleToggleLike(post.id)}
                   disabled={toggleLikeMutation.isPending}
                 >
@@ -408,14 +408,14 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-brand-light hover:bg-gray-700"
                   onClick={() => toggleComments(post.id)}
                 >
                   <MessageCircle className="h-4 w-4" />
                   <span>{post.comments.length}</span>
                 </Button>
               </div>
-              <Button variant="ghost" size="sm" className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="flex items-center gap-1 text-brand-light hover:bg-gray-700">
                 <Repeat2 className="h-4 w-4" />
                 <span>Share</span>
               </Button>
@@ -430,7 +430,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
 
             </div>
             {post.privacy === 'private' && currentUser?.id === post.user.id && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-gray-400">
                 This post is only visible to you.
               </div>
             )}
@@ -438,7 +438,7 @@ export default function SportsSocialFeed({ currentUser, profileUserId }: SportsS
         </Card>
       ))}
       <Dialog open={!!expandedPost} onOpenChange={() => setExpandedPost(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-brand-dark border-gray-700">
           <DialogHeader>
             <DialogTitle>Workout Details</DialogTitle>
           </DialogHeader>
