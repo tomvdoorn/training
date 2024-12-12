@@ -159,7 +159,7 @@ export default async function DashboardPage() {
                     </div>
                 </div>
 
-                <Card>
+                <Card className="hidden md:block">
                     <CardHeader>
                         <CardTitle>Follow recommendations</CardTitle>
                     </CardHeader>
