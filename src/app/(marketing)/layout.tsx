@@ -11,7 +11,7 @@ const fontSans = FontSans({
 })
 
 export const metadata = {
-  title: "ToTrain",
+  title: "TrainTogether",
   description: "Share the pain and grow together fuelled by the best AI coaches",
   icons: {
     icon: [
@@ -26,13 +26,12 @@ export const metadata = {
   },
   manifest: "/site.webmanifest",
   appleWebApp: {
-    title: "ToTrain"
+    title: "TrainTogether"
   }
 }
 
 export default function RootLayout({
   children,
-
 }: {
   children: React.ReactNode;
 }) {
@@ -40,13 +39,12 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body
         className={cn(
-          "relative h-full font-sans antialiased grainy light",
+          "relative h-full font-sans antialiased bg-brand-dark text-brand-light",
           fontSans.variable
         )}>
-        <main className="relative flex flex-col min-h-screen">
+        <main className=" flex flex-col min-h-screen">
           <Navbar />
           <div className="flex-grow flex-1">
-
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </div>
         </main>

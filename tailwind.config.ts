@@ -56,6 +56,17 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        brand: {
+          lime: {
+            from: '#cbff49',
+            to: '#9be538',
+          },
+          purple: '#5D3FD3',
+          skyblue: '#87CEEB',
+          dark: '#111827',
+          darker: '#0A0A0A',
+          light: '#F0F0F0',
+        },
       },
       maxWidth: {
         "8xl": "1408px"
@@ -78,6 +89,11 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(to right, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%)',
+        'brand-gradient-r': 'linear-gradient(to right, #cbff49, #9be538)',
+        'brand-gradient-br': 'linear-gradient(to bottom right, #cbff49, #9be538)',
       },
     },
   },
