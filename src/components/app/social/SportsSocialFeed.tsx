@@ -104,7 +104,6 @@ const StatisticsTable = ({ stats }: { stats: Record<string, string | number> }) 
   </>
 )
 
-// Add this interface above the ExpandedPost component
 interface ExtendedTrainingSession extends TrainingSession {
   exercises?: Array<{
     id: number;

@@ -1,4 +1,4 @@
-import { type TrainingSession } from "@prisma/client";
+import type { TrainingSession, PRType, SessionExerciseSet, SessionExercise, ExercisePersonalRecord } from "@prisma/client";
 
 interface WeeklyStats {
   completedSessions: number;
@@ -6,7 +6,20 @@ interface WeeklyStats {
   personalRecords: number;
 }
 
-export function calculateWeeklyStats(sessions: TrainingSession[]): WeeklyStats {
+interface ExtendedTrainingSession extends TrainingSession {
+  exercises: Array<
+    Partial<SessionExercise> & {
+      sets?: Array<
+        Partial<SessionExerciseSet> & {
+          personalRecords?: Array<Partial<ExercisePersonalRecord>>;
+        }
+      >;
+    }
+  >;
+}
+
+
+export function calculateWeeklyStats(sessions: ExtendedTrainingSession[]): WeeklyStats {
   return {
     completedSessions: sessions.length,
     timeSpent: sessions.reduce((total, session) => {
@@ -16,12 +29,17 @@ export function calculateWeeklyStats(sessions: TrainingSession[]): WeeklyStats {
       return total + duration;
     }, 0),
     personalRecords: sessions.reduce((total, session) => {
-      // Count PRs from exercise sets
-      return total + session.exercises?.reduce((exerciseTotal, exercise) => {
-        return exerciseTotal + exercise.sets?.reduce((setTotal, set) => {
-          return setTotal + (set.isPersonalRecord ? 1 : 0);
-        }, 0) ?? 0;
-      }, 0) ?? 0;
+        if (session.exercises) {
+            return total + session.exercises.reduce((exerciseTotal: number, exercise) => {
+                if (exercise.sets) {
+                    return exerciseTotal + exercise.sets.reduce((setTotal: number, set) => {
+                        return setTotal + (set.personalRecords ? 1 : 0);
+                    }, 0);
+                }
+                return exerciseTotal;
+            }, 0);
+        }
+        return total;
     }, 0),
   };
 }
