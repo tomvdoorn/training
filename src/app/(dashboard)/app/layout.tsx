@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/session"
 import { notFound } from "next/navigation"
 import { Toaster } from "~/components/ui/toaster";
 import { Viewport } from "next";
-
+import { BRAND } from "@/config/name";
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -17,7 +17,7 @@ const fontSans = FontSans({
 })
 
 export const metadata = {
-  title: "TrainTogether",
+  title: BRAND.name,
   description: "Share the pain and grow together fuelled by the best AI coaches",
   icons: {
     icon: [
@@ -33,7 +33,7 @@ export const metadata = {
 
   manifest: "/site.webmanifest",
   mobileWebAppCapable: {
-    title: "TrainTogether"
+    title: BRAND.name
   }
 }
 

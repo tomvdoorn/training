@@ -98,7 +98,7 @@ export default function AllTemplatesUser({ user_id }: AllTemplatesUserProps) {
               </CardContent>
               <CardFooter className="mt-auto">
                 <div className="grid grid-cols-3 gap-4 w-full">
-                  <Button asChild variant="outline" className="col-span-2" >
+                  <Button asChild variant="ghost" className="col-span-2 bg-brand-gradient-r text-gray-900 hover:opacity-90" >
 
                     <Link href={`/app/workouts/edit/${template.id}`}>
                       <Pencil className="mr-2 h-4 w-4" />
@@ -106,7 +106,7 @@ export default function AllTemplatesUser({ user_id }: AllTemplatesUserProps) {
                     </Link>
                   </Button>
                   <Link href={`/app/workouts/start/${template.id}`}>
-                    <Button>
+                    <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
 
                       <Play className="">
 

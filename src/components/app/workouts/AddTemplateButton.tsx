@@ -19,16 +19,16 @@ export default function AddTemplateButton() {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogTitle>
-            </DialogTitle>
+      <DialogTitle>
+      </DialogTitle>
       <DialogTrigger asChild>
-        <Button>
-        <PlusCircle className="mr-2 h-4 w-4" /> Create Training Plan</Button>
+        <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
+          <PlusCircle className="mr-2 h-4 w-4" /> Create Training Plan</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-description">
-        <CompactTrainingPlanCreatorComponent 
-          onClose={() => setIsModalOpen(false)} 
-          userId={session?.user.id ?? ''} 
+        <CompactTrainingPlanCreatorComponent
+          onClose={() => setIsModalOpen(false)}
+          userId={session?.user.id ?? ''}
           onSuccess={() => setIsModalOpen(false)}
         />
       </DialogContent>

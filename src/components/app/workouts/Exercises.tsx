@@ -55,11 +55,11 @@ interface ExerciseProps {
 }
 
 const setTypeColors = {
-  Regular: 'bg-gray-50',
-  Warmup: 'bg-yellow-50',
-  Dropset: 'bg-red-50',
-  Superset: 'bg-purple-50',
-  Partials: 'bg-blue-50',
+  Regular: 'text-gray-300 bg-brand-dark/90 hover:bg-gray-50/20',
+  Warmup: 'text-yellow-300 bg-brand-dark/90 hover:bg-yellow-50/20',
+  Dropset: 'text-red-300 bg-brand-dark hover:bg-red-50/20',
+  Superset: 'text-purple-300 bg-brand-dark/90 hover:bg-purple-50/20',
+  Partials: 'text-blue-300 hover:bg-blue-50/20',
   // Add more types and colors as needed
 };
 
@@ -166,18 +166,18 @@ const Exercise = ({
   return (
     <>
       <div
-        className={`mb-6 p-4 mt-8 rounded-lg ${exerciseIndex % 2 === 0 ? 'bg-slate-50' : 'bg-zinc-50'} shadow-sm transition-all duration-200 hover:shadow-md`}
+        className={`mb-6 p-4 mt-8 rounded-lg ${exerciseIndex % 2 === 0 ? 'bg-brand-dark' : 'bg-brand-dark/20'} shadow-sm transition-all duration-200 hover:shadow-md`}
       >
         <div className="flex items-center justify-between mb-4">
           <div className="font-medium">{exercise.name}</div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleAddSet}>
+            <Button variant="ghost" className="bg-brand-gradient-r text-gray-900 hover:opacity-90" size="sm" onClick={handleAddSet}>
               Add Set
             </Button>
-            <Button variant="outline" size="icon" onClick={handleMoveUp} disabled={exerciseIndex === 0}>
+            <Button variant="ghost" size="icon" onClick={handleMoveUp} disabled={exerciseIndex === 0}>
               <ChevronUp className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={handleMoveDown}>
+            <Button variant="ghost" size="icon" onClick={handleMoveDown}>
               <ChevronDown className="h-4 w-4" />
             </Button>
             <DropdownMenu>
@@ -186,12 +186,12 @@ const Exercise = ({
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={handleFileUpload}>Upload Media</DropdownMenuItem>
-                <DropdownMenuItem onSelect={toggleNotes}>
+              <DropdownMenuContent className="bg-brand-gradient-r border-gray-700 " align="end">
+                <DropdownMenuItem className="bg-brand-gradient-r text-gray-900 hover:shadow-md" onSelect={handleFileUpload}>Upload Media</DropdownMenuItem>
+                <DropdownMenuItem className="bg-brand-gradient-r text-gray-900 hover:shadow-md" onSelect={toggleNotes}>
                   {notes ? 'Edit Notes' : 'Add Notes'}
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={handleDeleteExercise}>Delete Exercise</DropdownMenuItem>
+                <DropdownMenuItem className="bg-brand-gradient-r text-gray-900 hover:opacity-90" onSelect={handleDeleteExercise}>Delete Exercise</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -217,7 +217,7 @@ const Exercise = ({
 
                     <Tooltip>
                       <TooltipTrigger>
-                        <span className="sr-only">Completed</span>
+                        <span className="sr-only text-brand-light bg-brand-gradient-r rounded-md p-1">Completed</span>
                         <CheckCircle className="w-4 h-4 mx-auto lg:hidden" />
                         <p className="align-left text-sm hidden lg:block">Completed</p>
                       </TooltipTrigger>

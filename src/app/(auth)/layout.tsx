@@ -4,6 +4,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { Inter as FontSans } from "next/font/google"
 import { Toaster } from "@/components/ui/toaster"
 import Image from "next/image"
+import { BRAND } from "~/config/name";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -11,7 +12,7 @@ const fontSans = FontSans({
 })
 
 export const metadata = {
-  title: "TrainTogether",
+  title: BRAND.name,
   description: "Share the pain and grow together fuelled by the best AI coaches",
   icons: {
     icon: [
@@ -25,8 +26,8 @@ export const metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-  appleWebApp: {
-    title: "TrainTogether"
+  MobileWebApp: {
+    title: BRAND.name
   }
 }
 

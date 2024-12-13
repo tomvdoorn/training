@@ -98,14 +98,14 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div className="bg-brand-dark shadow-md rounded px-8 pt-6 pb-8 mb-4">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="name">
                 Name:
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 bg-brand-dark text-brand-light leading-tight focus:outline-none focus:shadow-outline"
                 id="name"
                 type="text"
                 placeholder="Exercise Name"
@@ -115,11 +115,11 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
               />
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="description">
                 Description:
               </label>
               <textarea
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 bg-brand-dark text-brand-light leading-tight focus:outline-none focus:shadow-outline"
                 id="description"
                 placeholder="Exercise Description"
                 value={description}
@@ -128,7 +128,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
               />
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="muscleGroup">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="muscleGroup">
                 Muscle Group:
               </label>
               <Select onValueChange={(value) => setMuscleGroup(value as MuscleGroup)}>
@@ -143,7 +143,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
               </Select>
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="category">
                 Category:
               </label>
               <Select onValueChange={(value) => setCategoryId(Number(value))}>
@@ -158,7 +158,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
               </Select>
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="category">
                 Type:
               </label>
               <Select onValueChange={(value) => setType(value)}>
@@ -172,7 +172,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
               </Select>
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="imageUrl">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="imageUrl">
                 Image URL:
               </label>
               <input
@@ -185,11 +185,11 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
               />
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="videoUrl">
+              <label className="block text-brand-light text-sm font-bold mb-2" htmlFor="videoUrl">
                 Video URL:
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-brand-light leading-tight focus:outline-none focus:shadow-outline"
                 id="videoUrl"
                 type="url"
                 placeholder="Video URL"
@@ -200,7 +200,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
             <div className="flex items-center justify-between">
               <Button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                className="bg-brand-gradient-r text-gray-900 hover:opacity-90"
               >
                 Add Exercise
               </Button>

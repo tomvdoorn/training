@@ -13,7 +13,7 @@ const Sidebar = () => {
           className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-brand-light md:h-8 md:w-8 md:text-base"
         >
           <Image
-            src="/favicon.svg"
+            src="/web-app-manifest-192x192.png"
             alt={BRAND.name}
             width={48}
             height={48}

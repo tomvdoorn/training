@@ -248,7 +248,7 @@ function WorkoutPage({ params }: PageProps) {
               value={templateName}
               onChange={handleNameChange}
               onBlur={handleNameBlur}
-              className="text-2xl font-semibold p-0 border-none focus:ring-0 focus-visible:ring-0 bg-transparent group-hover:bg-gray-100 rounded transition-colors duration-200"
+              className="bg-brand-dark/90 text-2xl font-semibold p-0 border-none focus:ring-0 focus-visible:ring-0 group-hover:bg-brand-dark rounded transition-colors duration-200"
             />
             <Pencil className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
           </div>
@@ -285,7 +285,7 @@ function WorkoutPage({ params }: PageProps) {
                     value={templateName}
                     onChange={handleNameChange}
                     onBlur={handleNameBlur}
-                    className="text-2xl font-semibold p-0 border-none focus:ring-0 focus-visible:ring-0 bg-transparent group-hover:bg-gray-100 rounded transition-colors duration-200"
+                    className="text-2xl   font-semibold p-0 border-none focus:ring-0 focus-visible:ring-0 bg-gray-800/50  group-hover:bg-brand-dark rounded transition-colors duration-200"
                   />
                   <Pencil className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
                 </div>
@@ -299,7 +299,7 @@ function WorkoutPage({ params }: PageProps) {
               onChange={handleNotesChange}
               onBlur={handleNameBlur}
               placeholder="Add a note for this template..."
-              className="w-full p-2 mb-4 text-sm text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 mb-4 text-sm bg-gray-800/50 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={templateNotes ? undefined : 3}
             />
             {exercises.filter(ex => !ex.deleted).map((exercise, index) => (

@@ -362,7 +362,7 @@ function StartWorkout({ params }: PageProps) {
           <Button
             variant="ghost"
             onClick={() => handleNavigation("/app/workouts/")}
-            className="md:static fixed top-4 left-4 z-10 bg-background"
+            className="md:static fixed top-4 left-4 z-10 bg-brand-dark/90 hover:opacity-90"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
@@ -399,7 +399,7 @@ function StartWorkout({ params }: PageProps) {
                   <label className="text-sm font-semibold mb-2">Notes</label>
                   <textarea
                     value={workout?.note}
-                    className="w-full p-2 text-sm text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 text-sm text-gray-700 bg-gray-800/50 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled
                   />
                 </div>
@@ -423,7 +423,7 @@ function StartWorkout({ params }: PageProps) {
               ))}
             </CardContent>
             <CardFooter className="flex justify-end">
-              <Button onClick={() => setIsFinishModalOpen(true)} disabled={isSaving}>
+              <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90" onClick={() => setIsFinishModalOpen(true)} disabled={isSaving}>
                 Finish Workout
               </Button>
             </CardFooter>
@@ -449,12 +449,12 @@ function StartWorkout({ params }: PageProps) {
           ))}
         </div>
       </div>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-gray-200 p-4 flex justify-between items-center">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-dark/90 border-t border-gray-200 p-4 flex justify-between items-center">
         <AddExerciseToTemplate
           templateId={templateId}
           onExerciseAdded={handleExerciseAdded}
         />
-        <Button onClick={() => setIsFinishModalOpen(true)} disabled={isSaving}>
+        <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90" onClick={() => setIsFinishModalOpen(true)} disabled={isSaving}>
           Finish Workout
         </Button>
       </div>

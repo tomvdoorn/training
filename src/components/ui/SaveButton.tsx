@@ -14,6 +14,7 @@ export const SaveButton: React.FC<SaveButtonProps> = ({ onSave, isLoading }) => 
     <Button
       onClick={onSave}
       disabled={!hasUnsavedChanges || isLoading}
+      className="bg-brand-gradient-r text-gray-900 hover:opacity-90"
     >
       {isLoading ? 'Saving...' : 'Save Changes'}
     </Button>

@@ -91,7 +91,7 @@ const ExerciseSet = ({
     <TableRow
       key={setIndex}
       className={cn(
-        set.completed ? 'bg-green-100 hover:bg-green-200' : 'hover:bg-gray-100',
+        set.completed ? 'bg-brand-lime-from/10 rounded-md hover:bg-brand-gradient-r/30 ' : 'hover:bg-gray-800',
         'transition-colors duration-200'
       )}
     >
@@ -99,8 +99,7 @@ const ExerciseSet = ({
       <TableCell>
         <Select
           value={set.type}
-          onValueChange={(value) => handleInputChange('type', value as SetType)}
-        >
+          onValueChange={(value) => handleInputChange('type', value as SetType)}        >
           <SelectTrigger className={`w-full ${selectorColor}`}>
             <SelectValue placeholder="Select type">
               {set.type && (
@@ -111,7 +110,7 @@ const ExerciseSet = ({
               )}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-brand-dark/90">
             {Object.values(SetType).map((type) => (
               <SelectItem key={type} value={type} className={setTypeColors[type]}>
                 {type}
@@ -130,7 +129,7 @@ const ExerciseSet = ({
           pattern="[0-9]*" // For iOS numeric keyboard
           inputMode="numeric" // Better for reps input (whole numbers)
           style={{ fontSize: '16px' }} // Prevent zoom on iOS
-          className="text-base" // Ensure text is readable without zoom
+          className="text-base bg-brand-dark/90 " // Ensure text is readable without zoom
 
         />
       </TableCell>
@@ -144,7 +143,7 @@ const ExerciseSet = ({
           pattern="[0-9]*" // For iOS numeric keyboard
           inputMode="numeric" // Better for reps input (whole numbers)
           style={{ fontSize: '16px' }} // Prevent zoom on iOS
-          className="text-base" // Ensure text is readable without zoom
+          className="text-base bg-brand-dark/90 " // Ensure text is readable without zoom
 
         />
       </TableCell>

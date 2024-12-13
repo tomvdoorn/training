@@ -34,8 +34,8 @@ const Topbar = () => {
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-gray-800 bg-brand-dark px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button size="icon" variant="outline" className="sm:hidden border-gray-700 text-brand-light hover:text-brand-light hover:bg-gray-800">
-            <PanelLeft className="h-5 w-5" />
+          <Button size="icon" variant="outline" className="sm:hidden bg-brand-gradient-r border-gray-700 text-brand-light hover:text-brand-light hover:bg-gray-800">
+            <PanelLeft className="h-5 w-5 bg-brand-gradient-r text-gray-900" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
@@ -47,7 +47,7 @@ const Topbar = () => {
               onClick={() => handleLinkClick("/app")}
             >
               <Image
-                src="/favicon.svg"
+                src="/web-app-manifest-192x192.png"
                 alt={BRAND.name}
                 width={48}
                 height={48}

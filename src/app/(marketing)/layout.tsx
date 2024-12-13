@@ -4,14 +4,14 @@ import { Inter as FontSans } from "next/font/google"
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "~/lib/utils";
-
+import { BRAND } from "~/config/name";
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
 
 export const metadata = {
-  title: "TrainTogether",
+  title: BRAND.name,
   description: "Share the pain and grow together fuelled by the best AI coaches",
   icons: {
     icon: [
@@ -25,8 +25,8 @@ export const metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-  appleWebApp: {
-    title: "TrainTogether"
+  mobileWebApp: {
+    title: BRAND.name
   }
 }
 
