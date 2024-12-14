@@ -127,7 +127,7 @@ const CarouselItems: React.FC = () => {
                   size="icon"
                   title="Delete Workout"
                   onClick={() => handleDeleteClick(session)}
-                  className="border-gray-700 text-brand-light hover:bg-gray-700"
+                  className="border-gray-700 bg-brand-dark/90 text-brand-light hover:bg-gray-700"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

@@ -28,8 +28,8 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="bg-brand-dark border-brand-dark">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Workout</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className="text-brand-light">Delete Workout</AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-300" >
             Are you sure you want to delete this {isCompleted ? "completed" : ""} workout?
             {isCompleted && " This will also delete the associated post."}
           </AlertDialogDescription>
