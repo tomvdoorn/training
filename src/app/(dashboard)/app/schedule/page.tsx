@@ -161,10 +161,10 @@ export default function Calendar() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-      <div className="bg-brand-dark/90 rounded-lg shadow-lg w-full">
+      <div className="bg-gray-800 border-gray-800 rounded-lg shadow-lg w-full">
         <div className="flex flex-col items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 w-full">
           <div className="flex items-center gap-4 w-full">
-            <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
+            <Button variant="ghost" className="bg-brand-dark/90 hover:bg-brand-dark/80" size="icon" onClick={handlePrevMonth}>
               <ChevronLeftIcon className="w-5 h-5" />
             </Button>
             <h2 className="text-xl font-semibold flex-1 text-center">
