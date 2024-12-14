@@ -24,10 +24,10 @@ const NavItems = ({ href, icon: Icon, label }: { href: string, icon: React.Eleme
               }`}
           >
             <Icon className="h-5 w-5" />
-            <span className="sr-only bg-brand-primary">{label}</span>
+            <span className="sr-only bg-brand-gradient-r text-gray-900">{label}</span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
+        <TooltipContent side="right" className="bg-gradient-r border-brand-dark">{label}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   )
