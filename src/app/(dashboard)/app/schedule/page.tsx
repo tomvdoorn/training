@@ -37,7 +37,7 @@ interface ApiSession {
 // Define our Session type
 interface Session {
   id: number;
-  templateId: number| null;
+  templateId: number | null;
   startTime: Date;
   endTime: Date;
   completed: boolean;
@@ -79,7 +79,7 @@ function transformSession(apiSession: ApiSession): Session {
 function getSessionsForDate(date: number, month: number, year: number, sessions: Session[]): Session_res[] {
   const startOfDay = new Date(year, month, date);
   const endOfDay = new Date(year, month, date, 23, 59, 59, 999);
-  
+
   return sessions.filter(session => {
     const sessionDate = new Date(session.startTime);
     return sessionDate >= startOfDay && sessionDate <= endOfDay;
@@ -106,7 +106,7 @@ export default function Calendar() {
   const firstDayOfMonth = getFirstDayOfMonth(currentMonth, currentYear);
 
   const prevMonthDays = getDaysInMonth(currentMonth - 1, currentYear);
-  const dates: Array<{date: number; month: number; year: number; currentMonth: boolean}> = [];
+  const dates: Array<{ date: number; month: number; year: number; currentMonth: boolean }> = [];
 
   // Fill in previous month's dates
   for (let i = 0; i < firstDayOfMonth; i++) {
@@ -161,7 +161,7 @@ export default function Calendar() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full">
+      <div className="bg-brand-dark/90 rounded-lg shadow-lg w-full">
         <div className="flex flex-col items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 w-full">
           <div className="flex items-center gap-4 w-full">
             <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
@@ -188,17 +188,17 @@ export default function Calendar() {
           ))}
           {dates.map((dateObj, index) => {
             const sessionsForDate = getSessionsForDate(dateObj.date, dateObj.month, dateObj.year, userSessions);
-            const isToday = 
+            const isToday =
               dateObj.date === today.getDate() &&
               dateObj.month === today.getMonth() &&
               dateObj.year === today.getFullYear();
 
-            return (              
-              <CalendarDay 
-                key={index} 
-                dateObj={dateObj} 
-                isToday={isToday} 
-                eventsForDate={sessionsForDate} 
+            return (
+              <CalendarDay
+                key={index}
+                dateObj={dateObj}
+                isToday={isToday}
+                eventsForDate={sessionsForDate}
               />
             );
           })}
