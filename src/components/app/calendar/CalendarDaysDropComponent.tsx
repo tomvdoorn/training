@@ -1,10 +1,10 @@
 "use client";
 
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { useEffect, useRef, useState } from "react"; 
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import React from "react";
-import type  { FC } from "react";
+import type { FC } from "react";
 
 interface DayInCalendarProps extends React.HTMLAttributes<HTMLDivElement> {
   dateObj: { date: number; currentMonth: boolean };
@@ -35,7 +35,7 @@ const CalendarDayDropComponent: FC<DayInCalendarProps> = ({
 
   return (
     <div
-      className={cn("", isOver ? "bg-green-300" : "bg-background")}
+      className={cn("", isOver ? "bg-green-300" : "bg-brand-dark/90")}
       ref={ref}
       {...props}
     >

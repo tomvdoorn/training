@@ -164,7 +164,7 @@ export default function Calendar() {
       <div className="bg-gray-800 border-gray-800 rounded-lg shadow-lg w-full">
         <div className="flex flex-col items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 w-full">
           <div className="flex items-center gap-4 w-full">
-            <Button variant="ghost" className="bg-brand-dark/90 hover:bg-brand-dark/80" size="icon" onClick={handlePrevMonth}>
+            <Button variant="ghost" className="" size="icon" onClick={handlePrevMonth}>
               <ChevronLeftIcon className="w-5 h-5" />
             </Button>
             <h2 className="text-xl font-semibold flex-1 text-center">
@@ -175,7 +175,7 @@ export default function Calendar() {
             </Button>
           </div>
           <div className="flex items-center gap-4 w-full mt-4 sm:mt-0">
-            <Button variant="outline" size="sm" onClick={handleToday}>
+            <Button variant="outline" className="bg-brand-dark/90 hover:bg-brand-dark/80" size="sm" onClick={handleToday}>
               Today
             </Button>
           </div>
