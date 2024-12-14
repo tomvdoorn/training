@@ -196,7 +196,7 @@ export default function UserSettings({ id, firstName, lastName, email, image }: 
             </form>
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <Button onClick={handleSave} disabled={isLoading}>
+            <Button onClick={handleSave} disabled={isLoading} className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
               {isLoading ? 'Saving...' : 'Save'}
             </Button>
           </CardFooter>

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '~/components/ui/use-toast'
 import { api } from "~/trpc/react";
 
@@ -20,7 +20,7 @@ export default function SecuritySettings() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isError, setIsError] = useState(false)
-  const { register, handleSubmit,  formState: { errors }, reset } = useForm<PasswordChangeFormData>()
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<PasswordChangeFormData>()
 
   const changePasswordMutation = api.auth.changePassword.useMutation({
     onSuccess: () => {
@@ -77,7 +77,7 @@ export default function SecuritySettings() {
               <Input
                 type="password"
                 id="newPassword"
-                {...register('newPassword', { 
+                {...register('newPassword', {
                   required: 'New password is required',
                   minLength: { value: 8, message: 'Password must be at least 8 characters long' }
                 })}
@@ -90,7 +90,7 @@ export default function SecuritySettings() {
               <Input
                 type="password"
                 id="confirmPassword"
-                {...register('confirmPassword', { 
+                {...register('confirmPassword', {
                   required: 'Please confirm your new password',
                   validate: (value, formValues) => value === formValues.newPassword || 'Passwords do not match'
                 })}
@@ -98,7 +98,7 @@ export default function SecuritySettings() {
               {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
             </div>
 
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
               {isLoading ? 'Saving...' : 'Save'}
             </Button>
           </form>

@@ -56,7 +56,7 @@ export default function SupportForm() {
               <Input
                 type="email"
                 id="email"
-                {...register('email', { 
+                {...register('email', {
                   required: 'Email is required',
                   pattern: {
                     value: /\S+@\S+\.\S+/,
@@ -85,7 +85,7 @@ export default function SupportForm() {
               {errors.message && <p className="text-red-500 text-sm">{errors.message.message}</p>}
             </div>
 
-            <Button type="submit">Submit Request</Button>
+            <Button type="submit" className="bg-brand-gradient-r text-gray-900 hover:opacity-90">Submit Request</Button>
           </form>
         </CardContent>
         <CardFooter>
