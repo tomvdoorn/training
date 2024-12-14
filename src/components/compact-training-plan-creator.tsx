@@ -32,12 +32,12 @@ interface TrainingPlan {
   templates: (string)[];
 }
 
-export function CompactTrainingPlanCreatorComponent({ 
-  onClose, 
-  userId, 
-  onSuccess, 
+export function CompactTrainingPlanCreatorComponent({
+  onClose,
+  userId,
+  onSuccess,
   existingPlan,
-  mode = 'create' 
+  mode = 'create'
 }: CompactTrainingPlanCreatorComponentProps) {
   const [plan, setPlan] = useState<TrainingPlan>(() => {
     if (existingPlan) {
@@ -80,11 +80,11 @@ export function CompactTrainingPlanCreatorComponent({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const templateData = plan.templates
-        .map((templateId, index) => ({ 
-          templateId: templateId === "rest" ? null : templateId ? templateId.toString() : null, 
+        .map((templateId, index) => ({
+          templateId: templateId === "rest" ? null : templateId ? templateId.toString() : null,
           day: index + 1,
           userId: userId
         }))
@@ -111,7 +111,7 @@ export function CompactTrainingPlanCreatorComponent({
 
       await utils.trainingPlan.invalidate();
       await utils.template.invalidate();
-      
+
       onSuccess();
       onClose();
     } catch (error) {
@@ -125,11 +125,11 @@ export function CompactTrainingPlanCreatorComponent({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <CardHeader className="px-0 pt-0">
+      <CardHeader className="px-0 pt-0 bg-brand-dark/90">
         <CardTitle>{mode === 'edit' ? 'Edit Training Plan' : 'Create Training Plan'}</CardTitle>
       </CardHeader>
-      
-      <CardContent className="px-0 space-y-6">
+
+      <CardContent className="px-0 space-y-6 bg-brand-dark/90">
         {/* Plan Name Section */}
         <div className="space-y-2">
           <Label htmlFor="name">Plan Name</Label>
@@ -183,8 +183,8 @@ export function CompactTrainingPlanCreatorComponent({
             {plan.templates.map((template, index) => (
               <div key={index} className="flex items-center space-x-3 bg-muted/40 p-2 rounded-lg">
                 <span className="min-w-[60px] text-sm font-medium">Day {index + 1}</span>
-                <Select 
-                  value={template || "rest"} 
+                <Select
+                  value={template || "rest"}
                   onValueChange={(value) => handleChange('templates', plan.templates.map((t, i) => i === index ? value : t))}
                 >
                   <SelectTrigger className="w-full">
@@ -208,7 +208,7 @@ export function CompactTrainingPlanCreatorComponent({
 
         {/* Submit Button */}
         <div className="pt-4">
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-brand-gradient-r text-gray-900 hover:opacity-90">
             {mode === 'edit' ? 'Save Changes' : 'Create Plan'}
           </Button>
         </div>

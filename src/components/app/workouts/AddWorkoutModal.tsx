@@ -23,13 +23,13 @@ export default function WorkoutModal({ user_id }: workoutModal) {
             <Credenza>
                 <CredenzaTrigger asChild>
                     <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Create New Template
+                        <PlusCircle className="mr-2 h-4 w-4 bg-brand-gradient-r text-gray-900" /> Create New Template
                     </Button>
                 </CredenzaTrigger>
-                <CredenzaContent>
+                <CredenzaContent className="bg-brand-dark border-brand-dark">
                     <CredenzaHeader>
-                        <CredenzaTitle>Add Workout</CredenzaTitle>
-                        <CredenzaDescription>
+                        <CredenzaTitle className="text-brand-light">Add Workout Template</CredenzaTitle>
+                        <CredenzaDescription className="text-gray-300">
                             Create a workout template to use in your training sessions.
                         </CredenzaDescription>
                     </CredenzaHeader>
@@ -38,7 +38,7 @@ export default function WorkoutModal({ user_id }: workoutModal) {
                     </CredenzaBody>
                     <CredenzaFooter>
                         <CredenzaClose asChild>
-                            <button>Close</button>
+                            <button className="bg-brand-dark/90 hover:bg-brand-dark/80">Close</button>
                         </CredenzaClose>
                     </CredenzaFooter>
                 </CredenzaContent>
