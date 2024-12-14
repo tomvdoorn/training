@@ -26,7 +26,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-brand-dark border-brand-dark">
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Workout</AlertDialogTitle>
           <AlertDialogDescription>
@@ -36,10 +36,10 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" className="bg-brand-dark/90 hover:bg-brand-dark/80" onClick={onClose}>Cancel</Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button variant="destructive" onClick={onConfirm}>Delete</Button>
+            <Button variant="ghost" className="bg-brand-gradient-r text-gray-900 hover:opacity-90" onClick={onConfirm}>Delete</Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
