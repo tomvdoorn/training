@@ -36,7 +36,7 @@ interface PartialTemplateExercise extends Partial<TemplateExercise> {
     fileType: string;
     setIndices: number[];
   }>;
-  sets?: (TemplateExerciseSet & { completed?: boolean, deleted?: boolean })[]
+  sets?: (TemplateExerciseSet & { completed?: boolean, deleted?: boolean, reps_template?: number, weight_template?: number })[]
   exercise?: (typeof Exercise & { id?: number })
   deleted?: boolean;
 }
@@ -122,8 +122,10 @@ function StartWorkout({ params }: PageProps) {
         ...exercise,
         sets: exercise.sets?.map(set => ({
           ...set,
-          //   weight: undefined,
-          //   reps: undefined
+          weight: undefined,
+          reps: undefined,
+          weight_template: set.weight,
+          reps_template: set.reps
         })
           // 
         )
@@ -193,7 +195,6 @@ function StartWorkout({ params }: PageProps) {
           }
 
           console.log("Processing exercise:", exercise);
-          console.log("exercise.id", exercise.id);
 
           const exerciseId = exercise.exercise?.id;
           if (!exerciseId) {
@@ -201,11 +202,12 @@ function StartWorkout({ params }: PageProps) {
             continue;
           }
 
+          // Create session exercise with or without templateExerciseId based on whether it's a new exercise
           const newSessionExercise = await createSessionExerciseMutation.mutateAsync({
             sessionId: newTrainingSession.id,
             exerciseId: exerciseId,
             order: exercise.order!,
-            ...(exercise.id && { templateExerciseId: exercise.id }),
+            ...(typeof exercise.id === 'number' ? { templateExerciseId: exercise.id } : {}), // Only include templateExerciseId if it's a number
           });
 
           if (exercise.sets) {
@@ -230,7 +232,7 @@ function StartWorkout({ params }: PageProps) {
                   completedSets.push({
                     exerciseId: exerciseId,
                     sessionExerciseId: newSessionExercise.id,
-                    setId: index + 1, // Assuming the sets are created in order
+                    setId: index + 1,
                     reps: set.reps,
                     weight: set.weight,
                   });
@@ -342,7 +344,7 @@ function StartWorkout({ params }: PageProps) {
         sets: ex.sets.map(set => ({
           reps: set.reps,
           weight: set.weight,
-          type: set.type
+          type: set.type,
         }))
       }))
     } : undefined
@@ -353,6 +355,8 @@ function StartWorkout({ params }: PageProps) {
       sets: exercise.sets
     })) : undefined
   });
+
+  console.log("exercises", exercises);
 
   return (
 
@@ -411,7 +415,10 @@ function StartWorkout({ params }: PageProps) {
                   template_id={workout?.id}
                   exerciseIndex={index}
                   exercise={exercise.exercise!}
-                  sets={exercise.sets as TemplateExerciseSet[]}
+                  sets={exercise.sets?.map(set => ({
+                    ...set,
+                    id: set.isNew ? set.tempId : set.id
+                  })) as TemplateExerciseSet[]}
                   workoutIndex={index}
                   onReorder={handleReorderExercises}
                   start
@@ -438,7 +445,10 @@ function StartWorkout({ params }: PageProps) {
               template_id={workout?.id}
               exerciseIndex={index}
               exercise={exercise.exercise!}
-              sets={exercise.sets as TemplateExerciseSet[]}
+              sets={exercise.sets?.map(set => ({
+                ...set,
+                id: set.isNew ? set.tempId : set.id
+              })) as TemplateExerciseSet[]}
               workoutIndex={index}
               start
               onReorder={handleReorderExercises}

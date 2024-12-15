@@ -21,19 +21,19 @@ type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
 
 
 interface ExerciseProps {
-  templateExerciseId: number;
+  templateExerciseId: number | string;
   template_id?: number;
   exerciseIndex: number;
   exercise: ExerciseType;
-  sets?: (TemplateExerciseSet & { deleted?: boolean })[];
+  sets?: (TemplateExerciseSet & { deleted?: boolean, id?: number | string })[];
   workoutIndex: number;
   start: boolean;
   onReorder: (fromIndex: number, toIndex: number) => void;
   templateExercise?: {
-    id?: number;
+    id?: number | string;
     notes?: string | null;
     deleted?: boolean;
-    sets?: PartialTemplateExerciseSet[];
+    sets?: PartialTemplateExerciseSet[]
     is_copy?: boolean;
   };
   setDataOption?: 'lastSession' | 'prSession' | 'template' | undefined;
@@ -45,6 +45,8 @@ interface ExerciseProps {
         reps: number | null;
         weight: number | null;
         type: SetType;
+        reps_template?: number | null;
+        weight_template?: number | null;
       }>;
     }>;
   };
@@ -196,7 +198,7 @@ const Exercise = ({
             </DropdownMenu>
           </div>
         </div>
-        {(notes ?? showNotes) && (
+        {(showNotes) && (
           <Textarea
             value={notes}
             onChange={handleNotesChange}
@@ -229,19 +231,23 @@ const Exercise = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sets ? (sets.filter((set): set is TemplateExerciseSet => !('deleted' in set) || !set.deleted).map((set, setIndex) => (
+            {sets ? (sets.filter((set): set is (TemplateExerciseSet & { isNew?: boolean; tempId?: string }) => !('deleted' in set) || !set.deleted).map((set, setIndex) => (
               <ExerciseSet
-                key={`${exerciseIndex}-${setIndex}`}
+                key={set.isNew ? set.tempId : set.id}
                 setIndex={setIndex}
-                set={set}
+                set={{
+                  ...set,
+                  id: set.isNew ? undefined : set.id,
+                  tempId: set.isNew ? set.tempId : undefined
+                }}
                 workoutIndex={workoutIndex}
                 exerciseIndex={exerciseIndex}
                 templateExerciseId={templateExerciseId}
                 start={start ?? false}
                 setTypeColors={setTypeColors}
                 setDataOption={setDataOption}
-                lastSessionData={lastSessionData}
-                prSessionData={prSessionData}
+                lastSessionData={lastSessionData ?? undefined}
+                prSessionData={prSessionData ?? undefined}
               />
             )))
               :

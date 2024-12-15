@@ -134,14 +134,14 @@
 
   updateExerciseInTemplate: publicProcedure
     .input(z.object({
-      id: z.number(),
+      id: z.number().or(z.string()),
       order: z.number().optional(),
       notes: z.string().optional(),
       // Add other fields as needed
     }))
     .mutation(async ({ input }) => {
       const updatedExercise = await prisma.templateExercise.update({
-        where: { id: input.id },
+        where: { id: Number(input.id) },
         data: {
           order: input.order,
           notes: input.notes,

@@ -16,6 +16,7 @@ import { useToast } from "~/components/ui/use-toast";
 import type { Template, TemplateExercise, TemplateExerciseSet, Exercise as ExerciseType } from '@prisma/client';
 import { Input } from "~/components/ui/input";
 import { StoreListingDialog } from "@/components/app/store/StoreListingDialog"
+import { number } from 'zod';
 
 
 interface PageProps {
@@ -135,9 +136,12 @@ function WorkoutPage({ params }: PageProps) {
 
   const handleSaveChanges = useCallback(async () => {
     console.log("handleSaveChanges triggered");
+    console.log("hasUnsavedChanges", hasUnsavedChanges);
     setIsSaving(true);
     try {
       if (hasUnsavedChanges) {
+        console.log("hasUnsavedChanges is true", hasUnsavedChanges);
+        console.log("exercises", exercises);
         // Update template
         if (workout) {
           await updateTemplateMutation.mutateAsync({
@@ -162,17 +166,22 @@ function WorkoutPage({ params }: PageProps) {
                 if (!set.deleted) {
                   await addSetToTemplateExerciseMutation.mutateAsync({
                     templateExerciseId: newExercise.id,
+                    reps: set.reps!,
+                    weight: set.weight!,
+                    type: set.type!,
                   });
                 }
               }
             }
           } else if (exercise.deleted) {
             // Delete existing exercise
-            await deleteExerciseMutation.mutateAsync({ templateExerciseId: exercise.id! });
+            const exerciseId = Number(exercise.id!);
+            await deleteExerciseMutation.mutateAsync({ templateExerciseId: exerciseId });
           } else {
             // Update existing exercise
+            const exerciseId = Number(exercise.id!);
             await updateExerciseMutation.mutateAsync({
-              id: exercise.id!,
+              id: exerciseId,
               ...exercise,
               notes: exercise.notes ?? undefined,
             });
@@ -182,7 +191,10 @@ function WorkoutPage({ params }: PageProps) {
               for (const set of exercise.sets) {
                 if (set.isNew && !set.deleted) {
                   await addSetToTemplateExerciseMutation.mutateAsync({
-                    templateExerciseId: exercise.id!,
+                    templateExerciseId: exerciseId,
+                    reps: set.reps!,
+                    weight: set.weight!,
+                    type: set.type!,
                   });
                 } else if (!set.isNew && set.deleted) {
                   await deleteSetMutation.mutateAsync({ setId: set.id! });

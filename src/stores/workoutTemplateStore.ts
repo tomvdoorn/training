@@ -10,7 +10,8 @@ type PendingMedia = {
   setIndices: number[];
 };
 
-type PartialTemplateExercise = Partial<TemplateExercise> & {
+type PartialTemplateExercise = Partial<Omit<TemplateExercise, 'id'>> & {
+  id?: string | number;
   isNew?: boolean;
   deleted?: boolean;
   exercise?: Exercise;
@@ -21,13 +22,15 @@ type PartialTemplateExercise = Partial<TemplateExercise> & {
 type PartialTemplateExerciseSet = Partial<Omit<TemplateExerciseSet, 'reps' | 'weight' | 'duration' | 'distance' | 'rpe'>> & {
   isNew?: boolean;
   deleted?: boolean;
-  tempId?: string;
+  tempId?: string | number;
   completed?: boolean;
   reps?: number | null;
   weight?: number | null;
   duration?: number | null;
   distance?: number | null;
   rpe?: number | null;
+  reps_template?: number | null;
+  weight_template?: number | null;
 };
 
 interface WorkoutTemplateState {
@@ -43,18 +46,18 @@ interface addExerciseState extends Partial<TemplateExercise> {
 interface WorkoutTemplateActions {
   updateTemplate: (templateData: Partial<Template>) => void;
   addExercise: (exercise: Partial<addExerciseState>) => void;
-  updateExercise: (exerciseId: number, exerciseData: Partial<TemplateExercise>) => void;
-  removeExercise: (exerciseId: number) => void;
-  addSet: (exerciseId: number, newSet: Partial<TemplateExerciseSet>) => void;
-  updateSet: (exerciseId: number, setId: number | string, setData: Partial<TemplateExerciseSet>) => void;
-  removeSet: (exerciseId: number, setId: number | string) => void;
+  updateExercise: (exerciseId: number | string, exerciseData: Partial<TemplateExercise>) => void;
+  removeExercise: (exerciseId: number | string) => void;
+  addSet: (exerciseId: number | string, newSet: Partial<TemplateExerciseSet>) => void;
+  updateSet: (exerciseId: number | string, setId: number | string, setData: Partial<TemplateExerciseSet>) => void;
+  removeSet: (exerciseId: number | string, setId: number | string) => void;
   resetChanges: () => void;
   initializeExercises: (exercises: TemplateExercise[]) => void;
   setSessionMode: (isSessionMode: boolean) => void;
   updateSessionSet: (exerciseId: number, setId: number | string, setData: Partial<SessionExerciseSet>) => void;
   reorderExercises: (fromIndex: number, toIndex: number) => void;
   resetUnsavedChanges: () => void;
-  addPendingMedia: (exerciseId: number, media: { file: string; fileType: string; setIndices: number[] }) => void;
+  addPendingMedia: (exerciseId: number | string, media: { file: string; fileType: string; setIndices: number[] }) => void;
   addGeneralMedia: (media: PendingMedia) => void;
 }
 const initialState: WorkoutTemplateState = {
@@ -63,6 +66,11 @@ const initialState: WorkoutTemplateState = {
   hasUnsavedChanges: false,
   isSessionMode: false,
   generalMedia: [],
+};
+
+// Helper function to compare IDs (can be either number or string)
+const isSameId = (id1: number | string, id2: number | string) => {
+  return typeof id1 === typeof id2 ? id1 === id2 : String(id1) === String(id2);
 };
 
 export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemplateActions>((set) => ({
@@ -79,15 +87,17 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
   addExercise: (exercise) =>
     set(
       produce((state: WorkoutTemplateState) => {
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         state.exercises.push({
           ...exercise,
+          id: tempId,
           isNew: true,
           sets: [{
-            reps: 0,
-            weight: 0,
             type: 'Regular',
             isNew: true,
-            tempId: `temp-${Date.now()}`,
+            tempId: `set-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            reps: 0,
+            weight: 0,
           }],
         });
         state.hasUnsavedChanges = true;
@@ -97,85 +107,94 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
   updateExercise: (exerciseId, exerciseData) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
+        const exerciseIndex = state.exercises.findIndex((e) => isSameId(e.id!, exerciseId));
         if (exerciseIndex !== -1) {
           state.exercises[exerciseIndex] = {
             ...state.exercises[exerciseIndex]!,
             ...exerciseData,
-            notes: exerciseData.notes !== undefined ? exerciseData.notes : state.exercises[exerciseIndex]!.notes  ,
+            notes: exerciseData.notes !== undefined 
+              ? exerciseData.notes 
+              : state.exercises[exerciseIndex]!.notes,
           };
+          state.hasUnsavedChanges = true;
         }
-        state.hasUnsavedChanges = true;
       })
     ),
 
   removeExercise: (exerciseId) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
+        const exerciseIndex = state.exercises.findIndex((e) => isSameId(e.id!, exerciseId));
         if (exerciseIndex !== -1) {
           if (state.exercises[exerciseIndex]!.isNew) {
             state.exercises.splice(exerciseIndex, 1);
           } else {
             state.exercises[exerciseIndex]!.deleted = true;
           }
+          state.hasUnsavedChanges = true;
         }
-        state.hasUnsavedChanges = true;
       })
     ),
 
-  addSet: (exerciseId, newSet) =>
+  addSet: (exerciseId, setData) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
+        const exerciseIndex = state.exercises.findIndex((e) => isSameId(e.id!, exerciseId));
         if (exerciseIndex !== -1) {
-          if (!state.exercises[exerciseIndex]!.sets) {
-            state.exercises[exerciseIndex]!.sets = [];
-          }
-          const tempId = `temp-${Date.now()}`;
-          state.exercises[exerciseIndex]!.sets?.push({ ...newSet, isNew: true, tempId });
+          const tempId = `set-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          state.exercises[exerciseIndex]!.sets = state.exercises[exerciseIndex]!.sets ?? [];
+          state.exercises[exerciseIndex]!.sets.push({
+            ...setData,
+            isNew: true,
+            tempId,
+          });
+          state.hasUnsavedChanges = true;
         }
-        state.hasUnsavedChanges = true;
       })
     ),
 
   updateSet: (exerciseId, setId, setData) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
+        const exerciseIndex = state.exercises.findIndex((e) => isSameId(e.id!, exerciseId));
         if (exerciseIndex !== -1 && state.exercises[exerciseIndex]!.sets) {
           const setIndex = state.exercises[exerciseIndex]!.sets.findIndex((s) => 
-            (typeof setId === 'number' ? s.id === setId : s.tempId === setId)
+            isSameId(s.isNew ? s.tempId! : s.id!, setId)
           );
           if (setIndex !== -1) {
             state.exercises[exerciseIndex]!.sets[setIndex] = {
               ...state.exercises[exerciseIndex]!.sets[setIndex],
-              ...setData
+              ...setData,
             };
+            state.hasUnsavedChanges = true;
           }
         }
-        state.hasUnsavedChanges = true;
       })
     ),
 
   removeSet: (exerciseId, setId) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        const exerciseIndex = state.exercises.findIndex((e) => e.id === exerciseId);
+        const exerciseIndex = state.exercises.findIndex((e) => isSameId(e.id!, exerciseId));
         if (exerciseIndex !== -1 && state.exercises[exerciseIndex]!.sets) {
-          const setIndex = state.exercises[exerciseIndex]!.sets.findIndex((s) => 
-            (typeof setId === 'number' ? s.id === setId : s.tempId === setId)
-          );
-          if (setIndex !== -1 )  {
-            const set = state.exercises[exerciseIndex]!.sets[setIndex];
-            if (set!.isNew) {
-              state.exercises[exerciseIndex]!.sets.splice(setIndex, 1);
+          const setIndex = state.exercises[exerciseIndex]!.sets.findIndex((s) => {
+            if (s.isNew && typeof setId === 'string') {
+              return s.tempId === setId;
+            }
+            return s.id === setId;
+          });
+          if (setIndex !== -1) {
+            if (state.exercises[exerciseIndex]!.sets[setIndex]!.isNew) {
+              state.exercises[exerciseIndex]!.sets = [
+                ...state.exercises[exerciseIndex]!.sets.slice(0, setIndex),
+                ...state.exercises[exerciseIndex]!.sets.slice(setIndex + 1)
+              ];
             } else {
               state.exercises[exerciseIndex]!.sets[setIndex]!.deleted = true;
             }
+            state.hasUnsavedChanges = true;
           }
         }
-        state.hasUnsavedChanges = true;
       })
     ),
 
@@ -236,15 +255,14 @@ export const useWorkoutTemplateStore = create<WorkoutTemplateState & WorkoutTemp
       })
     ),
 
-  addPendingMedia: (exerciseId:number, media: PendingMedia) =>
+  addPendingMedia: (exerciseId, mediaData) =>
     set(
       produce((state: WorkoutTemplateState) => {
-        const exercise = state.exercises.find((e) => e.id === exerciseId);
-        if (exercise) {
-          if (!exercise.pendingMedia) {
-            exercise.pendingMedia = [];
-          }
-          exercise.pendingMedia.push(media);
+        const exerciseIndex = state.exercises.findIndex((e) => isSameId(e.id!, exerciseId));
+        if (exerciseIndex !== -1) {
+          state.exercises[exerciseIndex]!.pendingMedia = 
+            state.exercises[exerciseIndex]!.pendingMedia ?? [];
+          state.exercises[exerciseIndex]!.pendingMedia.push(mediaData);
           state.hasUnsavedChanges = true;
         }
       })

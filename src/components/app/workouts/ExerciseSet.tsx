@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { TableRow, TableCell } from "~/components/ui/table";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { type TemplateExerciseSet, SessionExerciseSet, SetType } from "@prisma/client";
+import { type TemplateExerciseSet, type SessionExerciseSet, SetType } from "@prisma/client";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "~/components/ui/select";
 import { useWorkoutTemplateStore } from '~/stores/workoutTemplateStore';
 import { Checkbox } from "~/components/ui/checkbox";
@@ -14,7 +14,7 @@ interface ExerciseSetProps {
   exerciseIndex: number;
   setIndex: number;
   set: Partial<TemplateExerciseSet & { completed?: boolean }> & { isNew?: boolean; tempId?: string };
-  templateExerciseId: number;
+  templateExerciseId: number | string;
   start: boolean;
   setTypeColors: Record<string, string>;
   setDataOption: 'lastSession' | 'prSession' | 'template' | undefined;
@@ -26,14 +26,24 @@ interface ExerciseSetProps {
         reps: number | null;
         weight: number | null;
         type: SetType;
+        reps_template?: number | null;
+        weight_template?: number | null;
       }>;
     }>;
   };
   prSessionData?: Array<{
     id: number;
-    sets: Array<Partial<SessionExerciseSet>>;
+    sets: Array<Partial<SessionExerciseSet & {
+      reps_template: number | null;
+      weight_template: number | null;
+    }>>;
   }>;
 }
+
+type PlaceholderData = Partial<TemplateExerciseSet & {
+  reps_template?: number | null;
+  weight_template?: number | null;
+}>;
 
 const ExerciseSet = ({
   setIndex,
@@ -47,16 +57,16 @@ const ExerciseSet = ({
 }: ExerciseSetProps) => {
   const { updateSet, removeSet } = useWorkoutTemplateStore();
 
-  const getPlaceholderData = useCallback(() => {
+  const getPlaceholderData = useCallback((): PlaceholderData => {
     switch (setDataOption) {
       case 'lastSession':
-        return lastSessionData?.exercises?.find(e => e.templateExerciseId === templateExerciseId)?.sets?.[setIndex] ?? {};
+        return (lastSessionData?.exercises?.find(e => e.templateExerciseId === templateExerciseId)?.sets?.[setIndex] ?? {}) as PlaceholderData;
       case 'prSession':
         console.log('prSessionData?', prSessionData);
-        const exerciseData = prSessionData?.[templateExerciseId];
-        return exerciseData?.sets?.[setIndex] ?? {};
+        const exerciseData = prSessionData?.[Number(templateExerciseId)];
+        return (exerciseData?.sets?.[setIndex] ?? {}) as PlaceholderData;
       default:
-        return set; // Use template data as default
+        return set as PlaceholderData;
     }
   }, [setDataOption, lastSessionData, prSessionData, templateExerciseId, setIndex, set]);
 
@@ -66,12 +76,12 @@ const ExerciseSet = ({
     const updatedFields: Partial<TemplateExerciseSet & { completed?: boolean }> = { [field]: value };
 
     if (field === 'completed' && value === true) {
-      // If marking as completed and weight or reps are undefined, use placeholder data
-      if (set.weight === undefined) {
-        updatedFields.weight = placeholderData.weight ?? 0;
+      // If marking as completed and no values are set, use placeholder data
+      if (set.weight === undefined || set.weight === null) {
+        updatedFields.weight = (placeholderData.weight ?? undefined) ?? (placeholderData.weight_template ?? undefined);
       }
-      if (set.reps === undefined) {
-        updatedFields.reps = placeholderData.reps ?? 0;
+      if (set.reps === undefined || set.reps === null) {
+        updatedFields.reps = (placeholderData.reps ?? undefined) ?? (placeholderData.reps_template ?? undefined);
       }
     }
 
@@ -123,28 +133,30 @@ const ExerciseSet = ({
         <Input
           type="number"
           min={0}
-          value={set.completed ? (set.weight?.toString() ?? '') : (start ? undefined : set.weight?.toString() ?? '')}
+          value={set.weight !== undefined && set.weight !== null ? set.weight.toString() : ''}
           onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) ?? 0)}
-          placeholder={placeholderData.weight?.toString() ?? ''}
-          pattern="[0-9]*" // For iOS numeric keyboard
-          inputMode="numeric" // Better for reps input (whole numbers)
-          style={{ fontSize: '16px' }} // Prevent zoom on iOS
-          className="text-base bg-brand-dark/90 " // Ensure text is readable without zoom
-
+          placeholder={setDataOption ? (placeholderData.weight ? placeholderData.weight.toString() : placeholderData.weight_template?.toString()) : undefined}
+          pattern="[0-9]*"
+          inputMode="decimal"
+          style={{ fontSize: '16px' }}
+          enterKeyHint="next"
+          tabIndex={0}
+          className="text-base bg-brand-dark/90"
         />
       </TableCell>
       <TableCell>
         <Input
           type="number"
           min={0}
-          value={set.completed ? (set.reps?.toString() ?? '') : (start ? undefined : set.reps?.toString() ?? '')}
+          value={set.reps !== undefined && set.reps !== null ? set.reps.toString() : ''}
           onChange={(e) => handleInputChange('reps', parseInt(e.target.value) ?? 0)}
-          placeholder={placeholderData.reps?.toString() ?? ''}
-          pattern="[0-9]*" // For iOS numeric keyboard
-          inputMode="numeric" // Better for reps input (whole numbers)
-          style={{ fontSize: '16px' }} // Prevent zoom on iOS
-          className="text-base bg-brand-dark/90 " // Ensure text is readable without zoom
-
+          placeholder={setDataOption ? (placeholderData.reps ? placeholderData.reps.toString() : placeholderData.reps_template?.toString()) : undefined}
+          pattern="[0-9]*"
+          inputMode="numeric"
+          style={{ fontSize: '16px' }}
+          enterKeyHint="done"
+          tabIndex={1}
+          className="text-base bg-brand-dark/90"
         />
       </TableCell>
       {start ?

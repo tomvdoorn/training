@@ -8,16 +8,21 @@ export const setRouter = router({
   addSetToTemplateExercise: publicProcedure
     .input(z.object({
       templateExerciseId: z.number(),
+      reps: z.number().optional(),
+      weight: z.number().optional(),
+      duration: z.number().optional(),
+      distance: z.number().optional(),
+      type: z.nativeEnum(SetType),
     }))
     .mutation(async ({ input }) => {
       const set = await prisma.templateExerciseSet.create({
         data: {
           templateExerciseId: input.templateExerciseId,
-          reps: 0, // default values
-          weight: 0,
-          duration: 0,
-          distance: 0,
-          type: 'Regular',
+          reps: input.reps ?? 0, // default values
+          weight: input.weight ?? 0,
+          duration: input.duration ?? 0,
+          distance: input.distance ?? 0,
+          type: input.type ?? 'Regular',
         },
       });
       return set;
