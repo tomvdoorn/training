@@ -39,7 +39,7 @@ export const sessionRouter = createTRPCRouter({
 
   createTrainingSession: protectedProcedure
     .input(z.object({
-      templateId: z.number(),
+      templateId: z.number().optional(),
       startTime: z.date(),
       endTime: z.date(),
       completed: z.boolean().optional(),

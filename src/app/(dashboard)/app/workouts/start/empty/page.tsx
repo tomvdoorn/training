@@ -44,16 +44,10 @@ interface PartialTemplateExercise extends Partial<TemplateExercise> {
 function StartWorkout({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const templateId = parseInt(params.id);
+  const templateId = null;
+  const workout = null;
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const { data: workout, refetch } = api.template.getTemplateById.useQuery(
-    { id: templateId },
-    {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    }
-  );
+
   const {
     exercises,
     hasUnsavedChanges,
@@ -116,26 +110,6 @@ function StartWorkout({ params }: PageProps) {
     }
   }, [exerciseMediaQuery.data]);
 
-  useEffect(() => {
-    if (workout && workout.exercises) {
-      const initialExercises = workout.exercises.map(exercise => ({
-        ...exercise,
-        sets: exercise.sets?.map(set => ({
-          ...set,
-          weight: undefined,
-          reps: undefined,
-          weight_template: set.weight,
-          reps_template: set.reps
-        })
-          // 
-        )
-        //  ?? []
-      }));
-      initializeExercises(initialExercises);
-      updateTemplate(workout);
-    }
-  }, [workout, initializeExercises, updateTemplate]);
-
   const handleNavigation = (href: string) => {
     if (checkUnsavedChanges(href)) {
       router.push(href);
@@ -144,7 +118,14 @@ function StartWorkout({ params }: PageProps) {
 
   const handleExerciseAdded = useCallback((newExercise: TemplateExercise) => {
     console.log("New exercise being added to template:", newExercise);
-    addExercise(newExercise);
+    addExercise({
+      ...newExercise,
+      sets: newExercise.sets?.map(set => ({
+        ...set,
+        isNew: true,
+        tempId: Math.random().toString(),
+      })) ?? [],
+    });
   }, [addExercise]);
 
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
@@ -159,141 +140,132 @@ function StartWorkout({ params }: PageProps) {
   }) => {
     setIsSaving(true);
     try {
-      if (hasUnsavedChanges) {
-        const newTrainingSession = await createTrainingSessionMutation.mutateAsync({
-          templateId: templateId,
-          startTime: startTime!,
-          endTime: data.endTime,
-          completed: true,
-          rating: data.rating,
+      const newTrainingSession = await createTrainingSessionMutation.mutateAsync({
+        startTime: startTime!,
+        endTime: data.endTime,
+        completed: true,
+        rating: data.rating,
+      });
+
+      const newPost = await createPostMutation.mutateAsync({
+        trainingSessionId: newTrainingSession.id,
+        privacy: data.privacy,
+        note: data.note,
+        title: data.title,
+        mediaIds: [],
+      });
+
+      let totalPRs = 0;
+      let totalWeight = 0;
+      const newMediaIds: number[] = [];
+      const completedSets: Array<{
+        exerciseId: number;
+        sessionExerciseId: number;
+        setId: number;
+        reps: number;
+        weight: number;
+      }> = [];
+
+      for (const exercise of exercises as PartialTemplateExercise[]) {
+        if (exercise.deleted) {
+          console.log("Skipping deleted exercise:", exercise);
+          continue;
+        }
+
+        console.log("Processing exercise:", exercise);
+
+        const exerciseId = exercise.exercise?.id;
+        if (!exerciseId) {
+          console.error('Missing exercise ID');
+          continue;
+        }
+
+        const newSessionExercise = await createSessionExerciseMutation.mutateAsync({
+          sessionId: newTrainingSession.id,
+          exerciseId: exerciseId,
+          order: exercise.order!,
         });
 
-        const newPost = await createPostMutation.mutateAsync({
-          trainingSessionId: newTrainingSession.id,
-          templateId: templateId,
-          privacy: data.privacy,
-          note: data.note,
-          title: data.title,
-          mediaIds: [],
-        });
+        if (exercise.sets) {
+          console.log(`Processing ${exercise.sets.length} sets for exercise ${exercise.id}`);
+          const validSets = exercise.sets.filter(set => !set.deleted);
 
-        let totalPRs = 0;
-        let totalWeight = 0;
-        const newMediaIds: number[] = [];
-        const completedSets: Array<{
-          exerciseId: number;
-          sessionExerciseId: number;
-          setId: number;
-          reps: number;
-          weight: number;
-        }> = [];
+          if (validSets.length > 0) {
+            const newSessionSets = await createSessionSetsMutation.mutateAsync(
+              validSets.map(set => ({
+                sessionExerciseId: newSessionExercise.id,
+                reps: set.reps ?? 0,
+                weight: set.weight ?? 0,
+                type: set.type ?? 'Regular',
+                completed: set.completed ?? false,
+              }))
+            );
 
-        for (const exercise of exercises as PartialTemplateExercise[]) {
-          if (exercise.deleted) {
-            console.log("Skipping deleted exercise:", exercise);
-            continue;
-          }
-
-          console.log("Processing exercise:", exercise);
-
-          const exerciseId = exercise.exercise?.id;
-          if (!exerciseId) {
-            console.error('Missing exercise ID');
-            continue;
-          }
-
-          // Create session exercise with or without templateExerciseId based on whether it's a new exercise
-          const newSessionExercise = await createSessionExerciseMutation.mutateAsync({
-            sessionId: newTrainingSession.id,
-            exerciseId: exerciseId,
-            order: exercise.order!,
-            ...(typeof exercise.id === 'number' ? { templateExerciseId: exercise.id } : {}), // Only include templateExerciseId if it's a number
-          });
-
-          if (exercise.sets) {
-            console.log(`Processing ${exercise.sets.length} sets for exercise ${exercise.id}`);
-            const validSets = exercise.sets.filter(set => !set.deleted);
-
-            if (validSets.length > 0) {
-              const newSessionSets = await createSessionSetsMutation.mutateAsync(
-                validSets.map(set => ({
+            validSets.forEach((set, index) => {
+              if (set.completed && set.weight && set.reps) {
+                totalWeight += (set.weight * set.reps);
+                completedSets.push({
+                  exerciseId: exerciseId,
                   sessionExerciseId: newSessionExercise.id,
-                  reps: set.reps ?? 0,
-                  weight: set.weight ?? 0,
-                  type: set.type ?? 'Regular',
-                  completed: set.completed ?? false,
-                }))
-              );
-
-              // Track completed sets for PR checking
-              validSets.forEach((set, index) => {
-                if (set.completed && set.weight && set.reps) {
-                  totalWeight += (set.weight * set.reps);
-                  completedSets.push({
-                    exerciseId: exerciseId,
-                    sessionExerciseId: newSessionExercise.id,
-                    setId: index + 1,
-                    reps: set.reps,
-                    weight: set.weight,
-                  });
-                }
-              });
-            }
-          }
-
-          if (exercise.pendingMedia?.length) {
-            for (const media of exercise.pendingMedia) {
-              if (data.selectedMedia.includes(media.file)) {
-                const newMedia = await uploadSessionExerciseMediaMutation.mutateAsync({
-                  sessionExerciseId: newSessionExercise.id,
-                  fileUrl: media.file,
-                  fileType: media.fileType,
-                  setIds: media.setIndices.map(index => exercise?.sets?.[index]?.id).filter(Boolean) as number[],
-                  postId: newPost.id,
+                  setId: index + 1,
+                  reps: set.reps,
+                  weight: set.weight,
                 });
-                newMediaIds.push(newMedia.id);
               }
-            }
+            });
           }
         }
 
-        // Check PRs in batch
-        if (completedSets.length > 0) {
-          const prResults = await checkAndCreatePRsMutation.mutateAsync(completedSets);
-          totalPRs = prResults.newPRsCount;
-        }
-
-        if (generalMedia.length) {
-          for (const media of generalMedia) {
+        if (exercise.pendingMedia?.length) {
+          for (const media of exercise.pendingMedia) {
             if (data.selectedMedia.includes(media.file)) {
               const newMedia = await uploadSessionExerciseMediaMutation.mutateAsync({
+                sessionExerciseId: newSessionExercise.id,
                 fileUrl: media.file,
                 fileType: media.fileType,
-                setIds: [],
+                setIds: media.setIndices.map(index => exercise?.sets?.[index]?.id).filter(Boolean) as number[],
                 postId: newPost.id,
               });
               newMediaIds.push(newMedia.id);
             }
           }
         }
-
-        await updatePostMutation.mutateAsync({
-          id: newPost.id,
-          numberOfPRs: totalPRs,
-          totalWeightLifted: totalWeight,
-          mediaIds: newMediaIds,
-        });
-
-        console.log("Post updated with PR information");
-
-        await refetch();
-        resetChanges();
-        toast({
-          title: "Success",
-          description: `Workout finished and post created successfully. You set ${totalPRs} new personal records!`,
-        });
-        router.push("/app/");
       }
+
+      if (completedSets.length > 0) {
+        const prResults = await checkAndCreatePRsMutation.mutateAsync(completedSets);
+        totalPRs = prResults.newPRsCount;
+      }
+
+      if (generalMedia.length) {
+        for (const media of generalMedia) {
+          if (data.selectedMedia.includes(media.file)) {
+            const newMedia = await uploadSessionExerciseMediaMutation.mutateAsync({
+              fileUrl: media.file,
+              fileType: media.fileType,
+              setIds: [],
+              postId: newPost.id,
+            });
+            newMediaIds.push(newMedia.id);
+          }
+        }
+      }
+
+      await updatePostMutation.mutateAsync({
+        id: newPost.id,
+        numberOfPRs: totalPRs,
+        totalWeightLifted: totalWeight,
+        mediaIds: newMediaIds,
+      });
+
+      console.log("Post updated with PR information");
+
+      resetChanges();
+      toast({
+        title: "Success",
+        description: `Workout finished and post created successfully. You set ${totalPRs} new personal records!`,
+      });
+      router.push("/app/");
     } catch (error) {
       console.error('Error finishing workout:', error);
       if (error instanceof Error) {
@@ -320,7 +292,6 @@ function StartWorkout({ params }: PageProps) {
     createSessionSetsMutation,
     checkAndCreatePRsMutation,
     updatePostMutation,
-    refetch,
     resetChanges,
     toast,
     router,
@@ -335,26 +306,6 @@ function StartWorkout({ params }: PageProps) {
   };
 
   const [setDataOption, setSetDataOption] = useState<'lastSession' | 'prSession' | 'template'>('lastSession');
-
-  const lastSessionQuery = api.session.getLastSessionData.useQuery({ templateId }, {
-    select: (data) => data ? {
-      exercises: data.exercises.map(ex => ({
-        id: ex.id,
-        templateExerciseId: ex.templateExerciseId,
-        sets: ex.sets.map(set => ({
-          reps: set.reps,
-          weight: set.weight,
-          type: set.type,
-        }))
-      }))
-    } : undefined
-  });
-  const prSessionQuery = api.session.getPRSessionData.useQuery({ templateId }, {
-    select: (data) => data ? Object.entries(data).map(([id, exercise]) => ({
-      id: parseInt(id),
-      sets: exercise.sets
-    })) : undefined
-  });
 
 
   return (
@@ -372,7 +323,7 @@ function StartWorkout({ params }: PageProps) {
           </Button>
         </div>
         <div className="md:hidden mb-4 px-4">
-          <h2 className="text-2xl font-bold">{workout?.name}</h2>
+          <h2 className="text-2xl font-bold">{"Empty Workout"}</h2>
           <p className="text-sm text-gray-500 mt-1">Edit your workout template</p>
           <div className="text-lg font-semibold mt-2">
             Elapsed Time: {formatElapsedTime(elapsedTime)}
@@ -383,35 +334,25 @@ function StartWorkout({ params }: PageProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>{workout?.name}</CardTitle>
+                  <CardTitle>{"Empty Workout"}</CardTitle>
                   <CardDescription className='mt-2'>Edit your workout template</CardDescription>
                   <div className="text-lg font-semibold">
                     Elapsed Time: {formatElapsedTime(elapsedTime)}
                   </div>
                 </div>
                 <AddExerciseToTemplate
-                  templateId={templateId}
+                  templateId={0}
                   onExerciseAdded={handleExerciseAdded}
                 />
               </div>
             </CardHeader>
             <CardContent>
               <SetDataSelector value={setDataOption} onChange={setSetDataOption} />
-              {workout?.note && (
-                <div className="mt-4">
-                  <label className="text-sm font-semibold mb-2">Notes</label>
-                  <textarea
-                    value={workout?.note}
-                    className="w-full p-2 text-sm text-gray-700 bg-gray-800/50 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled
-                  />
-                </div>
-              )}
               {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
                 <Exercise
                   key={exercise.id ?? `new-${index}`}
                   templateExerciseId={exercise.id!}
-                  template_id={workout?.id}
+                  template_id={0}
                   exerciseIndex={index}
                   exercise={exercise.exercise!}
                   sets={exercise.sets?.map(set => ({
@@ -422,8 +363,8 @@ function StartWorkout({ params }: PageProps) {
                   onReorder={handleReorderExercises}
                   start
                   setDataOption={setDataOption}
-                  lastSessionData={lastSessionQuery.data}
-                  prSessionData={prSessionQuery.data ?? undefined}
+                  lastSessionData={undefined}
+                  prSessionData={undefined}
                   templateExercise={exercise as Partial<TemplateExercise>}
                 />
               ))}
@@ -441,7 +382,7 @@ function StartWorkout({ params }: PageProps) {
             <Exercise
               key={exercise.id ?? `new-${index}`}
               templateExerciseId={exercise.id!}
-              template_id={workout?.id}
+              template_id={0}
               exerciseIndex={index}
               exercise={exercise.exercise!}
               sets={exercise.sets?.map(set => ({
@@ -452,15 +393,15 @@ function StartWorkout({ params }: PageProps) {
               start
               onReorder={handleReorderExercises}
               setDataOption={setDataOption}
-              lastSessionData={lastSessionQuery.data ?? undefined}
-              prSessionData={prSessionQuery.data ?? undefined}
+              lastSessionData={undefined}
+              prSessionData={undefined}
             />
           ))}
         </div>
       </div>
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-dark/90 border-t border-gray-200 p-4 flex justify-between items-center">
         <AddExerciseToTemplate
-          templateId={templateId}
+          templateId={0}
           onExerciseAdded={handleExerciseAdded}
         />
         <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90" onClick={() => setIsFinishModalOpen(true)} disabled={isSaving}>
@@ -477,7 +418,7 @@ function StartWorkout({ params }: PageProps) {
         onClose={() => setIsFinishModalOpen(false)}
         onConfirm={handleSaveChanges}
         isLoading={isSaving}
-        defaultTitle={workout?.name ?? 'Workout'}
+        defaultTitle={'Workout'}
         startTime={startTime ?? new Date()}
       />
     </div>

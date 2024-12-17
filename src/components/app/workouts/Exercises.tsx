@@ -21,7 +21,7 @@ type PartialTemplateExerciseSet = Partial<TemplateExerciseSet> & {
 
 
 interface ExerciseProps {
-  templateExerciseId: number | string;
+  templateExerciseId?: number | string;
   template_id?: number;
   exerciseIndex: number;
   exercise: ExerciseType;

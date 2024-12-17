@@ -56,13 +56,20 @@ export default function AllTemplatesUser({ user_id }: AllTemplatesUserProps) {
         <h1 className="text-3xl font-bold">Your Workouts</h1>
       </div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold mb-4 center"> Templates</h2>
-        <WorkoutModal user_id={user_ids} />
+        <h2 className="text-2xl font-bold">Templates</h2>
+        <div className="flex gap-4">
+          <WorkoutModal user_id={user_ids} />
+          <Button variant="ghost" className="gap-1 bg-brand-gradient-r text-gray-900 hover:opacity-90">
+            <Link href="/app/workouts/start/empty">
+              Start Workout
+            </Link>
+          </Button>
+        </div>
       </div>
       {workouts && workouts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workouts.map((template) => (
-            <Card key={template.id} className="hover:shadow-lg transition-shadow duration-300">
+            <Card key={template.id} className="hover:shadow-lg transition-shadow duration-300 flex flex-col min-h-[250px]">
               <CardHeader className="pb-1">
                 <CardTitle className="grid grid-cols-8 gap-3  items-center ">
                   <Dumbbell className="mr-2 h-5 w-5 col-span-1" />
@@ -96,7 +103,7 @@ export default function AllTemplatesUser({ user_id }: AllTemplatesUserProps) {
 
                 </div>
               </CardContent>
-              <CardFooter className="mt-auto">
+              <CardFooter>
                 <div className="grid grid-cols-3 gap-4 w-full">
                   <Button asChild variant="ghost" className="col-span-2 bg-brand-gradient-r text-gray-900 hover:opacity-90" >
 

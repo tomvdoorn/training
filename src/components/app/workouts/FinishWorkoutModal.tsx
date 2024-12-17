@@ -55,6 +55,12 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
   const [rating, setRating] = useState(5);
   const [endTime, setEndTime] = useState(new Date());
 
+  useEffect(() => {
+    if (isOpen) {
+      setEndTime(new Date());
+    }
+  }, [isOpen]);
+
   const handleEndTimeChange = (newTime: string) => {
     const newEndTime = new Date(newTime);
     if (newEndTime >= startTime) {
@@ -139,7 +145,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 bg-brand-dark">
         <DialogHeader>
           <DialogTitle>Finish Workout</DialogTitle>
           <DialogDescription>
@@ -177,6 +183,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
                   type="button"
                   variant="outline"
                   onClick={() => document.getElementById('file-upload')?.click()}
+                  className="bg-brand-gradient-r text-gray-900 hover:opacity-90"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Upload Media
@@ -209,6 +216,7 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
               max={new Date().toISOString().slice(0, 16)}
               value={endTime.toISOString().slice(0, 16)}
               onChange={(e) => handleEndTimeChange(e.target.value)}
+              className="bg-brand-dark text-white icon-white"
             />
           </div>
 
@@ -252,22 +260,27 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => onConfirm({
-              privacy,
-              note,
-              title,
-              rating,
-              endTime,
-              selectedMedia
-            })}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Publishing...' : 'Publish Workout'}
-          </Button>
+          <div className="flex justify-between w-full">
+
+            <div className="flex gap-2"></div>
+            <Button variant="outline" onClick={onClose} className="bg-brand-dark">
+              Cancel
+            </Button>
+
+            <Button
+              onClick={() => onConfirm({
+                privacy,
+                note,
+                title,
+                rating,
+                endTime,
+                selectedMedia
+              })}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Publishing...' : 'Publish Workout'}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

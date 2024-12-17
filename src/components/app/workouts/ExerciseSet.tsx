@@ -14,7 +14,7 @@ interface ExerciseSetProps {
   exerciseIndex: number;
   setIndex: number;
   set: Partial<TemplateExerciseSet & { completed?: boolean }> & { isNew?: boolean; tempId?: string };
-  templateExerciseId: number | string;
+  templateExerciseId?: number | string;
   start: boolean;
   setTypeColors: Record<string, string>;
   setDataOption: 'lastSession' | 'prSession' | 'template' | undefined;

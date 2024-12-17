@@ -181,9 +181,20 @@ const CarouselItems: React.FC = () => {
   );
 
   const renderEmptyState = (date: Date) => (
-    <div className="text-center">
-      <ScheduleSession />
-    </div>
+    <div className="flex flex-col justify-center gap-4">
+      <div className="flex justify-center">
+        <ScheduleSession />
+      </div>
+
+      <div className="flex justify-center">
+        <Button variant="ghost" className="gap-1 bg-brand-dark hover:opacity-90">
+          <Link href="/app/workouts/start/empty">
+            Start Workout
+          </Link>
+        </Button>
+      </div>
+    </div >
+
   );
 
   return (
