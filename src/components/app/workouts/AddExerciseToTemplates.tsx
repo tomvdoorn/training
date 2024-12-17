@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Credenza,
-  CredenzaBody,
-  CredenzaContent,
-  CredenzaTrigger,
-} from "@/components/ui/credenza"
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { api } from "~/trpc/react";
 import AddExercise from "./AddExercise";
@@ -36,7 +35,7 @@ const generateInitialsSVG = (initials: string): string => {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
       <rect width="100" height="100" fill="${bgColor}" />
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${textColor}" font-size="40" font-family="Arial, Helvetica, sans-serif">${initials}</text>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${textColor}" font-size="20" font-family="Arial, Helvetica, sans-serif">${initials}</text>
     </svg>
   `;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
@@ -102,23 +101,26 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
           const initials = getInitials(exercise.name);
           const fallbackSrc = generateInitialsSVG(initials);
           return (
-            <div className="bg-gray-800/50 p-2 mb-2 rounded-lg" key={exercise.id}>
-              <div className="flex flex-row mb-2 mt-2">
+            <div className="bg-gray-800/50 p-2 mb-2 rounded-lg max-h-[200px]" key={exercise.id}>
+              <div className="grid grid-cols-[80px_1fr] gap-2">
                 <Image
                   src={exercise.image ? exercise.image : fallbackSrc}
                   alt={exercise.name}
-                  width={100}
-                  height={100}
-                  className="rounded-md mr-2"
+                  width={80}
+                  height={80}
+                  className="rounded-md row-span-2"
                 />
-                <div className="font-medium basis-2/3">{exercise.name}
-                  <div className="flex items-center flex-wrap ">
-                    <p className="basis-2/3 text-brand-light text-muted-foreground text-sm">{exercise.description}</p>
-                  </div></div>
-                <Button className="align bg-brand-gradient-r text-gray-900 hover:opacity-90" onClick={() => selectExercise(exercise.id)}>Add</Button>
-
+                <div className="flex justify-between items-center">
+                  <div className="font-medium">{exercise.name}</div>
+                  <Button
+                    className="bg-brand-gradient-r text-gray-900 hover:opacity-90 shrink-0"
+                    onClick={() => selectExercise(exercise.id)}
+                  >
+                    Add
+                  </Button>
+                </div>
+                <p className="text-brand-light text-muted-foreground text-sm">{exercise.description}</p>
               </div>
-
             </div>
           );
         })}
@@ -135,16 +137,16 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
 
   return (
     <div>
-      <Credenza onOpenChange={setIsOpen} open={isOpen}>
-        <CredenzaTrigger asChild>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
           <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">Add Exercise</Button>
-        </CredenzaTrigger>
-        <CredenzaContent className="h-4/6 bg-brand-dark">
-          <CredenzaBody className="overflow-x-scroll">
+        </DialogTrigger>
+        <DialogContent className="h-[90vh] max-w-3xl w-[90vw] bg-brand-dark p-6">
+          <div className="h-full overflow-y-auto pr-6">
             {content}
-          </CredenzaBody>
-        </CredenzaContent>
-      </Credenza>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

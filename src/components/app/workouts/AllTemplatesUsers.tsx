@@ -55,12 +55,12 @@ export default function AllTemplatesUser({ user_id }: AllTemplatesUserProps) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Your Workouts</h1>
       </div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Templates</h2>
-        <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h2 className="text-2xl font-bold mb-4 sm:mb-0">Templates</h2>
+        <div className="flex gap-4 w-full sm:w-auto">
           <WorkoutModal user_id={user_ids} />
-          <Button variant="ghost" className="gap-1 bg-brand-gradient-r text-gray-900 hover:opacity-90">
-            <Link href="/app/workouts/start/empty">
+          <Button variant="ghost" className="gap-1 bg-brand-gradient-r text-gray-900 hover:opacity-90 flex-1 sm:flex-initial">
+            <Link href="/app/workouts/start/empty" className="w-full">
               Start Workout
             </Link>
           </Button>

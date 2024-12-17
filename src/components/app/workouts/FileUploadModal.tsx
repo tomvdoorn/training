@@ -16,7 +16,7 @@ const FileUploadModal = ({ isOpen, onClose, onUpload, sets }: { isOpen: boolean,
   };
 
   const handleSetToggle = (setId: number) => {
-    setSelectedSets(prev => 
+    setSelectedSets(prev =>
       prev.includes(setId) ? prev.filter(id => id !== setId) : [...prev, setId]
     );
   };
@@ -30,21 +30,21 @@ const FileUploadModal = ({ isOpen, onClose, onUpload, sets }: { isOpen: boolean,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="bg-brand-dark border-none m-2">
         <DialogHeader>
           <DialogTitle>Upload Media</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="file">File</Label>
-            <Input id="file" type="file" onChange={handleFileChange} accept="image/*,video/*" />
+            <Input id="file" type="file" onChange={handleFileChange} accept="image/*,video/*" className="bg-gray-800/50 text-white" />
           </div>
           <div className="space-y-2">
             <Label>Associate with sets:</Label>
             {sets.map((set, index) => (
               <div key={set.id} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={`set-${set.id}`} 
+                <Checkbox
+                  id={`set-${set.id}`}
                   checked={selectedSets.includes(set.id)}
                   onCheckedChange={() => handleSetToggle(set.id)}
                 />
