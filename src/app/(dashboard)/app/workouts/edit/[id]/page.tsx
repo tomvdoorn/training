@@ -16,7 +16,7 @@ import { useToast } from "~/components/ui/use-toast";
 import type { Template, TemplateExercise, TemplateExerciseSet, Exercise as ExerciseType } from '@prisma/client';
 import { Input } from "~/components/ui/input";
 import { StoreListingDialog } from "@/components/app/store/StoreListingDialog"
-import { number } from 'zod';
+
 
 
 interface PageProps {
@@ -270,7 +270,7 @@ function WorkoutPage({ params }: PageProps) {
           {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
             <Exercise
               key={exercise.id}
-              templateExerciseId={exercise.id!}
+              templateExerciseId={exercise.id}
               template_id={workout?.id}
               exerciseIndex={index}
               exercise={exercise.exercise!}
@@ -317,7 +317,7 @@ function WorkoutPage({ params }: PageProps) {
             {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
               <Exercise
                 key={exercise.id}
-                templateExerciseId={exercise.id!}
+                templateExerciseId={exercise.id}
                 template_id={workout?.id}
                 exerciseIndex={index}
                 exercise={exercise.exercise!}

@@ -410,7 +410,7 @@ function StartWorkout({ params }: PageProps) {
               {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
                 <Exercise
                   key={exercise.id ?? `new-${index}`}
-                  templateExerciseId={exercise.id!}
+                  templateExerciseId={exercise.id}
                   template_id={workout?.id}
                   exerciseIndex={index}
                   exercise={exercise.exercise!}
@@ -440,7 +440,7 @@ function StartWorkout({ params }: PageProps) {
           {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
             <Exercise
               key={exercise.id ?? `new-${index}`}
-              templateExerciseId={exercise.id!}
+              templateExerciseId={exercise.id}
               template_id={workout?.id}
               exerciseIndex={index}
               exercise={exercise.exercise!}

@@ -32,7 +32,7 @@ import type { Exercise } from '@prisma/client';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import Exercise from './Exercises';
+
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -83,8 +83,8 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
         muscleGroup: values.muscleGroup as MuscleGroup,
         categoryId: Number(values.categoryId),
         type: values.type === "Compound" ? 1 : 2,
-        image: values.imageUrl || undefined,
-        video: values.videoUrl || undefined,
+        image: values.imageUrl ?? undefined,
+        video: values.videoUrl ?? undefined,
       });
 
       if (!newExercise) {
@@ -102,7 +102,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
       };
 
       addExercise(templateExercise);
-      onExerciseAdded(templateExercise);
+      onExerciseAdded(newExercise);
       form.reset();
 
       setIsOpen(false);
@@ -118,7 +118,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
   return (
     <>
       <div onClick={() => setIsOpen(true)}>
-        {children || (
+        {children ?? (
           <Button variant="default">
             Add New Exercise
           </Button>

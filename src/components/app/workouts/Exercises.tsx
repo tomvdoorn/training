@@ -91,15 +91,15 @@ const Exercise = ({
       weight: 0,
       type: 'Regular',
     };
-    addSet(templateExerciseId, newSet);
+    addSet(templateExerciseId!, newSet);
   }, [templateExerciseId, addSet]);
 
   const handleDeleteExercise = useCallback(() => {
-    removeExercise(templateExerciseId);
+    removeExercise(templateExerciseId!);
   }, [templateExerciseId, removeExercise]);
 
   const handleUpdateExercise = useCallback((data: Partial<ExerciseType>) => {
-    updateExercise(templateExerciseId, data);
+    updateExercise(templateExerciseId!, data);
   }, [templateExerciseId, updateExercise]);
 
   const handleMoveUp = () => {
@@ -140,7 +140,7 @@ const Exercise = ({
         fileType = 'video';
       }
 
-      addPendingMedia(templateExerciseId, {
+      addPendingMedia(templateExerciseId!, {
         file: fileUrl,
         fileType,
         setIndices: selectedSets
@@ -155,7 +155,7 @@ const Exercise = ({
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
-    updateExercise(templateExerciseId, { notes: e.target.value });
+    updateExercise(templateExerciseId!, { notes: e.target.value });
   };
 
   const toggleNotes = () => {

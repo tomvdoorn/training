@@ -116,7 +116,7 @@ function StartWorkout({ params }: PageProps) {
     }
   };
 
-  const handleExerciseAdded = useCallback((newExercise: TemplateExercise) => {
+  const handleExerciseAdded = useCallback((newExercise: TemplateExercise & { sets?: TemplateExerciseSet[] }) => {
     console.log("New exercise being added to template:", newExercise);
     addExercise({
       ...newExercise,
@@ -351,7 +351,7 @@ function StartWorkout({ params }: PageProps) {
               {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
                 <Exercise
                   key={exercise.id ?? `new-${index}`}
-                  templateExerciseId={exercise.id!}
+                  templateExerciseId={exercise.id}
                   template_id={0}
                   exerciseIndex={index}
                   exercise={exercise.exercise!}
@@ -381,7 +381,7 @@ function StartWorkout({ params }: PageProps) {
           {exercises.filter(ex => !ex.deleted).map((exercise, index) => (
             <Exercise
               key={exercise.id ?? `new-${index}`}
-              templateExerciseId={exercise.id!}
+              templateExerciseId={exercise.id}
               template_id={0}
               exerciseIndex={index}
               exercise={exercise.exercise!}

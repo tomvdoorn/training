@@ -42,6 +42,7 @@ interface WorkoutTemplateState {
 }
 interface addExerciseState extends Partial<TemplateExercise> {
   exercise: Exercise;
+  sets?: PartialTemplateExerciseSet[];
 }
 interface WorkoutTemplateActions {
   updateTemplate: (templateData: Partial<Template>) => void;

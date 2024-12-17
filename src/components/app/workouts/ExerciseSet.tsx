@@ -85,11 +85,11 @@ const ExerciseSet = ({
       }
     }
 
-    updateSet(templateExerciseId, set.isNew ? set.tempId! : set.id!, updatedFields);
+    updateSet(templateExerciseId!, set.isNew ? set.tempId! : set.id!, updatedFields);
   }, [templateExerciseId, set, placeholderData, updateSet]);
 
   const handleRemoveSet = useCallback(() => {
-    removeSet(templateExerciseId, set.isNew ? set.tempId! : set.id!);
+    removeSet(templateExerciseId!, set.isNew ? set.tempId! : set.id!);
   }, [templateExerciseId, set.id, set.tempId, set.isNew, removeSet]);
 
   const selectorColor = setTypeColors[set.type as string] ?? 'bg-white';

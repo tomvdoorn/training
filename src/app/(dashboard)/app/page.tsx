@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { getServerAuthSession } from "~/server/auth";
 import { db } from "~/server/db";
@@ -6,7 +6,7 @@ import { calculateWeeklyStats, calculateTrend, formatDuration } from "~/lib/stat
 import { startOfWeek, endOfWeek, startOfWeek as startOfPreviousWeek, subWeeks } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowUpRight, Play, PlusCircle } from "lucide-react";
+import { ArrowUpRight, } from "lucide-react";
 import CarouselItems from "@/components/app/CarouselItem";
 import SportsSocialFeed from "@/components/app/social/SportsSocialFeed";
 import type { User } from '@prisma/client';
