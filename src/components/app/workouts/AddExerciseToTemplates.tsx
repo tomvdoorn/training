@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -138,6 +139,7 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
   return (
     <div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTitle>Add Exercise to template</DialogTitle>
         <DialogTrigger asChild>
           <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">Add Exercise</Button>
         </DialogTrigger>
