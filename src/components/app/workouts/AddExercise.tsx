@@ -32,6 +32,7 @@ import type { Exercise } from '@prisma/client';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import type { addExerciseState } from '~/stores/workoutTemplateStore';
 
 
 const formSchema = z.object({
@@ -47,14 +48,13 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface AddExerciseProps {
-  templateId: number;
-  onExerciseAdded: (newExercise: Exercise) => void;
+  templateId?: number;
+  onExerciseAdded: (newExercise: Partial<addExerciseState>) => void;
   children?: React.ReactNode;
 }
 
 const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, children }) => {
   const { data: exerciseCategories, error, isLoading } = api.exercise.getExerciseCategories.useQuery();
-  const { addExercise } = useWorkoutTemplateStore();
   const [isOpen, setIsOpen] = useState(false);
   const addExerciseMutation = api.exercise.addExercise.useMutation<Exercise>();
 
@@ -73,10 +73,6 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      if (!templateId) {
-        throw new Error("Template ID is required");
-      }
-
       const newExercise = await addExerciseMutation.mutateAsync({
         name: values.name,
         description: values.description,
@@ -92,7 +88,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
       }
 
       const templateExercise = {
-        templateId,
+        ...(templateId ? { templateId } : {}),
         exerciseId: newExercise.id,
         exercise: newExercise,
         order: 0,
@@ -101,10 +97,8 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
         isNew: true,
       };
 
-      addExercise(templateExercise);
-      onExerciseAdded(newExercise);
+      onExerciseAdded(templateExercise);
       form.reset();
-
       setIsOpen(false);
 
     } catch (error) {
@@ -131,7 +125,7 @@ const AddExercise: React.FC<AddExerciseProps> = ({ templateId, onExerciseAdded, 
           form.reset();
         }
       }}>
-        <DialogContent className="bg-brand-dark border-brand-dark max-w-3xl w-[90vw] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-brand-dark border-brand-dark max-w-3xl w-[90vw] max-h-[90vh] overflow-y-auto p-6 rounded-lg ">
           <DialogHeader>
             <DialogTitle className="text-brand-light">Add New Exercise</DialogTitle>
           </DialogHeader>

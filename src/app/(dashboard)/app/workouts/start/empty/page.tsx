@@ -125,6 +125,7 @@ function StartWorkout({ params }: PageProps) {
         isNew: true,
         tempId: Math.random().toString(),
       })) ?? [],
+
     });
   }, [addExercise]);
 

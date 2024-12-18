@@ -40,10 +40,13 @@ interface WorkoutTemplateState {
   isSessionMode: boolean;
   generalMedia: PendingMedia[];
 }
-interface addExerciseState extends Partial<TemplateExercise> {
+
+export interface addExerciseState extends Partial<TemplateExercise> {
   exercise: Exercise;
+  templateId?: number;
   sets?: PartialTemplateExerciseSet[];
 }
+
 interface WorkoutTemplateActions {
   updateTemplate: (templateData: Partial<Template>) => void;
   addExercise: (exercise: Partial<addExerciseState>) => void;

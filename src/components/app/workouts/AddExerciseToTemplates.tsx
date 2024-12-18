@@ -4,7 +4,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogHeader,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { api } from "~/trpc/react";
@@ -14,6 +16,7 @@ import type { TemplateExercise } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import Image from 'next/image'
+import type { addExerciseState } from '~/stores/workoutTemplateStore';
 
 interface AddExerciseToTemplateProps {
   templateId: number;
@@ -53,6 +56,11 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
     templateId,
   });
 
+  const handleExerciseAdded = (exercise: Partial<addExerciseState>) => {
+    addExercise(exercise);
+    setIsOpen(false);
+  };
+
   const selectExercise = (exerciseId: number) => {
     const newExercise = exercises?.find((exercise) => exercise.id === exerciseId);
     if (newExercise) {
@@ -76,8 +84,6 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
   const content = (
     <>
       <div className="mb-4 bg-gray-800/50">
-        <h3 className="text-lg font-semibold mb-2">Add Exercise</h3>
-        <p className="text-sm text-brand-light mb-4">Search for exercises or add a new one!</p>
         <div className="flex items-center space-x-2">
           <Input
             type="text"
@@ -88,7 +94,7 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
           />
           <AddExercise
             templateId={templateId}
-            onExerciseAdded={addExercise}
+            onExerciseAdded={handleExerciseAdded}
           >
             <Button variant="outline" className="whitespace-nowrap bg-brand-gradient-r text-gray-900 hover:opacity-90">
               <Plus className="w-4 h-4 mr-2" />
@@ -139,11 +145,15 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
   return (
     <div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTitle>Add Exercise to template</DialogTitle>
         <DialogTrigger asChild>
           <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">Add Exercise</Button>
         </DialogTrigger>
+
         <DialogContent className="h-[90vh] max-w-3xl w-[90vw] bg-brand-dark p-6">
+          <DialogHeader>
+            <DialogTitle>Add Exercise</DialogTitle>
+            <DialogDescription>Add an exercise to your template</DialogDescription>
+          </DialogHeader>
           <div className="h-full overflow-y-auto pr-6">
             {content}
           </div>
