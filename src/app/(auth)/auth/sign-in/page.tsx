@@ -116,6 +116,7 @@ function SignInForm() {
                 required
                 autoComplete="email"
                 className="bg-gray-700 border-gray-600 text-brand-light"
+                tabIndex={1}
               />
             </div>
             <div className="grid gap-2">
@@ -135,6 +136,7 @@ function SignInForm() {
                 autoComplete="current-password"
                 required
                 className="bg-gray-700 border-gray-600 text-brand-light"
+                tabIndex={2}
               />
             </div>
             <Button type="submit" disabled={isLoading} className="bg-brand-gradient-r text-gray-900 hover:opacity-90">
