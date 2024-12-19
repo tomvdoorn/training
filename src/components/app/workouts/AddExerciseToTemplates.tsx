@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -74,6 +74,12 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm("");
+    }
+  }, [isOpen]);
+
   const filteredExercises = useMemo(() => {
     if (!exercises) return [];
     return exercises.filter(exercise =>
@@ -82,8 +88,8 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
   }, [exercises, searchTerm]);
 
   const content = (
-    <>
-      <div className="mb-4 bg-gray-800/50">
+    <div className="flex flex-col h-full">
+      <div className="sticky top-0 z-10 bg-brand-dark">
         <div className="flex items-center space-x-2">
           <Input
             type="text"
@@ -103,7 +109,8 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
           </AddExercise>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+
+      <div className="flex-1 overflow-y-auto pt-4">
         {filteredExercises.map((exercise) => {
           const initials = getInitials(exercise.name);
           const fallbackSrc = generateInitialsSVG(initials);
@@ -131,11 +138,11 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
             </div>
           );
         })}
+        {filteredExercises.length === 0 && (
+          <p className="text-center text-gray-500">No matching exercises found</p>
+        )}
       </div>
-      {filteredExercises.length === 0 && (
-        <p className="text-center text-gray-500">No matching exercises found</p>
-      )}
-    </>
+    </div>
   );
 
   if (!isModal) {
@@ -149,12 +156,12 @@ export default function AddExerciseToTemplate({ templateId, onExerciseAdded, isM
           <Button className="bg-brand-gradient-r text-gray-900 hover:opacity-90">Add Exercise</Button>
         </DialogTrigger>
 
-        <DialogContent className="h-[90vh] max-w-3xl w-[90vw] bg-brand-dark p-6">
-          <DialogHeader>
+        <DialogContent className="h-[90dvh] max-w-3xl w-[90vw] bg-brand-dark p-3 flex flex-col">
+          <DialogHeader className="pb-2 flex-shrink-0">
             <DialogTitle>Add Exercise</DialogTitle>
             <DialogDescription>Add an exercise to your template</DialogDescription>
           </DialogHeader>
-          <div className="h-full overflow-y-auto pr-6">
+          <div className="h-full overflow-y-auto  flex-1">
             {content}
           </div>
         </DialogContent>

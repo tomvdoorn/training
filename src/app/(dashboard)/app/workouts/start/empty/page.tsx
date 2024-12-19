@@ -76,12 +76,17 @@ function StartWorkout({ params }: PageProps) {
   useEffect(() => {
     const now = new Date();
     setStartTime(now);
+
     const timer = setInterval(() => {
-      setElapsedTime(prev => prev + 1);
+      if (startTime) {
+        const currentTime = new Date();
+        const elapsed = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000);
+        setElapsedTime(elapsed);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [startTime]);
 
   const createTrainingSessionMutation = api.session.createTrainingSession.useMutation();
   const createPostMutation = api.post.createPost.useMutation();

@@ -87,8 +87,8 @@ const Exercise = ({
 
   const handleAddSet = useCallback(() => {
     const newSet: Partial<TemplateExerciseSet> = {
-      reps: 0,
-      weight: 0,
+      reps: undefined,
+      weight: undefined,
       type: 'Regular',
     };
     addSet(templateExerciseId!, newSet);
@@ -171,7 +171,7 @@ const Exercise = ({
         className={`mb-6 p-4 mt-8 rounded-lg ${exerciseIndex % 2 === 0 ? 'bg-brand-dark' : 'bg-brand-dark/20'} shadow-sm transition-all duration-200 hover:shadow-md`}
       >
         <div className="flex items-center justify-between mb-4">
-          <div className="font-medium">{exercise.name}</div>
+          <div className="font-medium pr-2">{exercise.name}</div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" className="bg-brand-gradient-r text-gray-900 hover:opacity-90" size="sm" onClick={handleAddSet}>
               Add Set

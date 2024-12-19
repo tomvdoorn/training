@@ -135,7 +135,7 @@ const ExerciseSet = ({
           min={0}
           value={set.weight !== undefined && set.weight !== null ? set.weight.toString() : ''}
           onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) ?? 0)}
-          placeholder={setDataOption ? (placeholderData.weight ? placeholderData.weight.toString() : placeholderData.weight_template?.toString()) : undefined}
+          placeholder={set.isNew ? '0' : (setDataOption ? (placeholderData.weight ? placeholderData.weight.toString() : placeholderData.weight_template?.toString()) : undefined)}
           pattern="[0-9]*"
           inputMode="decimal"
           style={{ fontSize: '16px' }}
@@ -150,7 +150,7 @@ const ExerciseSet = ({
           min={0}
           value={set.reps !== undefined && set.reps !== null ? set.reps.toString() : ''}
           onChange={(e) => handleInputChange('reps', parseInt(e.target.value) ?? 0)}
-          placeholder={setDataOption ? (placeholderData.reps ? placeholderData.reps.toString() : placeholderData.reps_template?.toString()) : undefined}
+          placeholder={set.isNew ? '0' : (setDataOption ? (placeholderData.reps ? placeholderData.reps.toString() : placeholderData.reps_template?.toString()) : undefined)}
           pattern="[0-9]*"
           inputMode="numeric"
           style={{ fontSize: '16px' }}

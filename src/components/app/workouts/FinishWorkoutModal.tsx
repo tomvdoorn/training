@@ -61,9 +61,15 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
     }
   }, [isOpen]);
 
+  const formatDateTimeLocal = (date: Date) => {
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
   const handleEndTimeChange = (newTime: string) => {
     const newEndTime = new Date(newTime);
-    if (newEndTime >= startTime) {
+    if (!isNaN(newEndTime.getTime()) && newEndTime >= startTime) {
       setEndTime(newEndTime);
     }
   };
@@ -213,8 +219,8 @@ export const FinishWorkoutModal: React.FC<FinishWorkoutModalProps> = ({
             <Input
               id="endTime"
               type="datetime-local"
-              max={new Date().toISOString().slice(0, 16)}
-              value={endTime.toISOString().slice(0, 16)}
+              max={formatDateTimeLocal(new Date())}
+              value={formatDateTimeLocal(endTime)}
               onChange={(e) => handleEndTimeChange(e.target.value)}
               className="bg-brand-dark text-white icon-white"
             />
