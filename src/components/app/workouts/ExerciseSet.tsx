@@ -105,7 +105,7 @@ const ExerciseSet = ({
         'transition-colors duration-200'
       )}
     >
-      <TableCell>{setIndex + 1}</TableCell>
+      <TableCell className="text-left">{setIndex + 1}</TableCell>
       <TableCell>
         <Select
           value={set.type}

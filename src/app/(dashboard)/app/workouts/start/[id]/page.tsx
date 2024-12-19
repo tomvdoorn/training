@@ -15,6 +15,7 @@ import { useSessionHandler } from '~/hooks/useSessionHandler';
 import { FinishWorkoutModal } from '~/components/app/workouts/FinishWorkoutModal';
 import SetDataSelector from '~/components/app/workouts/SetDataSelector';
 import type { Media } from '@prisma/client';
+import { useWorkoutTimer } from '~/hooks/useWorkoutTimer';
 
 interface PageProps {
   params: {
@@ -76,18 +77,7 @@ function StartWorkout({ params }: PageProps) {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const [startTime, setStartTime] = useState<Date | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
-
-  useEffect(() => {
-    const now = new Date();
-    setStartTime(now);
-    const timer = setInterval(() => {
-      setElapsedTime(prev => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const { startTime, formattedTime } = useWorkoutTimer();
 
   const createTrainingSessionMutation = api.session.createTrainingSession.useMutation();
   const createPostMutation = api.post.createPost.useMutation();
@@ -327,13 +317,6 @@ function StartWorkout({ params }: PageProps) {
     generalMedia
   ]);
 
-  const formatElapsedTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   const [setDataOption, setSetDataOption] = useState<'lastSession' | 'prSession' | 'template'>('lastSession');
 
   const lastSessionQuery = api.session.getLastSessionData.useQuery({ templateId }, {
@@ -375,7 +358,7 @@ function StartWorkout({ params }: PageProps) {
           <h2 className="text-2xl font-bold">{workout?.name}</h2>
           <p className="text-sm text-gray-500 mt-1">Edit your workout template</p>
           <div className="text-lg font-semibold mt-2">
-            Elapsed Time: {formatElapsedTime(elapsedTime)}
+            Elapsed Time: {formattedTime}
           </div>
         </div>
         <div className="hidden md:block">
@@ -386,7 +369,7 @@ function StartWorkout({ params }: PageProps) {
                   <CardTitle>{workout?.name}</CardTitle>
                   <CardDescription className='mt-2'>Edit your workout template</CardDescription>
                   <div className="text-lg font-semibold">
-                    Elapsed Time: {formatElapsedTime(elapsedTime)}
+                    Elapsed Time: {formattedTime}
                   </div>
                 </div>
                 <AddExerciseToTemplate
